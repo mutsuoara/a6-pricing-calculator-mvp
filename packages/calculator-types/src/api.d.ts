@@ -31,33 +31,33 @@ export interface SearchParams extends PaginationParams {
 export interface CreateProjectRequest {
     name: string;
     description?: string;
-    settings: PricingSettings;
-    laborCategories: LaborCategory[];
-    otherDirectCosts: OtherDirectCost[];
+    settings: any;
+    laborCategories: any[];
+    otherDirectCosts: any[];
     tags?: string[];
 }
 export interface UpdateProjectRequest {
     name?: string;
     description?: string;
-    settings?: PricingSettings;
-    laborCategories?: LaborCategory[];
-    otherDirectCosts?: OtherDirectCost[];
+    settings?: any;
+    laborCategories?: any[];
+    otherDirectCosts?: any[];
     tags?: string[];
 }
 export interface ProjectListResponse {
-    projects: ProjectSummary[];
+    projects: any[];
     total: number;
     page: number;
     limit: number;
     hasMore: boolean;
 }
 export interface CalculateRequest {
-    settings: PricingSettings;
-    laborCategories: LaborCategory[];
-    otherDirectCosts?: OtherDirectCost[];
+    settings: any;
+    laborCategories: any[];
+    otherDirectCosts?: any[];
 }
 export interface CalculateResponse {
-    result: CalculationResult;
+    result: any;
     calculationTime: number;
     timestamp: string;
 }
@@ -80,7 +80,7 @@ export interface CreateTemplateRequest {
     isPublic?: boolean;
 }
 export interface TemplateListResponse {
-    templates: ProjectTemplate[];
+    templates: any[];
     total: number;
     page: number;
     limit: number;

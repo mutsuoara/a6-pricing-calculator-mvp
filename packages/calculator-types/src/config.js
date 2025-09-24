@@ -1,5 +1,6 @@
+"use strict";
 /**
  * Configuration and environment types
  */
-export {};
+Object.defineProperty(exports, "__esModule", { value: true });
 //# sourceMappingURL=config.js.map

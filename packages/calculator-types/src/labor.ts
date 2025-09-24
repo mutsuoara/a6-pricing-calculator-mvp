@@ -48,3 +48,4 @@ export interface LaborCategorySummary {
   clearanceDistribution: Record<string, number>;
   locationDistribution: Record<string, number>;
 }
+

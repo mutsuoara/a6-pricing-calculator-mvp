@@ -76,3 +76,4 @@ export interface EnvironmentVariables {
   RATE_LIMIT_WINDOW_MS: string;
   RATE_LIMIT_MAX: string;
 }
+

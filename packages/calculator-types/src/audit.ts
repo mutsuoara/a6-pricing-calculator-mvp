@@ -58,3 +58,4 @@ export interface SecurityEvent {
   resolvedAt?: string;
   resolvedBy?: string;
 }
+

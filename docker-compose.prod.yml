@@ -3,11 +3,11 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: pricing-calculator-postgres
+    container_name: pricing-calculator-postgres-prod
     environment:
-      POSTGRES_DB: pricing_calculator
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${DB_NAME:-pricing_calculator}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
       - "5432:5432"
@@ -16,14 +16,15 @@ services:
     networks:
       - pricing-calculator-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d pricing_calculator"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-pricing_calculator}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
-    container_name: pricing-calculator-redis
+    container_name: pricing-calculator-redis-prod
     ports:
       - "6379:6379"
     volumes:
@@ -35,26 +36,31 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   api:
     build:
       context: .
       dockerfile: packages/calculator-api/Dockerfile
-    container_name: pricing-calculator-api
+      target: production
+    container_name: pricing-calculator-api-prod
     ports:
       - "3001:3001"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - PORT=3001
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_NAME=pricing_calculator
-      - DB_USER=postgres
-      - DB_PASSWORD=password
-      - DB_SSL=false
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/pricing_calculator
+      - DB_NAME=${DB_NAME:-pricing_calculator}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_SSL=${DB_SSL:-false}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-pricing_calculator}
       - REDIS_URL=redis://redis:6379
-      - CORS_ORIGIN=http://localhost:3000
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
@@ -62,35 +68,30 @@ services:
         condition: service_healthy
     networks:
       - pricing-calculator-network
-    volumes:
-      - ./packages/calculator-api:/app
-      - /app/node_modules
-    command: yarn dev
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: unless-stopped
 
   webapp:
     build:
       context: .
       dockerfile: apps/standalone-webapp/Dockerfile
-    container_name: pricing-calculator-webapp
+      target: production
+    container_name: pricing-calculator-webapp-prod
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - REACT_APP_API_URL=http://localhost:3001
+      - NODE_ENV=production
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:3001}
     depends_on:
       api:
         condition: service_healthy
     networks:
       - pricing-calculator-network
-    volumes:
-      - ./apps/standalone-webapp:/app
-      - /app/node_modules
-    command: yarn dev
+    restart: unless-stopped
 
 volumes:
   postgres_data:
@@ -99,4 +100,3 @@ volumes:
 networks:
   pricing-calculator-network:
     driver: bridge
-

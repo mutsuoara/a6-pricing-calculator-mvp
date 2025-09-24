@@ -24,3 +24,4 @@ RUN yarn workspace @pricing-calculator/api build
 EXPOSE 3001
 
 CMD ["yarn", "workspace", "@pricing-calculator/api", "start"]
+

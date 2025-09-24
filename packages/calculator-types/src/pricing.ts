@@ -91,3 +91,4 @@ export interface ScenarioComparison {
     totalCostVariancePercent: number;
   };
 }
+

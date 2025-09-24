@@ -1,5 +1,6 @@
+"use strict";
 /**
  * Project management and persistence types
  */
-export {};
+Object.defineProperty(exports, "__esModule", { value: true });
 //# sourceMappingURL=project.js.map

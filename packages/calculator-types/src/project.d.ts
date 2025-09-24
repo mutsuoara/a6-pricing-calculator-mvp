@@ -6,9 +6,9 @@ export interface PricingProject {
     tenantId: string;
     name: string;
     description?: string;
-    settings: PricingSettings;
-    laborCategories: LaborCategory[];
-    otherDirectCosts: OtherDirectCost[];
+    settings: any;
+    laborCategories: any[];
+    otherDirectCosts: any[];
     createdAt: string;
     updatedAt: string;
     createdBy: string;
