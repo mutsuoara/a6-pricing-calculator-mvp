@@ -4,6 +4,8 @@
 
 import { DatabaseService } from '../config/database';
 import { User } from './SimpleUser';
+import { PricingProject } from './PricingProject';
+import { AuditLog } from './AuditLog';
 
 export class ModelManager {
   private static initialized = false;
@@ -20,6 +22,8 @@ export class ModelManager {
 
       // Initialize all models
       User.initModel();
+      PricingProject.initModel();
+      AuditLog.initModel();
 
       // Sync database (create tables if they don't exist)
       await dbService.sync();
@@ -34,7 +38,9 @@ export class ModelManager {
 
   public static getModels() {
     return {
-      User
+      User,
+      PricingProject,
+      AuditLog
     };
   }
 
@@ -45,5 +51,5 @@ export class ModelManager {
 }
 
 // Export models for use in other parts of the application
-export { User };
+export { User, PricingProject, AuditLog };
 export { DatabaseService } from '../config/database';
