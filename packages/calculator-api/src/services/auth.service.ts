@@ -19,12 +19,22 @@ export class AuthService {
    * Initialize Passport strategies
    */
   public static initializePassport(): void {
-    // Google OAuth Strategy
-    passport.use(new GoogleStrategy({
-      clientID: process.env['GOOGLE_CLIENT_ID'] || '',
-      clientSecret: process.env['GOOGLE_CLIENT_SECRET'] || '',
-      callbackURL: '/api/auth/google/callback'
-    }, AuthService.handleGoogleCallback));
+    // Google OAuth Strategy - only initialize if credentials are provided
+    const googleClientId = process.env['GOOGLE_CLIENT_ID'];
+    const googleClientSecret = process.env['GOOGLE_CLIENT_SECRET'];
+    
+    if (googleClientId && googleClientSecret && googleClientId !== 'your_google_client_id_here') {
+      console.log('🔐 Initializing Google OAuth strategy...');
+      passport.use(new GoogleStrategy({
+        clientID: googleClientId,
+        clientSecret: googleClientSecret,
+        callbackURL: '/api/auth/google/callback'
+      }, AuthService.handleGoogleCallback));
+      console.log('✅ Google OAuth strategy initialized');
+    } else {
+      console.log('⚠️  Google OAuth credentials not configured - OAuth login will be disabled');
+      console.log('   Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables to enable OAuth');
+    }
 
     // JWT Strategy for API protection
     passport.use(new JwtStrategy({

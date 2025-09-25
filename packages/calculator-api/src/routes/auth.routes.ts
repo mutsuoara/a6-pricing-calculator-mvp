@@ -14,17 +14,37 @@ const router = express.Router();
 /**
  * Google OAuth login initiation
  */
-router.get('/google', passport.authenticate('google', {
-  scope: ['profile', 'email'],
-  prompt: 'select_account'
-}));
+router.get('/google', (req, res) => {
+  const googleClientId = process.env['GOOGLE_CLIENT_ID'];
+  const googleClientSecret = process.env['GOOGLE_CLIENT_SECRET'];
+  
+  if (!googleClientId || !googleClientSecret || googleClientId === 'your_google_client_id_here') {
+    return res.status(503).json({
+      error: 'Google OAuth not configured',
+      message: 'OAuth login is not available. Please contact administrator.',
+      code: 'OAUTH_NOT_CONFIGURED'
+    });
+  }
+  
+  return passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account'
+  })(req, res);
+});
 
 /**
  * Google OAuth callback
  */
-router.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/login?error=oauth_failed' }),
-  async (req: AuthRequest, res) => {
+router.get('/google/callback', (req, res, next) => {
+  const googleClientId = process.env['GOOGLE_CLIENT_ID'];
+  const googleClientSecret = process.env['GOOGLE_CLIENT_SECRET'];
+  
+  if (!googleClientId || !googleClientSecret || googleClientId === 'your_google_client_id_here') {
+    return res.redirect('/login?error=oauth_not_configured');
+  }
+  
+  return passport.authenticate('google', { failureRedirect: '/login?error=oauth_failed' })(req, res, next);
+}, async (req: AuthRequest, res) => {
     try {
       const user = req.user;
       if (!user) {

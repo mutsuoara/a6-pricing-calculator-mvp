@@ -5,6 +5,8 @@
 import { DatabaseService } from '../config/database';
 import { User } from './SimpleUser';
 import { PricingProject } from './PricingProject';
+import { LaborCategory } from './LaborCategory';
+import { OtherDirectCost } from './OtherDirectCost';
 import { AuditLog } from './AuditLog';
 
 export class ModelManager {
@@ -23,7 +25,32 @@ export class ModelManager {
       // Initialize all models
       User.initModel();
       PricingProject.initModel();
+      LaborCategory.initModel();
+      OtherDirectCost.initModel();
       AuditLog.initModel();
+
+      // Set up associations
+      PricingProject.hasMany(LaborCategory, {
+        foreignKey: 'projectId',
+        as: 'laborCategories',
+        onDelete: 'CASCADE',
+      });
+
+      LaborCategory.belongsTo(PricingProject, {
+        foreignKey: 'projectId',
+        as: 'project',
+      });
+
+      PricingProject.hasMany(OtherDirectCost, {
+        foreignKey: 'projectId',
+        as: 'otherDirectCosts',
+        onDelete: 'CASCADE',
+      });
+
+      OtherDirectCost.belongsTo(PricingProject, {
+        foreignKey: 'projectId',
+        as: 'project',
+      });
 
       // Sync database (create tables if they don't exist)
       await dbService.sync();
@@ -40,6 +67,8 @@ export class ModelManager {
     return {
       User,
       PricingProject,
+      LaborCategory,
+      OtherDirectCost,
       AuditLog
     };
   }
@@ -51,5 +80,5 @@ export class ModelManager {
 }
 
 // Export models for use in other parts of the application
-export { User, PricingProject, AuditLog };
+export { User, PricingProject, LaborCategory, OtherDirectCost, AuditLog };
 export { DatabaseService } from '../config/database';

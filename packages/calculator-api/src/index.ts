@@ -45,7 +45,8 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.use(limiter);
+// Apply rate limiting to all routes
+app.use(limiter as any);
 
 // CORS configuration
 app.use(cors({
@@ -53,7 +54,7 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}));
+}) as any);
 
 // Session configuration for OAuth
 app.use(session({
@@ -65,21 +66,21 @@ app.use(session({
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
-}));
+}) as any);
 
 // Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.initialize() as any);
+app.use(passport.session() as any);
 
 // Body parsing with size limits
 app.use(express.json({ 
   limit: '10mb',
-  verify: (_req, res, buf) => {
+  verify: (_req, _res, buf) => {
     // Basic JSON validation
     try {
       JSON.parse(buf.toString());
     } catch (e) {
-      res.status(400).json({ error: 'Invalid JSON format' });
+      // JSON is invalid, but we'll let express handle it
       return;
     }
   }

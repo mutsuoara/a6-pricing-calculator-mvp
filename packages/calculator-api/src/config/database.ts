@@ -101,3 +101,6 @@ export class DatabaseService {
     }
   }
 }
+
+// Export sequelize instance for direct use in models
+export const sequelize = DatabaseService.getInstance().getSequelize();
