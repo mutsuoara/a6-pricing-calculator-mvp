@@ -1,0 +1,264 @@
+/**
+ * Labor Category Service
+ * Handles labor category calculations and validation
+ */
+
+import { LaborCategoryInput, LaborCategoryResult, LaborCategorySummary, ValidationError } from '../types/labor-category';
+
+export class LaborCategoryService {
+  private static readonly CLEARANCE_PREMIUMS = {
+    'None': 0,
+    'Public Trust': 0.05,
+    'Secret': 0.10,
+    'Top Secret': 0.20,
+  };
+
+  /**
+   * Calculate effective hours for a labor category
+   */
+  public static calculateEffectiveHours(hours: number, ftePercentage: number): number {
+    return hours * (ftePercentage / 100);
+  }
+
+  /**
+   * Calculate clearance premium
+   */
+  public static calculateClearancePremium(clearanceLevel: 'None' | 'Public Trust' | 'Secret' | 'Top Secret'): number {
+    return this.CLEARANCE_PREMIUMS[clearanceLevel];
+  }
+
+  /**
+   * Calculate clearance adjusted rate
+   */
+  public static calculateClearanceAdjustedRate(baseRate: number, clearanceLevel: 'None' | 'Public Trust' | 'Secret' | 'Top Secret'): number {
+    const premium = this.calculateClearancePremium(clearanceLevel);
+    return baseRate * (1 + premium);
+  }
+
+  /**
+   * Calculate burdened rate
+   */
+  public static calculateBurdenedRate(
+    baseRate: number,
+    clearanceLevel: 'None' | 'Public Trust' | 'Secret' | 'Top Secret',
+    overheadRate: number,
+    gaRate: number,
+    feeRate: number
+  ): number {
+    const clearanceAdjustedRate = this.calculateClearanceAdjustedRate(baseRate, clearanceLevel);
+    return clearanceAdjustedRate * (1 + overheadRate) * (1 + gaRate) * (1 + feeRate);
+  }
+
+  /**
+   * Calculate total cost for a labor category
+   */
+  public static calculateTotalCost(
+    laborCategory: LaborCategoryInput,
+    overheadRate: number,
+    gaRate: number,
+    feeRate: number
+  ): LaborCategoryResult {
+    const effectiveHours = this.calculateEffectiveHours(laborCategory.hours, laborCategory.ftePercentage);
+    const clearancePremium = this.calculateClearancePremium(laborCategory.clearanceLevel);
+    const clearanceAdjustedRate = this.calculateClearanceAdjustedRate(laborCategory.baseRate, laborCategory.clearanceLevel);
+    const burdenedRate = this.calculateBurdenedRate(
+      laborCategory.baseRate,
+      laborCategory.clearanceLevel,
+      overheadRate,
+      gaRate,
+      feeRate
+    );
+
+    const overheadAmount = clearanceAdjustedRate * overheadRate * effectiveHours;
+    const gaAmount = clearanceAdjustedRate * (1 + overheadRate) * gaRate * effectiveHours;
+    const feeAmount = clearanceAdjustedRate * (1 + overheadRate) * (1 + gaRate) * feeRate * effectiveHours;
+    const totalCost = burdenedRate * effectiveHours;
+
+    return {
+      id: laborCategory.id,
+      title: laborCategory.title,
+      baseRate: laborCategory.baseRate,
+      hours: laborCategory.hours,
+      ftePercentage: laborCategory.ftePercentage,
+      effectiveHours,
+      clearanceLevel: laborCategory.clearanceLevel,
+      location: laborCategory.location,
+      clearancePremium,
+      clearanceAdjustedRate,
+      overheadAmount,
+      overheadRate,
+      gaAmount,
+      gaRate,
+      feeAmount,
+      feeRate,
+      totalCost,
+      burdenedRate,
+    };
+  }
+
+  /**
+   * Validate a labor category
+   */
+  public static validateLaborCategory(laborCategory: LaborCategoryInput, index: number): ValidationError[] {
+    const errors: ValidationError[] = [];
+    const prefix = `categories[${index}]`;
+
+    if (!laborCategory.title || laborCategory.title.trim().length === 0) {
+      errors.push({
+        field: `${prefix}.title`,
+        message: 'Labor category title is required',
+        value: laborCategory.title,
+      });
+    }
+
+    if (laborCategory.baseRate < 1 || laborCategory.baseRate > 1000) {
+      errors.push({
+        field: `${prefix}.baseRate`,
+        message: 'Base rate must be between $1 and $1000',
+        value: laborCategory.baseRate,
+      });
+    }
+
+    if (laborCategory.hours < 1 || laborCategory.hours > 10000) {
+      errors.push({
+        field: `${prefix}.hours`,
+        message: 'Hours must be between 1 and 10000',
+        value: laborCategory.hours,
+      });
+    }
+
+    if (laborCategory.ftePercentage < 0.01 || laborCategory.ftePercentage > 100) {
+      errors.push({
+        field: `${prefix}.ftePercentage`,
+        message: 'FTE percentage must be between 0.01% and 100%',
+        value: laborCategory.ftePercentage,
+      });
+    }
+
+    if (!laborCategory.clearanceLevel || !['None', 'Public Trust', 'Secret', 'Top Secret'].includes(laborCategory.clearanceLevel)) {
+      errors.push({
+        field: `${prefix}.clearanceLevel`,
+        message: 'Invalid clearance level',
+        value: laborCategory.clearanceLevel,
+      });
+    }
+
+    if (!laborCategory.location || !['Remote', 'On-site', 'Hybrid'].includes(laborCategory.location)) {
+      errors.push({
+        field: `${prefix}.location`,
+        message: 'Invalid location type',
+        value: laborCategory.location,
+      });
+    }
+
+    return errors;
+  }
+
+  /**
+   * Calculate summary for all labor categories
+   */
+  public static calculateSummary(
+    categories: LaborCategoryInput[],
+    overheadRate: number,
+    gaRate: number,
+    feeRate: number
+  ): LaborCategorySummary {
+    if (categories.length === 0) {
+      return {
+        totalCategories: 0,
+        totalHours: 0,
+        totalEffectiveHours: 0,
+        totalBaseCost: 0,
+        totalBurdenedCost: 0,
+        averageBaseRate: 0,
+        averageBurdenedRate: 0,
+      };
+    }
+
+    let totalHours = 0;
+    let totalEffectiveHours = 0;
+    let totalBaseCost = 0;
+    let totalBurdenedCost = 0;
+    let totalBaseRate = 0;
+    let totalBurdenedRate = 0;
+
+    categories.forEach(category => {
+      const result = this.calculateTotalCost(category, overheadRate, gaRate, feeRate);
+      
+      totalHours += category.hours;
+      totalEffectiveHours += result.effectiveHours;
+      totalBaseCost += category.baseRate * category.hours;
+      totalBurdenedCost += result.totalCost;
+      totalBaseRate += category.baseRate;
+      totalBurdenedRate += result.burdenedRate;
+    });
+
+    return {
+      totalCategories: categories.length,
+      totalHours,
+      totalEffectiveHours,
+      totalBaseCost,
+      totalBurdenedCost,
+      averageBaseRate: totalBaseRate / categories.length,
+      averageBurdenedRate: totalBurdenedRate / categories.length,
+    };
+  }
+
+  /**
+   * Create a new empty labor category
+   */
+  public static createEmptyCategory(): LaborCategoryInput {
+    return {
+      title: '',
+      baseRate: 0,
+      hours: 0,
+      ftePercentage: 100,
+      clearanceLevel: 'None',
+      location: 'Remote',
+    };
+  }
+
+  /**
+   * Format currency for display
+   */
+  public static formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  }
+
+  /**
+   * Format percentage for display
+   */
+  public static formatPercentage(value: number): string {
+    return `${(value * 100).toFixed(1)}%`;
+  }
+
+  /**
+   * Get clearance level color for UI
+   */
+  public static getClearanceLevelColor(clearanceLevel: 'None' | 'Public Trust' | 'Secret' | 'Top Secret'): string {
+    switch (clearanceLevel) {
+      case 'None': return '#4caf50'; // Green
+      case 'Public Trust': return '#ff9800'; // Orange
+      case 'Secret': return '#f44336'; // Red
+      case 'Top Secret': return '#9c27b0'; // Purple
+      default: return '#757575'; // Grey
+    }
+  }
+
+  /**
+   * Get location icon for UI
+   */
+  public static getLocationIcon(location: 'Remote' | 'On-site' | 'Hybrid'): string {
+    switch (location) {
+      case 'Remote': return '🏠';
+      case 'On-site': return '🏢';
+      case 'Hybrid': return '🔄';
+      default: return '📍';
+    }
+  }
+}

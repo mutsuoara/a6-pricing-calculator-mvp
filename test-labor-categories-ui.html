@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labor Categories UI Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .test-title {
+            color: #1976d2;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .test-description {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .test-link {
+            display: inline-block;
+            background: #1976d2;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .test-link:hover {
+            background: #1565c0;
+        }
+        .feature-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .feature-list li:before {
+            content: "✅ ";
+            color: #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧮 Labor Categories Input UI - Test Page</h1>
+        
+        <div class="test-section">
+            <div class="test-title">Live Demo</div>
+            <div class="test-description">
+                Test the Labor Categories Input component with real-time calculations and professional UI.
+            </div>
+            <a href="http://localhost:3000" class="test-link" target="_blank">
+                🚀 Open Labor Categories Demo
+            </a>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Features to Test</div>
+            <div class="test-description">
+                The Labor Categories Input component includes the following features:
+            </div>
+            <ul class="feature-list">
+                <li>Professional table-based input with Material-UI components</li>
+                <li>Dynamic add/remove labor categories with validation</li>
+                <li>Real-time effective hours calculation (Hours × FTE%)</li>
+                <li>Clearance level selection with color-coded indicators</li>
+                <li>Location selection (Remote/On-site/Hybrid) with icons</li>
+                <li>Summary footer showing totals and averages</li>
+                <li>Debounced input handling to prevent excessive calculations</li>
+                <li>Form validation with inline error messages</li>
+                <li>Professional government contracting visual design</li>
+                <li>Responsive table design for various screen sizes</li>
+                <li>Accessibility compliance (WCAG 2.2 AA)</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test Scenarios</div>
+            <div class="test-description">
+                Try these test scenarios to verify functionality:
+            </div>
+            <ol>
+                <li><strong>Add Categories:</strong> Click "Add Category" to create new labor categories</li>
+                <li><strong>Edit Fields:</strong> Click the edit icon to modify category details</li>
+                <li><strong>Real-time Calculations:</strong> Change base rate, hours, or FTE% and watch calculations update</li>
+                <li><strong>Clearance Premiums:</strong> Change clearance levels and see burdened rates adjust</li>
+                <li><strong>Input Validation:</strong> Try entering invalid values (e.g., base rate > $1000)</li>
+                <li><strong>Settings Impact:</strong> Adjust OH/G&A/Fee rates and see all calculations update</li>
+                <li><strong>Summary Updates:</strong> Verify summary cards update with totals and averages</li>
+                <li><strong>Responsive Design:</strong> Resize browser window to test mobile/tablet views</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Expected Results</div>
+            <div class="test-description">
+                Sample calculation for Senior Software Engineer ($85/hr, 2080 hours, 100% FTE, Secret clearance):
+            </div>
+            <ul>
+                <li><strong>Effective Hours:</strong> 2,080 (2080 × 100%)</li>
+                <li><strong>Clearance Premium:</strong> 10% (Secret level)</li>
+                <li><strong>Clearance Adjusted Rate:</strong> $93.50/hr ($85 × 1.10)</li>
+                <li><strong>Burdened Rate:</strong> $153.76/hr (with 30% OH, 15% G&A, 10% Fee)</li>
+                <li><strong>Total Cost:</strong> $319,822 (2080 × $153.76)</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">API Integration</div>
+            <div class="test-description">
+                The component integrates with the calculation service API:
+            </div>
+            <ul>
+                <li><strong>Calculation Service:</strong> Uses PricingCalculationService for accurate calculations</li>
+                <li><strong>Validation Service:</strong> Implements comprehensive input validation</li>
+                <li><strong>Real-time Updates:</strong> Debounced calculations prevent performance issues</li>
+                <li><strong>Error Handling:</strong> User-friendly error messages with specific guidance</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
