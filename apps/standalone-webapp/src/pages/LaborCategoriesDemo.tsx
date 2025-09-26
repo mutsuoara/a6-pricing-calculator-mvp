@@ -96,20 +96,20 @@ export const LaborCategoriesDemo: React.FC = () => {
               Overhead Rate: {(overheadRate * 100).toFixed(1)}%
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Indirect costs for facilities, equipment, and administrative support. Typically 20-40% for government contracts.
+              Indirect costs for facilities, equipment, and administrative support. Typically 20-40% for government contracts. Range: 0-100%.
             </Typography>
             <Slider
               value={overheadRate}
               onChange={handleOverheadRateChange}
               min={0}
-              max={2}
+              max={1}
               step={0.01}
               marks={[
                 { value: 0, label: '0%' },
+                { value: 0.25, label: '25%' },
                 { value: 0.5, label: '50%' },
+                { value: 0.75, label: '75%' },
                 { value: 1, label: '100%' },
-                { value: 1.5, label: '150%' },
-                { value: 2, label: '200%' },
               ]}
               valueLabelDisplay="auto"
               valueLabelFormat={(value) => `${(value * 100).toFixed(1)}%`}
@@ -120,20 +120,20 @@ export const LaborCategoriesDemo: React.FC = () => {
               G&A Rate: {(gaRate * 100).toFixed(1)}%
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              General & Administrative costs for corporate overhead, executive management, and business development. Usually 8-15%.
+              General & Administrative costs for corporate overhead, executive management, and business development. Usually 8-15%. Range: 0-100%.
             </Typography>
             <Slider
               value={gaRate}
               onChange={handleGaRateChange}
               min={0}
-              max={2}
+              max={1}
               step={0.01}
               marks={[
                 { value: 0, label: '0%' },
+                { value: 0.25, label: '25%' },
                 { value: 0.5, label: '50%' },
+                { value: 0.75, label: '75%' },
                 { value: 1, label: '100%' },
-                { value: 1.5, label: '150%' },
-                { value: 2, label: '200%' },
               ]}
               valueLabelDisplay="auto"
               valueLabelFormat={(value) => `${(value * 100).toFixed(1)}%`}
@@ -144,7 +144,7 @@ export const LaborCategoriesDemo: React.FC = () => {
               Fee Rate: {(feeRate * 100).toFixed(1)}%
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Profit margin added to total costs. Varies by contract type: FFP (5-15%), T&M (2-8%), CPFF (1-5%).
+              Profit margin added to total costs. Varies by contract type: FFP (5-15%), T&M (2-8%), CPFF (1-5%). Range: 0-100%.
             </Typography>
             <Slider
               value={feeRate}
