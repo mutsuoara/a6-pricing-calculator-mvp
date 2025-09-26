@@ -3,7 +3,7 @@
  * Demonstrates the Labor Categories Input component with sample data
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -20,10 +20,16 @@ import {
   Divider,
   IconButton,
   Tooltip,
+  Button,
+  Alert,
+  Collapse,
 } from '@mui/material';
-import { Info as InfoIcon } from '@mui/icons-material';
-import { LaborCategoryInput } from '../types/labor-category';
+import { Info as InfoIcon, ExpandMore as ExpandMoreIcon, ExpandLess as ExpandLessIcon } from '@mui/icons-material';
+import { LaborCategoryInput, ValidationError, OverridePermissions, ValidationContext } from '../types/labor-category';
 import LaborCategoriesInput from '../components/LaborCategoriesInput';
+import ValidationAlert from '../components/ValidationAlert';
+import ContractVehicleSelector from '../components/ContractVehicleSelector';
+import UserPermissionsSelector from '../components/UserPermissionsSelector';
 
 export const LaborCategoriesDemo: React.FC = () => {
   const [categories, setCategories] = useState<LaborCategoryInput[]>([
@@ -59,6 +65,17 @@ export const LaborCategoriesDemo: React.FC = () => {
   const [overheadRate, setOverheadRate] = useState(0.30);
   const [gaRate, setGaRate] = useState(0.15);
   const [feeRate, setFeeRate] = useState(0.10);
+  const [contractVehicle, setContractVehicle] = useState<string | undefined>();
+  const [permissions, setPermissions] = useState<OverridePermissions>({
+    canOverrideRates: false,
+    canOverrideContractLimits: false,
+    canOverrideValidation: false,
+    userRole: 'analyst',
+  });
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [validationWarnings, setValidationWarnings] = useState<ValidationError[]>([]);
+  const [showValidationDetails, setShowValidationDetails] = useState(false);
+  const [overriddenFields, setOverriddenFields] = useState<Set<string>>(new Set());
 
   const handleCategoriesChange = (newCategories: LaborCategoryInput[]) => {
     setCategories(newCategories);
@@ -75,6 +92,206 @@ export const LaborCategoriesDemo: React.FC = () => {
   const handleFeeRateChange = (_: Event, newValue: number | number[]) => {
     setFeeRate(newValue as number);
   };
+
+  // Validation logic
+  const validateRates = useCallback(() => {
+    const errors: ValidationError[] = [];
+    const warnings: ValidationError[] = [];
+
+    // Basic validation
+    if (overheadRate < 0) {
+      errors.push({
+        field: 'overheadRate',
+        message: 'Overhead rate cannot be negative',
+        value: overheadRate,
+        severity: 'error',
+        canOverride: false,
+      });
+    }
+
+    if (gaRate < 0) {
+      errors.push({
+        field: 'gaRate',
+        message: 'G&A rate cannot be negative',
+        value: gaRate,
+        severity: 'error',
+        canOverride: false,
+      });
+    }
+
+    if (feeRate < 0) {
+      errors.push({
+        field: 'feeRate',
+        message: 'Fee rate cannot be negative',
+        value: feeRate,
+        severity: 'error',
+        canOverride: false,
+      });
+    }
+
+    // Contract vehicle specific validation
+    if (contractVehicle) {
+      const contractLimits = getContractVehicleLimits(contractVehicle);
+      
+      if (contractLimits) {
+        // Check overhead rate against contract limits
+        if (overheadRate > contractLimits.maxOverheadRate) {
+          const canOverride = permissions.canOverrideContractLimits;
+          const error: ValidationError = {
+            field: 'overheadRate',
+            message: `Overhead rate (${(overheadRate * 100).toFixed(1)}%) exceeds ${contractVehicle} limit (${(contractLimits.maxOverheadRate * 100).toFixed(0)}%)`,
+            value: overheadRate,
+            severity: canOverride ? 'warning' : 'error',
+            canOverride,
+          };
+          if (canOverride) {
+            error.overrideReason = 'Contract vehicle limit exceeded';
+          }
+          if (overriddenFields.has('overheadRate')) {
+            warnings.push(error);
+          } else {
+            (canOverride ? warnings : errors).push(error);
+          }
+        }
+
+        // Check G&A rate against contract limits
+        if (gaRate > contractLimits.maxGaRate) {
+          const canOverride = permissions.canOverrideContractLimits;
+          const error: ValidationError = {
+            field: 'gaRate',
+            message: `G&A rate (${(gaRate * 100).toFixed(1)}%) exceeds ${contractVehicle} limit (${(contractLimits.maxGaRate * 100).toFixed(0)}%)`,
+            value: gaRate,
+            severity: canOverride ? 'warning' : 'error',
+            canOverride,
+          };
+          if (canOverride) {
+            error.overrideReason = 'Contract vehicle limit exceeded';
+          }
+          if (overriddenFields.has('gaRate')) {
+            warnings.push(error);
+          } else {
+            (canOverride ? warnings : errors).push(error);
+          }
+        }
+
+        // Check fee rate against contract limits
+        if (feeRate > contractLimits.maxFeeRate) {
+          const canOverride = permissions.canOverrideContractLimits;
+          const error: ValidationError = {
+            field: 'feeRate',
+            message: `Fee rate (${(feeRate * 100).toFixed(1)}%) exceeds ${contractVehicle} limit (${(contractLimits.maxFeeRate * 100).toFixed(0)}%)`,
+            value: feeRate,
+            severity: canOverride ? 'warning' : 'error',
+            canOverride,
+          };
+          if (canOverride) {
+            error.overrideReason = 'Contract vehicle limit exceeded';
+          }
+          if (overriddenFields.has('feeRate')) {
+            warnings.push(error);
+          } else {
+            (canOverride ? warnings : errors).push(error);
+          }
+        }
+      }
+    } else {
+      // Fallback to general limits when no contract vehicle specified
+      if (overheadRate > 1) { // 100%
+        const canOverride = permissions.canOverrideRates;
+        const error: ValidationError = {
+          field: 'overheadRate',
+          message: 'Overhead rate exceeds 100% - consider selecting a contract vehicle for specific limits',
+          value: overheadRate,
+          severity: canOverride ? 'warning' : 'error',
+          canOverride,
+        };
+        if (canOverride) {
+          error.overrideReason = 'General rate limit exceeded';
+        }
+        if (overriddenFields.has('overheadRate')) {
+          warnings.push(error);
+        } else {
+          (canOverride ? warnings : errors).push(error);
+        }
+      }
+
+      if (gaRate > 0.5) { // 50%
+        const canOverride = permissions.canOverrideRates;
+        const error: ValidationError = {
+          field: 'gaRate',
+          message: 'G&A rate exceeds 50% - consider selecting a contract vehicle for specific limits',
+          value: gaRate,
+          severity: canOverride ? 'warning' : 'error',
+          canOverride,
+        };
+        if (canOverride) {
+          error.overrideReason = 'General rate limit exceeded';
+        }
+        if (overriddenFields.has('gaRate')) {
+          warnings.push(error);
+        } else {
+          (canOverride ? warnings : errors).push(error);
+        }
+      }
+
+      if (feeRate > 0.2) { // 20%
+        const canOverride = permissions.canOverrideRates;
+        const error: ValidationError = {
+          field: 'feeRate',
+          message: 'Fee rate exceeds 20% - consider selecting a contract vehicle for specific limits',
+          value: feeRate,
+          severity: canOverride ? 'warning' : 'error',
+          canOverride,
+        };
+        if (canOverride) {
+          error.overrideReason = 'General rate limit exceeded';
+        }
+        if (overriddenFields.has('feeRate')) {
+          warnings.push(error);
+        } else {
+          (canOverride ? warnings : errors).push(error);
+        }
+      }
+    }
+
+    setValidationErrors(errors);
+    setValidationWarnings(warnings);
+  }, [overheadRate, gaRate, feeRate, contractVehicle, permissions, overriddenFields]);
+
+  // Contract vehicle limits
+  const getContractVehicleLimits = (vehicle: string) => {
+    const limits: Record<string, { maxOverheadRate: number; maxGaRate: number; maxFeeRate: number }> = {
+      'GSA MAS': { maxOverheadRate: 0.40, maxGaRate: 0.15, maxFeeRate: 0.10 },
+      'VA SPRUCE': { maxOverheadRate: 0.35, maxGaRate: 0.12, maxFeeRate: 0.08 },
+      'OPM (GSA)': { maxOverheadRate: 0.38, maxGaRate: 0.14, maxFeeRate: 0.09 },
+      'HHS SWIFT (GSA)': { maxOverheadRate: 0.42, maxGaRate: 0.16, maxFeeRate: 0.11 },
+      '8(a)': { maxOverheadRate: 0.35, maxGaRate: 0.12, maxFeeRate: 0.08 },
+      'SBIR': { maxOverheadRate: 0.25, maxGaRate: 0.10, maxFeeRate: 0.05 },
+      'IDIQ': { maxOverheadRate: 0.50, maxGaRate: 0.20, maxFeeRate: 0.15 },
+    };
+    
+    return limits[vehicle] || null;
+  };
+
+  // Override handlers
+  const handleOverride = (field: string) => {
+    setOverriddenFields(prev => new Set([...prev, field]));
+    validateRates();
+  };
+
+  const handleDismiss = (field: string) => {
+    setOverriddenFields(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(field);
+      return newSet;
+    });
+    validateRates();
+  };
+
+  // Run validation when rates or permissions change
+  React.useEffect(() => {
+    validateRates();
+  }, [validateRates]);
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -93,6 +310,16 @@ export const LaborCategoriesDemo: React.FC = () => {
         <Typography variant="h5" gutterBottom fontWeight="bold">
           Project Settings
         </Typography>
+        
+        {/* Contract Vehicle Selection */}
+        <Box mb={3}>
+          <ContractVehicleSelector
+            selectedVehicle={contractVehicle}
+            onVehicleChange={setContractVehicle}
+          />
+        </Box>
+
+        {/* Rate Settings */}
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <Box display="flex" alignItems="center" gap={1} mb={1}>
@@ -109,7 +336,7 @@ export const LaborCategoriesDemo: React.FC = () => {
               value={overheadRate}
               onChange={handleOverheadRateChange}
               min={0}
-              max={1}
+              max={contractVehicle ? getContractVehicleLimits(contractVehicle)?.maxOverheadRate || 1 : 1}
               step={0.01}
               marks={[
                 { value: 0, label: '0%' },
@@ -137,7 +364,7 @@ export const LaborCategoriesDemo: React.FC = () => {
               value={gaRate}
               onChange={handleGaRateChange}
               min={0}
-              max={1}
+              max={contractVehicle ? getContractVehicleLimits(contractVehicle)?.maxGaRate || 0.5 : 0.5}
               step={0.01}
               marks={[
                 { value: 0, label: '0%' },
@@ -165,7 +392,7 @@ export const LaborCategoriesDemo: React.FC = () => {
               value={feeRate}
               onChange={handleFeeRateChange}
               min={0}
-              max={1}
+              max={contractVehicle ? getContractVehicleLimits(contractVehicle)?.maxFeeRate || 0.2 : 0.2}
               step={0.01}
               marks={[
                 { value: 0, label: '0%' },
@@ -179,6 +406,27 @@ export const LaborCategoriesDemo: React.FC = () => {
             />
           </Grid>
         </Grid>
+
+        {/* Validation Alerts */}
+        <Box mt={3}>
+          <ValidationAlert
+            errors={validationErrors}
+            warnings={validationWarnings}
+            permissions={permissions}
+            onOverride={handleOverride}
+            onDismiss={handleDismiss}
+            expanded={showValidationDetails}
+            onToggleExpanded={() => setShowValidationDetails(!showValidationDetails)}
+          />
+        </Box>
+      </Paper>
+
+      {/* User Permissions Panel */}
+      <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+        <UserPermissionsSelector
+          permissions={permissions}
+          onPermissionsChange={setPermissions}
+        />
       </Paper>
 
       {/* Labor Categories Input */}

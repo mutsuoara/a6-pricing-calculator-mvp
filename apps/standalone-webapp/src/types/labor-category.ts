@@ -48,6 +48,23 @@ export interface ValidationError {
   field: string;
   message: string;
   value?: any;
+  severity: 'error' | 'warning' | 'info';
+  canOverride?: boolean;
+  overrideReason?: string;
+}
+
+export interface OverridePermissions {
+  canOverrideRates: boolean;
+  canOverrideContractLimits: boolean;
+  canOverrideValidation: boolean;
+  userRole: string;
+  reason?: string;
+}
+
+export interface ValidationContext {
+  contractVehicle?: string;
+  permissions?: OverridePermissions;
+  allowOverrides?: boolean;
 }
 
 export interface LaborCategoryFormData {

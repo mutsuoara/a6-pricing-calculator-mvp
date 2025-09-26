@@ -43,6 +43,9 @@ export interface ValidationError {
   field: string;
   message: string;
   value?: any;
+  severity: 'error' | 'warning' | 'info';
+  canOverride?: boolean;
+  overrideReason?: string;
 }
 
 export interface ScenarioInput {
@@ -52,7 +55,106 @@ export interface ScenarioInput {
   otherDirectCosts: OtherDirectCostInput[];
 }
 
+export interface OverridePermissions {
+  canOverrideRates: boolean;
+  canOverrideContractLimits: boolean;
+  canOverrideValidation: boolean;
+  userRole: string;
+  reason?: string;
+}
+
+export interface ValidationContext {
+  contractVehicle?: string;
+  permissions?: OverridePermissions;
+  allowOverrides?: boolean;
+}
+
 export class PricingCalculationService {
+  
+  /**
+   * Get contract vehicle rate limits
+   */
+  private static getContractVehicleLimits(contractVehicle: string): { maxOverheadRate: number; maxGaRate: number; maxFeeRate: number } | null {
+    const limits: Record<string, { maxOverheadRate: number; maxGaRate: number; maxFeeRate: number }> = {
+      'GSA MAS': { maxOverheadRate: 0.40, maxGaRate: 0.15, maxFeeRate: 0.10 },
+      'VA SPRUCE': { maxOverheadRate: 0.35, maxGaRate: 0.12, maxFeeRate: 0.08 },
+      'OPM (GSA)': { maxOverheadRate: 0.38, maxGaRate: 0.14, maxFeeRate: 0.09 },
+      'HHS SWIFT (GSA)': { maxOverheadRate: 0.42, maxGaRate: 0.16, maxFeeRate: 0.11 },
+      '8(a)': { maxOverheadRate: 0.35, maxGaRate: 0.12, maxFeeRate: 0.08 },
+      'SBIR': { maxOverheadRate: 0.25, maxGaRate: 0.10, maxFeeRate: 0.05 },
+      'IDIQ': { maxOverheadRate: 0.50, maxGaRate: 0.20, maxFeeRate: 0.15 },
+    };
+    
+    return limits[contractVehicle] || null;
+  }
+  
+  /**
+   * Validate calculation input with override support
+   */
+  public static validateWithOverrides(input: CalculationInput, context?: ValidationContext): { 
+    errors: ValidationError[]; 
+    warnings: ValidationError[]; 
+    canProceed: boolean; 
+  } {
+    const allErrors = this.validateCalculationInput(input, context);
+    
+    const errors = allErrors.filter(e => e.severity === 'error');
+    const warnings = allErrors.filter(e => e.severity === 'warning' || e.severity === 'info');
+    
+    // Can proceed if there are no errors, or if all errors can be overridden and user has permission
+    const canProceed = errors.length === 0 || 
+      (context?.permissions?.canOverrideValidation === true && 
+       errors.every(e => e.canOverride === true));
+    
+    return { errors, warnings, canProceed };
+  }
+
+  /**
+   * Calculate complete pricing for a project with validation context
+   */
+  public static calculateProjectWithContext(input: CalculationInput, context?: ValidationContext): CalculationResult {
+    // Validate inputs with override support
+    const validation = this.validateWithOverrides(input, context);
+    
+    if (!validation.canProceed) {
+      const errorMessages = validation.errors.map(e => e.message).join(', ');
+      throw new Error(`Validation failed: ${errorMessages}`);
+    }
+    
+    // Log warnings if any
+    if (validation.warnings.length > 0) {
+      console.warn('Validation warnings:', validation.warnings.map(w => w.message));
+    }
+
+    // Calculate labor categories
+    const laborResults = input.laborCategories.map(lc => 
+      this.calculateLaborCategory(lc, input.settings)
+    );
+
+    // Calculate other direct costs
+    const odcResults = input.otherDirectCosts.map(odc => 
+      this.calculateOtherDirectCost(odc)
+    );
+
+    // Calculate totals
+    const totalLaborCost = laborResults.reduce((sum, result) => sum + result.totalCost, 0);
+    const totalODCCost = odcResults.reduce((sum, result) => sum + result.totalAmount, 0);
+    const totalProjectCost = totalLaborCost + totalODCCost;
+
+    return {
+      projectId: input.settings.projectId || '',
+      settings: input.settings,
+      laborCategories: laborResults,
+      otherDirectCosts: odcResults,
+      totals: {
+        laborCost: totalLaborCost,
+        odcCost: totalODCCost,
+        totalCost: totalProjectCost,
+      },
+      calculatedAt: new Date().toISOString(),
+      validationWarnings: validation.warnings,
+    };
+  }
   
   /**
    * Calculate complete pricing for a project
@@ -78,18 +180,15 @@ export class PricingCalculationService {
     const totalLaborCost = laborResults.reduce((sum, lr) => sum + lr.totalCost, 0);
     const totalODCCost = odcResults.reduce((sum, odc) => sum + odc.totalAmount, 0);
     const totalProjectCost = totalLaborCost + totalODCCost;
-    const totalEffectiveHours = laborResults.reduce((sum, lr) => sum + lr.effectiveHours, 0);
-    const averageBurdenedRate = totalEffectiveHours > 0 ? totalLaborCost / totalEffectiveHours : 0;
 
     return {
+      projectId: input.settings.projectId || '',
       laborCategories: laborResults,
       otherDirectCosts: odcResults,
       totals: {
-        totalLaborCost,
-        totalODCCost,
-        totalProjectCost,
-        totalEffectiveHours,
-        averageBurdenedRate,
+        laborCost: totalLaborCost,
+        odcCost: totalODCCost,
+        totalCost: totalProjectCost,
       },
       settings: input.settings,
       calculatedAt: new Date().toISOString(),
@@ -200,16 +299,16 @@ export class PricingCalculationService {
     }
     
     const comparisons = results.slice(1).map(scenario => {
-      const laborVariance = scenario.result.totals.totalLaborCost - baseline.result.totals.totalLaborCost;
-      const odcVariance = scenario.result.totals.totalODCCost - baseline.result.totals.totalODCCost;
-      const totalVariance = scenario.result.totals.totalProjectCost - baseline.result.totals.totalProjectCost;
+      const laborVariance = scenario.result.totals.laborCost - baseline.result.totals.laborCost;
+      const odcVariance = scenario.result.totals.odcCost - baseline.result.totals.odcCost;
+      const totalVariance = scenario.result.totals.totalCost - baseline.result.totals.totalCost;
       
-      const laborVariancePercent = baseline.result.totals.totalLaborCost > 0 
-        ? (laborVariance / baseline.result.totals.totalLaborCost) * 100 
+      const laborVariancePercent = baseline.result.totals.laborCost > 0 
+        ? (laborVariance / baseline.result.totals.laborCost) * 100 
         : 0;
       
-      const totalVariancePercent = baseline.result.totals.totalProjectCost > 0 
-        ? (totalVariance / baseline.result.totals.totalProjectCost) * 100 
+      const totalVariancePercent = baseline.result.totals.totalCost > 0 
+        ? (totalVariance / baseline.result.totals.totalCost) * 100 
         : 0;
 
       return {
@@ -231,70 +330,172 @@ export class PricingCalculationService {
   }
 
   /**
-   * Validate calculation input
+   * Validate calculation input with optional override support
    */
-  public static validateCalculationInput(input: CalculationInput): ValidationError[] {
+  public static validateCalculationInput(input: CalculationInput, context?: ValidationContext): ValidationError[] {
     const errors: ValidationError[] = [];
 
     // Validate settings
-    errors.push(...this.validateSettings(input.settings));
+    errors.push(...this.validateSettings(input.settings, context));
 
     // Validate labor categories
     input.laborCategories.forEach((lc, index) => {
-      errors.push(...this.validateLaborCategory(lc, index));
+      errors.push(...this.validateLaborCategory(lc, index, context));
     });
 
     // Validate other direct costs
     input.otherDirectCosts.forEach((odc, index) => {
-      errors.push(...this.validateOtherDirectCost(odc, index));
+      errors.push(...this.validateOtherDirectCost(odc, index, context));
     });
 
     return errors;
   }
 
   /**
-   * Validate pricing settings
+   * Validate pricing settings with contract vehicle limits and override support
    */
-  public static validateSettings(settings: PricingSettings): ValidationError[] {
+  public static validateSettings(settings: PricingSettings, context?: ValidationContext): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    if (settings.overheadRate < 0 || settings.overheadRate > 2) {
+    // Basic range validation (always enforced)
+    if (settings.overheadRate < 0) {
       errors.push({
         field: 'overheadRate',
-        message: 'Overhead rate must be between 0% and 200%',
+        message: 'Overhead rate cannot be negative',
         value: settings.overheadRate,
+        severity: 'error',
+        canOverride: false,
       });
     }
 
-    if (settings.gaRate < 0 || settings.gaRate > 2) {
+    if (settings.gaRate < 0) {
       errors.push({
         field: 'gaRate',
-        message: 'G&A rate must be between 0% and 200%',
+        message: 'G&A rate cannot be negative',
         value: settings.gaRate,
+        severity: 'error',
+        canOverride: false,
       });
     }
 
-    if (settings.feeRate < 0 || settings.feeRate > 1) {
+    if (settings.feeRate < 0) {
       errors.push({
         field: 'feeRate',
-        message: 'Fee rate must be between 0% and 100%',
+        message: 'Fee rate cannot be negative',
         value: settings.feeRate,
+        severity: 'error',
+        canOverride: false,
       });
     }
 
+    // Contract vehicle specific validation
+    if (context?.contractVehicle) {
+      const contractLimits = this.getContractVehicleLimits(context.contractVehicle);
+      
+      if (contractLimits) {
+        // Check overhead rate against contract limits
+        if (settings.overheadRate > contractLimits.maxOverheadRate) {
+          const canOverride = context.permissions?.canOverrideContractLimits || false;
+          const error: ValidationError = {
+            field: 'overheadRate',
+            message: `Overhead rate (${(settings.overheadRate * 100).toFixed(1)}%) exceeds ${context.contractVehicle} limit (${contractLimits.maxOverheadRate}%)`,
+            value: settings.overheadRate,
+            severity: canOverride ? 'warning' : 'error',
+            canOverride,
+          };
+          if (canOverride) {
+            error.overrideReason = 'Contract vehicle limit exceeded';
+          }
+          errors.push(error);
+        }
+
+        // Check G&A rate against contract limits
+        if (settings.gaRate > contractLimits.maxGaRate) {
+          const canOverride = context.permissions?.canOverrideContractLimits || false;
+          const error: ValidationError = {
+            field: 'gaRate',
+            message: `G&A rate (${(settings.gaRate * 100).toFixed(1)}%) exceeds ${context.contractVehicle} limit (${contractLimits.maxGaRate}%)`,
+            value: settings.gaRate,
+            severity: canOverride ? 'warning' : 'error',
+            canOverride,
+          };
+          if (canOverride) {
+            error.overrideReason = 'Contract vehicle limit exceeded';
+          }
+          errors.push(error);
+        }
+
+        // Check fee rate against contract limits
+        if (settings.feeRate > contractLimits.maxFeeRate) {
+          const canOverride = context.permissions?.canOverrideContractLimits || false;
+          const error: ValidationError = {
+            field: 'feeRate',
+            message: `Fee rate (${(settings.feeRate * 100).toFixed(1)}%) exceeds ${context.contractVehicle} limit (${contractLimits.maxFeeRate}%)`,
+            value: settings.feeRate,
+            severity: canOverride ? 'warning' : 'error',
+            canOverride,
+          };
+          if (canOverride) {
+            error.overrideReason = 'Contract vehicle limit exceeded';
+          }
+          errors.push(error);
+        }
+      }
+    } else {
+      // Fallback to general limits when no contract vehicle specified
+      if (settings.overheadRate > 1) { // 100%
+        errors.push({
+          field: 'overheadRate',
+          message: 'Overhead rate exceeds 100% - consider selecting a contract vehicle for specific limits',
+          value: settings.overheadRate,
+          severity: 'warning',
+          canOverride: true,
+          overrideReason: 'General rate limit exceeded',
+        });
+      }
+
+      if (settings.gaRate > 0.5) { // 50%
+        errors.push({
+          field: 'gaRate',
+          message: 'G&A rate exceeds 50% - consider selecting a contract vehicle for specific limits',
+          value: settings.gaRate,
+          severity: 'warning',
+          canOverride: true,
+          overrideReason: 'General rate limit exceeded',
+        });
+      }
+
+      if (settings.feeRate > 0.2) { // 20%
+        errors.push({
+          field: 'feeRate',
+          message: 'Fee rate exceeds 20% - consider selecting a contract vehicle for specific limits',
+          value: settings.feeRate,
+          severity: 'warning',
+          canOverride: true,
+          overrideReason: 'General rate limit exceeded',
+        });
+      }
+    }
+
+    // Contract type validation
     if (!settings.contractType || !['FFP', 'T&M', 'CPFF'].includes(settings.contractType)) {
       errors.push({
         field: 'contractType',
         message: 'Contract type must be FFP, T&M, or CPFF',
         value: settings.contractType,
+        severity: 'error',
+        canOverride: false,
       });
     }
 
+    // Period of performance validation
     if (!settings.periodOfPerformance?.startDate || !settings.periodOfPerformance?.endDate) {
       errors.push({
         field: 'periodOfPerformance',
         message: 'Period of performance dates are required',
         value: settings.periodOfPerformance,
+        severity: 'error',
+        canOverride: false,
       });
     }
 
@@ -307,6 +508,8 @@ export class PricingCalculationService {
           field: 'periodOfPerformance',
           message: 'Start date must be before end date',
           value: settings.periodOfPerformance,
+          severity: 'error',
+          canOverride: false,
         });
       }
     }
@@ -317,7 +520,7 @@ export class PricingCalculationService {
   /**
    * Validate labor category
    */
-  public static validateLaborCategory(lc: LaborCategoryInput, index: number): ValidationError[] {
+  public static validateLaborCategory(lc: LaborCategoryInput, index: number, context?: ValidationContext): ValidationError[] {
     const errors: ValidationError[] = [];
     const prefix = `laborCategories[${index}]`;
 
@@ -326,23 +529,39 @@ export class PricingCalculationService {
         field: `${prefix}.title`,
         message: 'Labor category title is required',
         value: lc.title,
+        severity: 'error',
+        canOverride: false,
       });
     }
 
     if (lc.baseRate < 1 || lc.baseRate > 1000) {
-      errors.push({
+      const canOverride = context?.permissions?.canOverrideValidation || false;
+      const error: ValidationError = {
         field: `${prefix}.baseRate`,
         message: 'Base rate must be between $1 and $1000',
         value: lc.baseRate,
-      });
+        severity: canOverride ? 'warning' : 'error',
+        canOverride,
+      };
+      if (canOverride) {
+        error.overrideReason = 'Rate limit exceeded';
+      }
+      errors.push(error);
     }
 
     if (lc.hours < 1 || lc.hours > 10000) {
-      errors.push({
+      const canOverride = context?.permissions?.canOverrideValidation || false;
+      const error: ValidationError = {
         field: `${prefix}.hours`,
         message: 'Hours must be between 1 and 10000',
         value: lc.hours,
-      });
+        severity: canOverride ? 'warning' : 'error',
+        canOverride,
+      };
+      if (canOverride) {
+        error.overrideReason = 'Hours limit exceeded';
+      }
+      errors.push(error);
     }
 
     if (lc.ftePercentage < 0.01 || lc.ftePercentage > 100) {
@@ -350,6 +569,8 @@ export class PricingCalculationService {
         field: `${prefix}.ftePercentage`,
         message: 'FTE percentage must be between 0.01% and 100%',
         value: lc.ftePercentage,
+        severity: 'error',
+        canOverride: false,
       });
     }
 
@@ -358,6 +579,8 @@ export class PricingCalculationService {
         field: `${prefix}.clearanceLevel`,
         message: 'Invalid clearance level',
         value: lc.clearanceLevel,
+        severity: 'error',
+        canOverride: false,
       });
     }
 
@@ -366,6 +589,8 @@ export class PricingCalculationService {
         field: `${prefix}.location`,
         message: 'Invalid location type',
         value: lc.location,
+        severity: 'error',
+        canOverride: false,
       });
     }
 
@@ -375,7 +600,7 @@ export class PricingCalculationService {
   /**
    * Validate other direct cost
    */
-  public static validateOtherDirectCost(odc: OtherDirectCostInput, index: number): ValidationError[] {
+  public static validateOtherDirectCost(odc: OtherDirectCostInput, index: number, _context?: ValidationContext): ValidationError[] {
     const errors: ValidationError[] = [];
     const prefix = `otherDirectCosts[${index}]`;
 
@@ -384,6 +609,8 @@ export class PricingCalculationService {
         field: `${prefix}.description`,
         message: 'Description is required',
         value: odc.description,
+        severity: 'error',
+        canOverride: false,
       });
     }
 
@@ -392,6 +619,8 @@ export class PricingCalculationService {
         field: `${prefix}.amount`,
         message: 'Amount must be non-negative',
         value: odc.amount,
+        severity: 'error',
+        canOverride: false,
       });
     }
 
@@ -400,6 +629,8 @@ export class PricingCalculationService {
         field: `${prefix}.taxRate`,
         message: 'Tax rate must be between 0% and 100%',
         value: odc.taxRate,
+        severity: 'error',
+        canOverride: false,
       });
     }
 
@@ -408,6 +639,8 @@ export class PricingCalculationService {
         field: `${prefix}.category`,
         message: 'Invalid category',
         value: odc.category,
+        severity: 'error',
+        canOverride: false,
       });
     }
 

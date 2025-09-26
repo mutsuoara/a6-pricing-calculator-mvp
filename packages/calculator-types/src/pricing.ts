@@ -9,6 +9,7 @@ export type ClearanceLevel = 'None' | 'Public Trust' | 'Secret' | 'Top Secret';
 export type LocationType = 'Remote' | 'On-site' | 'Hybrid';
 
 export interface PricingSettings {
+  projectId?: string;
   overheadRate: number; // 0-200% (0.0-2.0)
   gaRate: number; // 0-200% (0.0-2.0) 
   feeRate: number; // 0-100% (0.0-1.0)
@@ -38,18 +39,27 @@ export interface OtherDirectCost {
   taxable: boolean;
 }
 
+export interface ValidationError {
+  field: string;
+  message: string;
+  value?: any;
+  severity: 'error' | 'warning' | 'info';
+  canOverride?: boolean;
+  overrideReason?: string;
+}
+
 export interface CalculationResult {
+  projectId?: string;
   laborCategories: LaborCategoryResult[];
   otherDirectCosts: OtherDirectCostResult[];
   totals: {
-    totalLaborCost: number;
-    totalODCCost: number;
-    totalProjectCost: number;
-    totalEffectiveHours: number;
-    averageBurdenedRate: number;
+    laborCost: number;
+    odcCost: number;
+    totalCost: number;
   };
   settings: PricingSettings;
   calculatedAt: string;
+  validationWarnings?: ValidationError[];
 }
 
 export interface LaborCategoryResult {
