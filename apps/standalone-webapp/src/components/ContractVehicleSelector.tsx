@@ -25,9 +25,9 @@ interface ContractVehicle {
   name: string;
   code: string;
   description: string;
-  maxOverheadRate: number;
-  maxGaRate: number;
-  maxFeeRate: number;
+  maxOverheadRate: number | string;
+  maxGaRate: number | string;
+  maxFeeRate: number | string;
   complianceRequirements: string[];
 }
 
@@ -173,7 +173,7 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
               <Grid item xs={4}>
                 <Box textAlign="center">
                   <Typography variant="h6" color="primary">
-                    {selectedVehicleData.maxOverheadRate.toFixed(0)}%
+                    {selectedVehicleData.maxOverheadRate ? Number(selectedVehicleData.maxOverheadRate).toFixed(0) : '0'}%
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Max Overhead
@@ -183,7 +183,7 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
               <Grid item xs={4}>
                 <Box textAlign="center">
                   <Typography variant="h6" color="primary">
-                    {selectedVehicleData.maxGaRate.toFixed(0)}%
+                    {selectedVehicleData.maxGaRate ? Number(selectedVehicleData.maxGaRate).toFixed(0) : '0'}%
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Max G&A
@@ -193,7 +193,7 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
               <Grid item xs={4}>
                 <Box textAlign="center">
                   <Typography variant="h6" color="primary">
-                    {selectedVehicleData.maxFeeRate.toFixed(0)}%
+                    {selectedVehicleData.maxFeeRate ? Number(selectedVehicleData.maxFeeRate).toFixed(0) : '0'}%
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Max Fee
