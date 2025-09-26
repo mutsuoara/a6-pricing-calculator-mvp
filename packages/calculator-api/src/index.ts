@@ -13,6 +13,8 @@ import { ModelManager } from './models';
 import { MigrationRunner } from './migrations/migrate';
 import { AuthService } from './services/auth.service';
 import authRoutes from './routes/auth.routes';
+import pricingRoutes from './routes/pricing.routes';
+import calculationRoutes from './routes/calculation.routes';
 
 // Load environment variables
 dotenv.config();
@@ -140,12 +142,18 @@ app.get('/api', (_req, res) => {
 // Authentication routes
 app.use('/api/auth', authRoutes);
 
+// Pricing calculation routes
+app.use('/api/pricing', pricingRoutes);
+
+// Calculation service routes
+app.use('/api/calculation', calculationRoutes);
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
     error: 'Not Found',
     message: `Route ${req.method} ${req.originalUrl} not found`,
-    availableRoutes: ['/health', '/api']
+    availableRoutes: ['/health', '/api/auth', '/api/pricing', '/api/calculation']
   });
 });
 

@@ -207,7 +207,9 @@ export class LaborCategory extends Model<LaborCategoryAttributes, LaborCategoryC
         hooks: {
           beforeSave: (laborCategory: LaborCategory) => {
             // Calculate effective hours before saving
-            laborCategory.effectiveHours = laborCategory.calculateEffectiveHours();
+            const hours = Number(laborCategory.hours);
+            const ftePercentage = Number(laborCategory.ftePercentage);
+            laborCategory.effectiveHours = (hours * ftePercentage) / 100;
           },
         },
       }

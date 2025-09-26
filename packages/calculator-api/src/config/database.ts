@@ -55,11 +55,11 @@ export class DatabaseService {
         },
         define: {
           timestamps: true,
-          underscored: true,
+          underscored: false, // Use camelCase field names
           paranoid: true, // Enable soft deletes
-          createdAt: 'created_at',
-          updatedAt: 'updated_at',
-          deletedAt: 'deleted_at'
+          createdAt: 'createdAt',
+          updatedAt: 'updatedAt',
+          deletedAt: 'deletedAt'
         }
       }
     );
