@@ -152,6 +152,10 @@ app.use('/api/calculation', calculationRoutes);
 import laborCategoryRoutes from './routes/labor-category.routes';
 app.use('/api/labor-categories', laborCategoryRoutes);
 
+// Export routes
+import exportRoutes from './routes/export.routes';
+app.use('/api/export', exportRoutes);
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({

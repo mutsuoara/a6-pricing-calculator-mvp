@@ -41,6 +41,7 @@ import LaborCategoriesInput from './LaborCategoriesInput';
 import CalculationResults from './CalculationResults';
 import ContractVehicleSelector from './ContractVehicleSelector';
 import UserPermissionsSelector from './UserPermissionsSelector';
+import ExportPanel from './ExportPanel';
 
 // Import types
 import { LaborCategoryInput, ValidationError, OverridePermissions } from '../types/labor-category';
@@ -175,9 +176,46 @@ const IntegratedPricingCalculator: React.FC = () => {
     handleMenuClose();
   };
 
-  const handleExportExcel = () => {
-    setSnackbarMessage('Excel export started!');
-    setSnackbarOpen(true);
+  const handleExportExcel = async () => {
+    if (!calculationResult) {
+      setSnackbarMessage('No calculation results to export');
+      setSnackbarOpen(true);
+      return;
+    }
+
+    try {
+      const { ExportService } = await import('../services/export.service');
+      
+      await ExportService.exportToExcel(
+        calculationResult,
+        projectData.laborCategories,
+        projectData.otherDirectCosts,
+        {
+          projectId: projectData.id,
+          contractType: 'Fixed Price',
+          locationType: 'On-site',
+          periodOfPerformance: {
+            startDate: new Date().toISOString(),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+          },
+          overheadRate: projectData.overheadRate,
+          gaRate: projectData.gaRate,
+          feeRate: projectData.feeRate,
+        },
+        {
+          projectName: projectData.name,
+          contractVehicle: projectData.contractVehicle,
+        }
+      );
+
+      setSnackbarMessage('Excel file exported successfully!');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Export error:', error);
+      setSnackbarMessage(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setSnackbarOpen(true);
+    }
+    
     handleMenuClose();
   };
 
@@ -515,6 +553,28 @@ const IntegratedPricingCalculator: React.FC = () => {
             validationWarnings={validationWarnings}
             isLoading={isCalculating}
           />
+          
+          <Box mt={4}>
+            <ExportPanel
+              calculationResult={calculationResult}
+              laborCategories={projectData.laborCategories}
+              otherDirectCosts={projectData.otherDirectCosts}
+              settings={{
+                projectId: projectData.id,
+                contractType: 'Fixed Price',
+                locationType: 'On-site',
+                periodOfPerformance: {
+                  startDate: new Date().toISOString(),
+                  endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+                },
+                overheadRate: projectData.overheadRate,
+                gaRate: projectData.gaRate,
+                feeRate: projectData.feeRate,
+              }}
+              projectName={projectData.name}
+              contractVehicle={projectData.contractVehicle}
+            />
+          </Box>
         </TabPanel>
 
         <TabPanel value={currentTab} index={4}>
