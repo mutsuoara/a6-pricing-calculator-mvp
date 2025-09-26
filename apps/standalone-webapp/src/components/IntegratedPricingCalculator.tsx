@@ -1,5 +1,6 @@
 /**
- * UI components exports
+ * Integrated Pricing Calculator Component
+ * Orchestrates all pricing components into a unified interface
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
@@ -20,6 +21,7 @@ import {
   Divider,
   Alert,
   Snackbar,
+  Grid,
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -29,9 +31,23 @@ import {
   Download as DownloadIcon,
   Share as ShareIcon,
   Settings as SettingsIcon,
+  People as PeopleIcon,
+  AttachMoney as MoneyIcon,
+  TrendingUp as TrendingUpIcon,
+  Compare as CompareIcon,
 } from '@mui/icons-material';
 
-// Import types (these would be imported from the types package in a real implementation)
+// Import existing components
+import LaborCategoriesInput from './LaborCategoriesInput';
+import CalculationResults from './CalculationResults';
+import ContractVehicleSelector from './ContractVehicleSelector';
+import UserPermissionsSelector from './UserPermissionsSelector';
+import ValidationAlert from './ValidationAlert';
+
+// Import types
+import { LaborCategoryInput, ValidationError, OverridePermissions } from '../types/labor-category';
+import { CalculationResult, PricingSettings, LaborCategoryInput as LaborCategoryInputType } from '../../packages/calculator-types/src/pricing';
+
 interface ProjectData {
   id: string;
   name: string;
@@ -41,7 +57,7 @@ interface ProjectData {
   overheadRate: number;
   gaRate: number;
   feeRate: number;
-  laborCategories: any[];
+  laborCategories: LaborCategoryInput[];
   otherDirectCosts: any[];
 }
 
@@ -67,7 +83,7 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-export const PricingCalculator: React.FC = () => {
+const IntegratedPricingCalculator: React.FC = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [projectData, setProjectData] = useState<ProjectData>({
     id: 'demo-project-1',
@@ -78,9 +94,46 @@ export const PricingCalculator: React.FC = () => {
     overheadRate: 0.30,
     gaRate: 0.15,
     feeRate: 0.10,
-    laborCategories: [],
+    laborCategories: [
+      {
+        id: '1',
+        title: 'Senior Software Engineer',
+        baseRate: 85.00,
+        hours: 2080,
+        ftePercentage: 100,
+        clearanceLevel: 'Secret',
+        location: 'On-site',
+      },
+      {
+        id: '2',
+        title: 'Project Manager',
+        baseRate: 95.00,
+        hours: 2080,
+        ftePercentage: 100,
+        clearanceLevel: 'Public Trust',
+        location: 'On-site',
+      },
+    ],
     otherDirectCosts: [],
   });
+
+  // State for validation and permissions
+  const [permissions, setPermissions] = useState<OverridePermissions>({
+    canOverrideRates: false,
+    canOverrideContractLimits: false,
+    canOverrideValidation: false,
+    userRole: 'analyst',
+  });
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [validationWarnings, setValidationWarnings] = useState<ValidationError[]>([]);
+  const [showValidationDetails, setShowValidationDetails] = useState(false);
+  const [overriddenFields, setOverriddenFields] = useState<Set<string>>(new Set());
+
+  // Calculation state
+  const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
+
+  // UI state
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -144,6 +197,146 @@ export const PricingCalculator: React.FC = () => {
     setSnackbarOpen(true);
     handleMenuClose();
   };
+
+  const handleCategoriesChange = (newCategories: LaborCategoryInput[]) => {
+    setProjectData(prev => ({
+      ...prev,
+      laborCategories: newCategories,
+      lastModified: new Date().toISOString(),
+    }));
+  };
+
+  const handleOverheadRateChange = (_: Event, newValue: number | number[]) => {
+    setProjectData(prev => ({
+      ...prev,
+      overheadRate: newValue as number,
+      lastModified: new Date().toISOString(),
+    }));
+  };
+
+  const handleGaRateChange = (_: Event, newValue: number | number[]) => {
+    setProjectData(prev => ({
+      ...prev,
+      gaRate: newValue as number,
+      lastModified: new Date().toISOString(),
+    }));
+  };
+
+  const handleFeeRateChange = (_: Event, newValue: number | number[]) => {
+    setProjectData(prev => ({
+      ...prev,
+      feeRate: newValue as number,
+      lastModified: new Date().toISOString(),
+    }));
+  };
+
+  const handleContractVehicleChange = (vehicle: string | undefined) => {
+    setProjectData(prev => ({
+      ...prev,
+      contractVehicle: vehicle,
+      lastModified: new Date().toISOString(),
+    }));
+  };
+
+  // Calculate project results
+  const calculateProject = useCallback(async () => {
+    if (projectData.laborCategories.length === 0) {
+      setCalculationResult(null);
+      return;
+    }
+
+    setIsCalculating(true);
+    try {
+      // Convert categories to the format expected by the calculation service
+      const laborCategories: LaborCategoryInputType[] = projectData.laborCategories.map(cat => ({
+        id: cat.id || '',
+        title: cat.title,
+        baseRate: cat.baseRate,
+        hours: cat.hours,
+        ftePercentage: cat.ftePercentage / 100, // Convert percentage to decimal
+        clearanceLevel: cat.clearanceLevel as any,
+        location: cat.location as any,
+      }));
+
+      // Create pricing settings
+      const settings: PricingSettings = {
+        projectId: projectData.id,
+        overheadRate: projectData.overheadRate,
+        gaRate: projectData.gaRate,
+        feeRate: projectData.feeRate,
+        contractType: 'FFP' as any,
+        periodOfPerformance: 12,
+        locationType: 'On-site' as any,
+      };
+
+      // Mock calculation (replace with actual API call)
+      const mockResult: CalculationResult = {
+        projectId: projectData.id,
+        calculatedAt: new Date().toISOString(),
+        settings,
+        laborCategories: laborCategories.map((lc) => ({
+          id: lc.id,
+          title: lc.title,
+          baseRate: lc.baseRate,
+          hours: lc.hours,
+          ftePercentage: lc.ftePercentage,
+          effectiveHours: lc.hours * lc.ftePercentage,
+          clearanceLevel: lc.clearanceLevel,
+          location: lc.location,
+          clearancePremium: lc.clearanceLevel === 'Top Secret' ? 0.20 : 
+                           lc.clearanceLevel === 'Secret' ? 0.10 : 
+                           lc.clearanceLevel === 'Public Trust' ? 0.05 : 0,
+          burdenedRate: lc.baseRate * (1 + (lc.clearanceLevel === 'Top Secret' ? 0.20 : 
+                                           lc.clearanceLevel === 'Secret' ? 0.10 : 
+                                           lc.clearanceLevel === 'Public Trust' ? 0.05 : 0)) * 
+                       (1 + projectData.overheadRate) * (1 + projectData.gaRate) * (1 + projectData.feeRate),
+          totalCost: lc.baseRate * (1 + (lc.clearanceLevel === 'Top Secret' ? 0.20 : 
+                                        lc.clearanceLevel === 'Secret' ? 0.10 : 
+                                        lc.clearanceLevel === 'Public Trust' ? 0.05 : 0)) * 
+                    (1 + projectData.overheadRate) * (1 + projectData.gaRate) * (1 + projectData.feeRate) * 
+                    lc.hours * lc.ftePercentage,
+        })),
+        otherDirectCosts: [],
+        totals: {
+          laborCost: 0,
+          odcCost: 0,
+          totalCost: 0,
+          totalEffectiveHours: 0,
+          averageBurdenedRate: 0,
+        },
+        validationWarnings: validationWarnings,
+      };
+
+      // Calculate totals
+      const laborCost = mockResult.laborCategories.reduce((sum, lc) => sum + lc.totalCost, 0);
+      const totalEffectiveHours = mockResult.laborCategories.reduce((sum, lc) => sum + lc.effectiveHours, 0);
+      const averageBurdenedRate = totalEffectiveHours > 0 ? laborCost / totalEffectiveHours : 0;
+
+      mockResult.totals = {
+        laborCost,
+        odcCost: 0,
+        totalCost: laborCost,
+        totalEffectiveHours,
+        averageBurdenedRate,
+      };
+
+      setCalculationResult(mockResult);
+    } catch (error) {
+      console.error('Calculation error:', error);
+      setCalculationResult(null);
+    } finally {
+      setIsCalculating(false);
+    }
+  }, [projectData, validationWarnings]);
+
+  // Run calculation when inputs change
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      calculateProject();
+    }, 300); // Debounce calculation
+
+    return () => clearTimeout(timeoutId);
+  }, [calculateProject]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -245,10 +438,26 @@ export const PricingCalculator: React.FC = () => {
                 icon={<SettingsIcon />}
                 iconPosition="start"
               />
-              <Tab label="Labor Categories" />
-              <Tab label="Other Direct Costs" />
-              <Tab label="Results" />
-              <Tab label="Scenarios" />
+              <Tab 
+                label="Labor Categories" 
+                icon={<PeopleIcon />}
+                iconPosition="start"
+              />
+              <Tab 
+                label="Other Direct Costs" 
+                icon={<MoneyIcon />}
+                iconPosition="start"
+              />
+              <Tab 
+                label="Results" 
+                icon={<TrendingUpIcon />}
+                iconPosition="start"
+              />
+              <Tab 
+                label="Scenarios" 
+                icon={<CompareIcon />}
+                iconPosition="start"
+              />
             </Tabs>
           </Toolbar>
         </AppBar>
@@ -261,9 +470,21 @@ export const PricingCalculator: React.FC = () => {
           <Alert severity="info" sx={{ mb: 3 }}>
             Configure your project settings including contract vehicle, rates, and validation rules.
           </Alert>
-          <Typography variant="body1" color="text.secondary">
-            Project settings configuration will be implemented here.
-          </Typography>
+          
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <ContractVehicleSelector
+                selectedVehicle={projectData.contractVehicle}
+                onVehicleChange={handleContractVehicleChange}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <UserPermissionsSelector
+                permissions={permissions}
+                onPermissionsChange={setPermissions}
+              />
+            </Grid>
+          </Grid>
         </TabPanel>
 
         <TabPanel value={currentTab} index={1}>
@@ -273,9 +494,14 @@ export const PricingCalculator: React.FC = () => {
           <Alert severity="info" sx={{ mb: 3 }}>
             Add and manage labor categories for your project. Configure rates, hours, and clearance levels.
           </Alert>
-          <Typography variant="body1" color="text.secondary">
-            Labor categories management will be implemented here.
-          </Typography>
+          
+          <LaborCategoriesInput
+            categories={projectData.laborCategories}
+            onCategoriesChange={handleCategoriesChange}
+            overheadRate={projectData.overheadRate}
+            gaRate={projectData.gaRate}
+            feeRate={projectData.feeRate}
+          />
         </TabPanel>
 
         <TabPanel value={currentTab} index={2}>
@@ -297,9 +523,14 @@ export const PricingCalculator: React.FC = () => {
           <Alert severity="info" sx={{ mb: 3 }}>
             View detailed calculation results, cost breakdowns, and project summaries.
           </Alert>
-          <Typography variant="body1" color="text.secondary">
-            Calculation results display will be implemented here.
-          </Typography>
+          
+          <CalculationResults
+            result={calculationResult}
+            laborCategories={projectData.laborCategories}
+            otherDirectCosts={projectData.otherDirectCosts}
+            validationWarnings={validationWarnings}
+            isLoading={isCalculating}
+          />
         </TabPanel>
 
         <TabPanel value={currentTab} index={4}>
@@ -359,3 +590,5 @@ export const PricingCalculator: React.FC = () => {
     </Box>
   );
 };
+
+export default IntegratedPricingCalculator;
