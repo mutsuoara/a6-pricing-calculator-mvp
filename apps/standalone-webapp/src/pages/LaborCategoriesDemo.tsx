@@ -3,7 +3,7 @@
  * Demonstrates the Labor Categories Input component with sample data
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   Box,
   Container,
@@ -30,6 +30,8 @@ import LaborCategoriesInput from '../components/LaborCategoriesInput';
 import ValidationAlert from '../components/ValidationAlert';
 import ContractVehicleSelector from '../components/ContractVehicleSelector';
 import UserPermissionsSelector from '../components/UserPermissionsSelector';
+import CalculationResults from '../components/CalculationResults';
+import { CalculationResult, PricingSettings, LaborCategoryInput as LaborCategoryInputType, OtherDirectCostInput } from '../../packages/calculator-types/src/pricing';
 
 export const LaborCategoriesDemo: React.FC = () => {
   const [categories, setCategories] = useState<LaborCategoryInput[]>([
@@ -76,6 +78,8 @@ export const LaborCategoriesDemo: React.FC = () => {
   const [validationWarnings, setValidationWarnings] = useState<ValidationError[]>([]);
   const [showValidationDetails, setShowValidationDetails] = useState(false);
   const [overriddenFields, setOverriddenFields] = useState<Set<string>>(new Set());
+  const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   const handleCategoriesChange = (newCategories: LaborCategoryInput[]) => {
     setCategories(newCategories);
@@ -258,7 +262,7 @@ export const LaborCategoriesDemo: React.FC = () => {
     setValidationWarnings(warnings);
   }, [overheadRate, gaRate, feeRate, contractVehicle, permissions, overriddenFields]);
 
-  // Contract vehicle limits
+  // Contract vehicle limits (converted from percentage to decimal for slider use)
   const getContractVehicleLimits = (vehicle: string) => {
     const limits: Record<string, { maxOverheadRate: number; maxGaRate: number; maxFeeRate: number }> = {
       'GSA MAS': { maxOverheadRate: 0.40, maxGaRate: 0.15, maxFeeRate: 0.10 },
@@ -287,6 +291,106 @@ export const LaborCategoriesDemo: React.FC = () => {
     });
     validateRates();
   };
+
+  // Calculate project results
+  const calculateProject = useCallback(async () => {
+    if (categories.length === 0) {
+      setCalculationResult(null);
+      return;
+    }
+
+    setIsCalculating(true);
+    try {
+      // Convert categories to the format expected by the calculation service
+      const laborCategories: LaborCategoryInputType[] = categories.map(cat => ({
+        id: cat.id || '',
+        title: cat.title,
+        baseRate: cat.baseRate,
+        hours: cat.hours,
+        ftePercentage: cat.ftePercentage / 100, // Convert percentage to decimal
+        clearanceLevel: cat.clearanceLevel as any,
+        location: cat.location as any,
+      }));
+
+      // Create pricing settings
+      const settings: PricingSettings = {
+        projectId: 'demo-project',
+        overheadRate,
+        gaRate,
+        feeRate,
+        contractType: 'FFP' as any,
+        periodOfPerformance: 12,
+        locationType: 'On-site' as any,
+      };
+
+      // For now, we'll use mock calculation since we don't have the API integration yet
+      // TODO: Replace with actual API call to calculation service
+      const mockResult: CalculationResult = {
+        projectId: 'demo-project',
+        calculatedAt: new Date().toISOString(),
+        settings,
+        laborCategories: laborCategories.map((lc, index) => ({
+          id: lc.id,
+          title: lc.title,
+          baseRate: lc.baseRate,
+          hours: lc.hours,
+          ftePercentage: lc.ftePercentage,
+          effectiveHours: lc.hours * lc.ftePercentage,
+          clearanceLevel: lc.clearanceLevel,
+          location: lc.location,
+          clearancePremium: lc.clearanceLevel === 'Top Secret' ? 0.20 : 
+                           lc.clearanceLevel === 'Secret' ? 0.10 : 
+                           lc.clearanceLevel === 'Public Trust' ? 0.05 : 0,
+          burdenedRate: lc.baseRate * (1 + lc.clearanceLevel === 'Top Secret' ? 0.20 : 
+                                      lc.clearanceLevel === 'Secret' ? 0.10 : 
+                                      lc.clearanceLevel === 'Public Trust' ? 0.05 : 0) * 
+                       (1 + overheadRate) * (1 + gaRate) * (1 + feeRate),
+          totalCost: lc.baseRate * (1 + (lc.clearanceLevel === 'Top Secret' ? 0.20 : 
+                                        lc.clearanceLevel === 'Secret' ? 0.10 : 
+                                        lc.clearanceLevel === 'Public Trust' ? 0.05 : 0)) * 
+                    (1 + overheadRate) * (1 + gaRate) * (1 + feeRate) * lc.hours * lc.ftePercentage,
+        })),
+        otherDirectCosts: [], // TODO: Add ODC support
+        totals: {
+          laborCost: 0, // Will be calculated below
+          odcCost: 0,
+          totalCost: 0, // Will be calculated below
+          totalEffectiveHours: 0, // Will be calculated below
+          averageBurdenedRate: 0, // Will be calculated below
+        },
+        validationWarnings: validationWarnings,
+      };
+
+      // Calculate totals
+      const laborCost = mockResult.laborCategories.reduce((sum, lc) => sum + lc.totalCost, 0);
+      const totalEffectiveHours = mockResult.laborCategories.reduce((sum, lc) => sum + lc.effectiveHours, 0);
+      const averageBurdenedRate = totalEffectiveHours > 0 ? laborCost / totalEffectiveHours : 0;
+
+      mockResult.totals = {
+        laborCost,
+        odcCost: 0,
+        totalCost: laborCost,
+        totalEffectiveHours,
+        averageBurdenedRate,
+      };
+
+      setCalculationResult(mockResult);
+    } catch (error) {
+      console.error('Calculation error:', error);
+      setCalculationResult(null);
+    } finally {
+      setIsCalculating(false);
+    }
+  }, [categories, overheadRate, gaRate, feeRate, validationWarnings]);
+
+  // Run calculation when inputs change
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      calculateProject();
+    }, 300); // Debounce calculation
+
+    return () => clearTimeout(timeoutId);
+  }, [calculateProject]);
 
   // Run validation when rates or permissions change
   React.useEffect(() => {
@@ -436,6 +540,15 @@ export const LaborCategoriesDemo: React.FC = () => {
         overheadRate={overheadRate}
         gaRate={gaRate}
         feeRate={feeRate}
+      />
+
+      {/* Calculation Results */}
+      <CalculationResults
+        result={calculationResult}
+        laborCategories={categories}
+        otherDirectCosts={[]}
+        validationWarnings={validationWarnings}
+        isLoading={isCalculating}
       />
 
       {/* Features Overview */}

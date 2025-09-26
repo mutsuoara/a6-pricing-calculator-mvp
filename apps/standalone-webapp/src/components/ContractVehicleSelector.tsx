@@ -69,9 +69,9 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
             name: 'GSA MAS',
             code: 'GSA_MAS',
             description: 'General Services Administration Multiple Award Schedule',
-            maxOverheadRate: 0.40,
-            maxGaRate: 0.15,
-            maxFeeRate: 0.10,
+            maxOverheadRate: 40.00,
+            maxGaRate: 15.00,
+            maxFeeRate: 10.00,
             complianceRequirements: ['GSA compliance', 'SIN requirements'],
           },
           {
@@ -79,9 +79,9 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
             name: 'VA SPRUCE',
             code: 'VA_SPRUCE',
             description: 'VA Strategic Partnering for Readiness in Underserved Communities',
-            maxOverheadRate: 0.35,
-            maxGaRate: 0.12,
-            maxFeeRate: 0.08,
+            maxOverheadRate: 35.00,
+            maxGaRate: 12.00,
+            maxFeeRate: 8.00,
             complianceRequirements: ['VA compliance', 'Healthcare focus'],
           },
           {
@@ -89,9 +89,9 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
             name: 'OPM (GSA)',
             code: 'OPM_GSA',
             description: 'Office of Personnel Management through GSA',
-            maxOverheadRate: 0.38,
-            maxGaRate: 0.14,
-            maxFeeRate: 0.09,
+            maxOverheadRate: 38.00,
+            maxGaRate: 14.00,
+            maxFeeRate: 9.00,
             complianceRequirements: ['OPM compliance', 'HR services'],
           },
           {
@@ -99,9 +99,9 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
             name: 'HHS SWIFT (GSA)',
             code: 'HHS_SWIFT_GSA',
             description: 'Health and Human Services SWIFT through GSA',
-            maxOverheadRate: 0.42,
-            maxGaRate: 0.16,
-            maxFeeRate: 0.11,
+            maxOverheadRate: 42.00,
+            maxGaRate: 16.00,
+            maxFeeRate: 11.00,
             complianceRequirements: ['HHS compliance', 'Healthcare IT'],
           },
         ]);
@@ -173,7 +173,7 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
               <Grid item xs={4}>
                 <Box textAlign="center">
                   <Typography variant="h6" color="primary">
-                    {(selectedVehicleData.maxOverheadRate * 100).toFixed(0)}%
+                    {parseFloat(selectedVehicleData.maxOverheadRate).toFixed(0)}%
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Max Overhead
@@ -183,7 +183,7 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
               <Grid item xs={4}>
                 <Box textAlign="center">
                   <Typography variant="h6" color="primary">
-                    {(selectedVehicleData.maxGaRate * 100).toFixed(0)}%
+                    {parseFloat(selectedVehicleData.maxGaRate).toFixed(0)}%
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Max G&A
@@ -193,7 +193,7 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
               <Grid item xs={4}>
                 <Box textAlign="center">
                   <Typography variant="h6" color="primary">
-                    {(selectedVehicleData.maxFeeRate * 100).toFixed(0)}%
+                    {parseFloat(selectedVehicleData.maxFeeRate).toFixed(0)}%
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Max Fee
