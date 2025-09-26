@@ -31,7 +31,7 @@ import ValidationAlert from '../components/ValidationAlert';
 import ContractVehicleSelector from '../components/ContractVehicleSelector';
 import UserPermissionsSelector from '../components/UserPermissionsSelector';
 import CalculationResults from '../components/CalculationResults';
-import { CalculationResult, PricingSettings, LaborCategoryInput as LaborCategoryInputType, OtherDirectCostInput } from '../../packages/calculator-types/src/pricing';
+import { CalculationResult, PricingSettings, LaborCategoryInput as LaborCategoryInputType, OtherDirectCostInput } from '@pricing-calculator/types';
 
 export const LaborCategoriesDemo: React.FC = () => {
   const [categories, setCategories] = useState<LaborCategoryInput[]>([

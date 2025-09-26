@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Typography, Box, Button, AppBar, Toolbar, Tabs, Tab } from '@mui/material';
+import { Container, Typography, Box, AppBar, Toolbar, Tabs, Tab } from '@mui/material';
 import { PricingCalculator } from '@pricing-calculator/ui';
 import LaborCategoriesDemo from './pages/LaborCategoriesDemo';
 import IntegratedPricingCalculator from './components/IntegratedPricingCalculator';

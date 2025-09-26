@@ -56,6 +56,8 @@ export interface CalculationResult {
     laborCost: number;
     odcCost: number;
     totalCost: number;
+    totalEffectiveHours: number;
+    averageBurdenedRate: number;
   };
   settings: PricingSettings;
   calculatedAt: string;

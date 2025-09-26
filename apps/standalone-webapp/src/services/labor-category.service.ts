@@ -108,6 +108,7 @@ export class LaborCategoryService {
         field: `${prefix}.title`,
         message: 'Labor category title is required',
         value: laborCategory.title,
+        severity: 'error',
       });
     }
 
@@ -116,6 +117,7 @@ export class LaborCategoryService {
         field: `${prefix}.baseRate`,
         message: 'Base rate must be between $1 and $1000',
         value: laborCategory.baseRate,
+        severity: 'error',
       });
     }
 
@@ -124,6 +126,7 @@ export class LaborCategoryService {
         field: `${prefix}.hours`,
         message: 'Hours must be between 1 and 10000',
         value: laborCategory.hours,
+        severity: 'error',
       });
     }
 
@@ -132,6 +135,7 @@ export class LaborCategoryService {
         field: `${prefix}.ftePercentage`,
         message: 'FTE percentage must be between 0.01% and 100%',
         value: laborCategory.ftePercentage,
+        severity: 'error',
       });
     }
 
@@ -140,6 +144,7 @@ export class LaborCategoryService {
         field: `${prefix}.clearanceLevel`,
         message: 'Invalid clearance level',
         value: laborCategory.clearanceLevel,
+        severity: 'error',
       });
     }
 
@@ -148,6 +153,7 @@ export class LaborCategoryService {
         field: `${prefix}.location`,
         message: 'Invalid location type',
         value: laborCategory.location,
+        severity: 'error',
       });
     }
 

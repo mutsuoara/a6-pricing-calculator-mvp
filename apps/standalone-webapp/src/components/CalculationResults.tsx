@@ -27,10 +27,9 @@ import {
   People as PeopleIcon,
   Schedule as ScheduleIcon,
   TrendingUp as TrendingUpIcon,
-  Warning as WarningIcon,
 } from '@mui/icons-material';
 import { LaborCategoryInput, ValidationError } from '../types/labor-category';
-import { CalculationResult, LaborCategoryResult, OtherDirectCostResult } from '../../packages/calculator-types/src/pricing';
+import { CalculationResult } from '@pricing-calculator/types';
 
 interface CalculationResultsProps {
   result: CalculationResult | null;
@@ -42,8 +41,6 @@ interface CalculationResultsProps {
 
 const CalculationResults: React.FC<CalculationResultsProps> = ({
   result,
-  laborCategories,
-  otherDirectCosts,
   validationWarnings,
   isLoading = false,
 }) => {

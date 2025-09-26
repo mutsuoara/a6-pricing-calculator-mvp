@@ -37,7 +37,7 @@ interface ProjectData {
   name: string;
   lastModified: string;
   status: 'draft' | 'active' | 'archived';
-  contractVehicle?: string;
+  contractVehicle: string | undefined;
   overheadRate: number;
   gaRate: number;
   feeRate: number;

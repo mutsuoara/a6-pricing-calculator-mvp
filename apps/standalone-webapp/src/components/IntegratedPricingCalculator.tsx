@@ -6,7 +6,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   Box,
-  Container,
   Typography,
   Paper,
   Tabs,
@@ -42,18 +41,17 @@ import LaborCategoriesInput from './LaborCategoriesInput';
 import CalculationResults from './CalculationResults';
 import ContractVehicleSelector from './ContractVehicleSelector';
 import UserPermissionsSelector from './UserPermissionsSelector';
-import ValidationAlert from './ValidationAlert';
 
 // Import types
 import { LaborCategoryInput, ValidationError, OverridePermissions } from '../types/labor-category';
-import { CalculationResult, PricingSettings, LaborCategoryInput as LaborCategoryInputType } from '../../packages/calculator-types/src/pricing';
+import { CalculationResult, PricingSettings, LaborCategoryInput as LaborCategoryInputType } from '@pricing-calculator/types';
 
 interface ProjectData {
   id: string;
   name: string;
   lastModified: string;
   status: 'draft' | 'active' | 'archived';
-  contractVehicle?: string;
+  contractVehicle: string | undefined;
   overheadRate: number;
   gaRate: number;
   feeRate: number;
@@ -124,10 +122,7 @@ const IntegratedPricingCalculator: React.FC = () => {
     canOverrideValidation: false,
     userRole: 'analyst',
   });
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
-  const [validationWarnings, setValidationWarnings] = useState<ValidationError[]>([]);
-  const [showValidationDetails, setShowValidationDetails] = useState(false);
-  const [overriddenFields, setOverriddenFields] = useState<Set<string>>(new Set());
+  const [validationWarnings] = useState<ValidationError[]>([]);
 
   // Calculation state
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
@@ -206,29 +201,6 @@ const IntegratedPricingCalculator: React.FC = () => {
     }));
   };
 
-  const handleOverheadRateChange = (_: Event, newValue: number | number[]) => {
-    setProjectData(prev => ({
-      ...prev,
-      overheadRate: newValue as number,
-      lastModified: new Date().toISOString(),
-    }));
-  };
-
-  const handleGaRateChange = (_: Event, newValue: number | number[]) => {
-    setProjectData(prev => ({
-      ...prev,
-      gaRate: newValue as number,
-      lastModified: new Date().toISOString(),
-    }));
-  };
-
-  const handleFeeRateChange = (_: Event, newValue: number | number[]) => {
-    setProjectData(prev => ({
-      ...prev,
-      feeRate: newValue as number,
-      lastModified: new Date().toISOString(),
-    }));
-  };
 
   const handleContractVehicleChange = (vehicle: string | undefined) => {
     setProjectData(prev => ({
@@ -265,8 +237,10 @@ const IntegratedPricingCalculator: React.FC = () => {
         gaRate: projectData.gaRate,
         feeRate: projectData.feeRate,
         contractType: 'FFP' as any,
-        periodOfPerformance: 12,
-        locationType: 'On-site' as any,
+        periodOfPerformance: {
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
+        },
       };
 
       // Mock calculation (replace with actual API call)
@@ -274,28 +248,38 @@ const IntegratedPricingCalculator: React.FC = () => {
         projectId: projectData.id,
         calculatedAt: new Date().toISOString(),
         settings,
-        laborCategories: laborCategories.map((lc) => ({
-          id: lc.id,
-          title: lc.title,
-          baseRate: lc.baseRate,
-          hours: lc.hours,
-          ftePercentage: lc.ftePercentage,
-          effectiveHours: lc.hours * lc.ftePercentage,
-          clearanceLevel: lc.clearanceLevel,
-          location: lc.location,
-          clearancePremium: lc.clearanceLevel === 'Top Secret' ? 0.20 : 
-                           lc.clearanceLevel === 'Secret' ? 0.10 : 
-                           lc.clearanceLevel === 'Public Trust' ? 0.05 : 0,
-          burdenedRate: lc.baseRate * (1 + (lc.clearanceLevel === 'Top Secret' ? 0.20 : 
-                                           lc.clearanceLevel === 'Secret' ? 0.10 : 
-                                           lc.clearanceLevel === 'Public Trust' ? 0.05 : 0)) * 
-                       (1 + projectData.overheadRate) * (1 + projectData.gaRate) * (1 + projectData.feeRate),
-          totalCost: lc.baseRate * (1 + (lc.clearanceLevel === 'Top Secret' ? 0.20 : 
-                                        lc.clearanceLevel === 'Secret' ? 0.10 : 
-                                        lc.clearanceLevel === 'Public Trust' ? 0.05 : 0)) * 
-                    (1 + projectData.overheadRate) * (1 + projectData.gaRate) * (1 + projectData.feeRate) * 
-                    lc.hours * lc.ftePercentage,
-        })),
+        laborCategories: laborCategories.map((lc) => {
+          const clearancePremium = lc.clearanceLevel === 'Top Secret' ? 0.20 : 
+                                 lc.clearanceLevel === 'Secret' ? 0.10 : 
+                                 lc.clearanceLevel === 'Public Trust' ? 0.05 : 0;
+          const clearanceAdjustedRate = lc.baseRate * (1 + clearancePremium);
+          const overheadAmount = clearanceAdjustedRate * projectData.overheadRate;
+          const gaAmount = (clearanceAdjustedRate + overheadAmount) * projectData.gaRate;
+          const feeAmount = (clearanceAdjustedRate + overheadAmount + gaAmount) * projectData.feeRate;
+          const burdenedRate = clearanceAdjustedRate + overheadAmount + gaAmount + feeAmount;
+          const totalCost = burdenedRate * lc.hours * lc.ftePercentage;
+
+          return {
+            id: lc.id ?? `temp-${Date.now()}-${Math.random()}`,
+            title: lc.title,
+            baseRate: lc.baseRate,
+            hours: lc.hours,
+            ftePercentage: lc.ftePercentage,
+            effectiveHours: lc.hours * lc.ftePercentage,
+            clearanceLevel: lc.clearanceLevel as any,
+            location: lc.location as any,
+            clearancePremium,
+            clearanceAdjustedRate,
+            overheadAmount,
+            overheadRate: projectData.overheadRate,
+            gaAmount,
+            gaRate: projectData.gaRate,
+            feeAmount,
+            feeRate: projectData.feeRate,
+            totalCost,
+            burdenedRate,
+          };
+        }),
         otherDirectCosts: [],
         totals: {
           laborCost: 0,
