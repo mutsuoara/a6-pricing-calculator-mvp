@@ -18,7 +18,10 @@ import {
   Select,
   MenuItem,
   Divider,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
+import { Info as InfoIcon } from '@mui/icons-material';
 import { LaborCategoryInput } from '../types/labor-category';
 import LaborCategoriesInput from '../components/LaborCategoriesInput';
 
@@ -92,12 +95,16 @@ export const LaborCategoriesDemo: React.FC = () => {
         </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
-            <Typography variant="subtitle1" gutterBottom>
-              Overhead Rate: {(overheadRate * 100).toFixed(1)}%
-            </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Indirect costs for facilities, equipment, and administrative support. Typically 20-40% for government contracts. Range: 0-100%.
-            </Typography>
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
+              <Typography variant="subtitle1">
+                Overhead Rate: {(overheadRate * 100).toFixed(1)}%
+              </Typography>
+              <Tooltip title="Indirect costs for facilities, equipment, and administrative support. Typically 20-40% for government contracts.">
+                <IconButton size="small">
+                  <InfoIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
             <Slider
               value={overheadRate}
               onChange={handleOverheadRateChange}
@@ -116,12 +123,16 @@ export const LaborCategoriesDemo: React.FC = () => {
             />
           </Grid>
           <Grid item xs={12} md={4}>
-            <Typography variant="subtitle1" gutterBottom>
-              G&A Rate: {(gaRate * 100).toFixed(1)}%
-            </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              General & Administrative costs for corporate overhead, executive management, and business development. Usually 8-15%. Range: 0-100%.
-            </Typography>
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
+              <Typography variant="subtitle1">
+                G&A Rate: {(gaRate * 100).toFixed(1)}%
+              </Typography>
+              <Tooltip title="General & Administrative costs for corporate overhead, executive management, and business development. Usually 8-15%.">
+                <IconButton size="small">
+                  <InfoIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
             <Slider
               value={gaRate}
               onChange={handleGaRateChange}
@@ -140,12 +151,16 @@ export const LaborCategoriesDemo: React.FC = () => {
             />
           </Grid>
           <Grid item xs={12} md={4}>
-            <Typography variant="subtitle1" gutterBottom>
-              Fee Rate: {(feeRate * 100).toFixed(1)}%
-            </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Profit margin added to total costs. Varies by contract type: FFP (5-15%), T&M (2-8%), CPFF (1-5%). Range: 0-100%.
-            </Typography>
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
+              <Typography variant="subtitle1">
+                Fee Rate: {(feeRate * 100).toFixed(1)}%
+              </Typography>
+              <Tooltip title="Profit margin added to total costs. Varies by contract type: FFP (5-15%), T&M (2-8%), CPFF (1-5%).">
+                <IconButton size="small">
+                  <InfoIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
             <Slider
               value={feeRate}
               onChange={handleFeeRateChange}

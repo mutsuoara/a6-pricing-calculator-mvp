@@ -8,6 +8,9 @@ import { PricingProject } from './PricingProject';
 import { LaborCategory } from './LaborCategory';
 import { OtherDirectCost } from './OtherDirectCost';
 import { AuditLog } from './AuditLog';
+import { ContractVehicle } from './ContractVehicle';
+import { A6Role } from './A6Role';
+import { LaborCategoryTemplate } from './LaborCategoryTemplate';
 
 export class ModelManager {
   private static initialized = false;
@@ -28,6 +31,9 @@ export class ModelManager {
       LaborCategory.initModel();
       OtherDirectCost.initModel();
       AuditLog.initModel();
+      ContractVehicle.initModel();
+      A6Role.initModel();
+      LaborCategoryTemplate.initModel();
 
       // Set up associations
       PricingProject.hasMany(LaborCategory, {
@@ -52,6 +58,8 @@ export class ModelManager {
         as: 'project',
       });
 
+      // LCAT Template associations - using JSON storage instead of many-to-many
+
       // Sync database (create tables if they don't exist)
       await dbService.sync();
 
@@ -69,7 +77,10 @@ export class ModelManager {
       PricingProject,
       LaborCategory,
       OtherDirectCost,
-      AuditLog
+      AuditLog,
+      ContractVehicle,
+      A6Role,
+      LaborCategoryTemplate
     };
   }
 
@@ -80,5 +91,5 @@ export class ModelManager {
 }
 
 // Export models for use in other parts of the application
-export { User, PricingProject, LaborCategory, OtherDirectCost, AuditLog };
+export { User, PricingProject, LaborCategory, OtherDirectCost, AuditLog, ContractVehicle, A6Role, LaborCategoryTemplate };
 export { DatabaseService } from '../config/database';

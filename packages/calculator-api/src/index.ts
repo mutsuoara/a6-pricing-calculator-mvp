@@ -148,6 +148,10 @@ app.use('/api/pricing', pricingRoutes);
 // Calculation service routes
 app.use('/api/calculation', calculationRoutes);
 
+// Labor category routes
+import laborCategoryRoutes from './routes/labor-category.routes';
+app.use('/api/labor-categories', laborCategoryRoutes);
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({

@@ -28,6 +28,10 @@ import {
   Grid,
   Card,
   CardContent,
+  Fab,
+  SpeedDial,
+  SpeedDialAction,
+  SpeedDialIcon,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -35,9 +39,14 @@ import {
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
+  LibraryBooks as LibraryIcon,
+  ContentCopy as DuplicateIcon,
+  ClearAll as ClearAllIcon,
+  Info as InfoIcon,
 } from '@mui/icons-material';
 import { LaborCategoryInput, LaborCategoryResult, LaborCategorySummary, ValidationError } from '../types/labor-category';
 import { LaborCategoryService } from '../services/labor-category.service';
+import LCATSelectionDialog from './LCATSelectionDialog';
 
 interface LaborCategoriesInputProps {
   categories: LaborCategoryInput[];
@@ -71,6 +80,8 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     averageBaseRate: 0,
     averageBurdenedRate: 0,
   });
+  const [lcatDialogOpen, setLcatDialogOpen] = useState(false);
+  const [speedDialOpen, setSpeedDialOpen] = useState(false);
 
   // Calculate summary whenever categories or rates change
   useEffect(() => {
@@ -154,25 +165,119 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     return LaborCategoryService.calculateTotalCost(category, overheadRate, gaRate, feeRate);
   };
 
+  const handleLCATSelect = (template: any) => {
+    // Get typical rate for the template (use first available vehicle rate or average)
+    const vehicleCodes = Object.keys(template.vehicleRates);
+    const typicalRate = vehicleCodes.length > 0 
+      ? template.vehicleRates[vehicleCodes[0]].typicalRate
+      : 75; // Fallback rate
+
+    const newCategory: LaborCategoryInput = {
+      id: Date.now().toString(),
+      title: template.title,
+      baseRate: typicalRate,
+      hours: template.typicalHours || 2080,
+      ftePercentage: 100,
+      clearanceLevel: template.typicalClearanceLevel,
+      location: template.typicalLocation,
+    };
+    
+    const newCategories = [...categories, newCategory];
+    onCategoriesChange(newCategories);
+    
+    // Start editing the new category
+    setEditingState(prev => ({
+      ...prev,
+      [`category_${newCategories.length - 1}`]: true,
+    }));
+  };
+
+  const duplicateCategory = (index: number) => {
+    const categoryToDuplicate = categories[index];
+    const duplicatedCategory: LaborCategoryInput = {
+      ...categoryToDuplicate,
+      id: Date.now().toString(),
+      title: `${categoryToDuplicate.title} (Copy)`,
+    };
+    
+    const newCategories = [...categories, duplicatedCategory];
+    onCategoriesChange(newCategories);
+  };
+
+  const clearAllCategories = () => {
+    if (window.confirm('Are you sure you want to clear all labor categories? This action cannot be undone.')) {
+      onCategoriesChange([]);
+      setEditingState({});
+    }
+  };
+
+  const speedDialActions = [
+    {
+      icon: <LibraryIcon />,
+      name: 'Select Labor Category',
+      onClick: () => setLcatDialogOpen(true),
+    },
+    {
+      icon: <AddIcon />,
+      name: 'Add Empty Labor Category',
+      onClick: addCategory,
+    },
+  ];
+
+  if (categories.length > 0) {
+    speedDialActions.push({
+      icon: <ClearAllIcon />,
+      name: 'Clear All',
+      onClick: clearAllCategories,
+    });
+  }
+
   return (
     <Box>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5" component="h2" fontWeight="bold">
-          Labor Categories
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={addCategory}
-          disabled={disabled}
-          sx={{ 
-            backgroundColor: '#1976d2',
-            '&:hover': { backgroundColor: '#1565c0' }
-          }}
-        >
-          Add Category
-        </Button>
+        <Box>
+          <Typography variant="h5" component="h2" fontWeight="bold">
+            Labor Categories
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Manage your project team with pre-populated labor categories or custom categories
+          </Typography>
+        </Box>
+        <Box display="flex" gap={2} alignItems="center">
+          <Button
+            variant="outlined"
+            startIcon={<LibraryIcon />}
+            onClick={() => setLcatDialogOpen(true)}
+            disabled={disabled}
+            sx={{ 
+              borderColor: '#1976d2',
+              color: '#1976d2',
+              minWidth: '180px',
+              height: '40px',
+              '&:hover': { 
+                borderColor: '#1565c0',
+                backgroundColor: 'rgba(25, 118, 210, 0.04)'
+              }
+            }}
+          >
+            Select Labor Category
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={addCategory}
+            disabled={disabled}
+            sx={{ 
+              backgroundColor: '#1976d2',
+              minWidth: '180px',
+              height: '40px',
+              '&:hover': { backgroundColor: '#1565c0' }
+            }}
+          >
+            Add Labor Category
+          </Button>
+        </Box>
       </Box>
 
       {/* Categories Table */}
@@ -180,15 +285,78 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-              <TableCell sx={{ fontWeight: 'bold' }}>Title</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="right">Base Rate</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="right">Hours</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="right">FTE %</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="right">Effective Hours</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="center">Clearance</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="center">Location</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="right">Burdened Rate</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="right">Total Cost</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>
+                <Box display="flex" alignItems="center" gap={0.5}>
+                  Title
+                  <Tooltip title="Labor category job title or role name">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Base Rate
+                  <Tooltip title="Hourly rate before burden (overhead, G&A, fee)">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Hours
+                  <Tooltip title="Total hours for this labor category">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  FTE %
+                  <Tooltip title="Full-Time Equivalent percentage (0-100%)">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Effective Hours
+                  <Tooltip title="Calculated as Hours × FTE%">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="center">
+                <Box display="flex" alignItems="center" justifyContent="center" gap={0.5}>
+                  Clearance
+                  <Tooltip title="Security clearance level required">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="center">
+                <Box display="flex" alignItems="center" justifyContent="center" gap={0.5}>
+                  Location
+                  <Tooltip title="Work location type">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Burdened Rate
+                  <Tooltip title="Base rate + overhead + G&A + fee + clearance premium">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Total Cost
+                  <Tooltip title="Burdened rate × effective hours">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
               <TableCell sx={{ fontWeight: 'bold' }} align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -208,8 +376,17 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                         value={category.title}
                         onChange={(e) => updateCategory(index, 'title', e.target.value)}
                         error={!!getFieldError(index, 'title')}
-                        helperText={getFieldError(index, 'title')}
                         disabled={disabled}
+                        sx={{ 
+                          '& .MuiFormHelperText-root': { 
+                            position: 'absolute', 
+                            top: '100%', 
+                            left: 0,
+                            margin: 0,
+                            fontSize: '0.75rem'
+                          }
+                        }}
+                        helperText={getFieldError(index, 'title')}
                       />
                     ) : (
                       <Typography variant="body2" fontWeight="medium">
@@ -227,9 +404,18 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                         value={category.baseRate}
                         onChange={(e) => updateCategory(index, 'baseRate', parseFloat(e.target.value) || 0)}
                         error={!!getFieldError(index, 'baseRate')}
-                        helperText={getFieldError(index, 'baseRate')}
                         disabled={disabled}
-                        sx={{ width: 100 }}
+                        sx={{ 
+                          width: 100,
+                          '& .MuiFormHelperText-root': { 
+                            position: 'absolute', 
+                            top: '100%', 
+                            left: 0,
+                            margin: 0,
+                            fontSize: '0.75rem'
+                          }
+                        }}
+                        helperText={getFieldError(index, 'baseRate')}
                         inputProps={{ min: 1, max: 1000, step: 0.01 }}
                       />
                     ) : (
@@ -248,9 +434,18 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                         value={category.hours}
                         onChange={(e) => updateCategory(index, 'hours', parseInt(e.target.value) || 0)}
                         error={!!getFieldError(index, 'hours')}
-                        helperText={getFieldError(index, 'hours')}
                         disabled={disabled}
-                        sx={{ width: 80 }}
+                        sx={{ 
+                          width: 80,
+                          '& .MuiFormHelperText-root': { 
+                            position: 'absolute', 
+                            top: '100%', 
+                            left: 0,
+                            margin: 0,
+                            fontSize: '0.75rem'
+                          }
+                        }}
+                        helperText={getFieldError(index, 'hours')}
                         inputProps={{ min: 1, max: 10000 }}
                       />
                     ) : (
@@ -269,9 +464,18 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                         value={category.ftePercentage}
                         onChange={(e) => updateCategory(index, 'ftePercentage', parseFloat(e.target.value) || 0)}
                         error={!!getFieldError(index, 'ftePercentage')}
-                        helperText={getFieldError(index, 'ftePercentage')}
                         disabled={disabled}
-                        sx={{ width: 80 }}
+                        sx={{ 
+                          width: 80,
+                          '& .MuiFormHelperText-root': { 
+                            position: 'absolute', 
+                            top: '100%', 
+                            left: 0,
+                            margin: 0,
+                            fontSize: '0.75rem'
+                          }
+                        }}
+                        helperText={getFieldError(index, 'ftePercentage')}
                         inputProps={{ min: 0.01, max: 100, step: 0.01 }}
                       />
                     ) : (
@@ -291,11 +495,12 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                   {/* Clearance Level */}
                   <TableCell align="center">
                     {editing ? (
-                      <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <FormControl size="small" sx={{ minWidth: 120, height: 40 }}>
                         <Select
                           value={category.clearanceLevel}
                           onChange={(e) => updateCategory(index, 'clearanceLevel', e.target.value)}
                           disabled={disabled}
+                          sx={{ height: 40 }}
                         >
                           <MenuItem value="None">None</MenuItem>
                           <MenuItem value="Public Trust">Public Trust</MenuItem>
@@ -319,11 +524,12 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                   {/* Location */}
                   <TableCell align="center">
                     {editing ? (
-                      <FormControl size="small" sx={{ minWidth: 100 }}>
+                      <FormControl size="small" sx={{ minWidth: 100, height: 40 }}>
                         <Select
                           value={category.location}
                           onChange={(e) => updateCategory(index, 'location', e.target.value)}
                           disabled={disabled}
+                          sx={{ height: 40 }}
                         >
                           <MenuItem value="Remote">Remote</MenuItem>
                           <MenuItem value="On-site">On-site</MenuItem>
@@ -390,6 +596,16 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                             <EditIcon />
                           </IconButton>
                         </Tooltip>
+                        <Tooltip title="Duplicate">
+                          <IconButton
+                            size="small"
+                            onClick={() => duplicateCategory(index)}
+                            disabled={disabled}
+                            color="info"
+                          >
+                            <DuplicateIcon />
+                          </IconButton>
+                        </Tooltip>
                         <Tooltip title="Delete">
                           <IconButton
                             size="small"
@@ -410,83 +626,190 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
         </Table>
       </TableContainer>
 
-      {/* Summary Cards */}
+      {/* Enhanced Summary Cards */}
       {categories.length > 0 && (
-        <Box mt={3}>
-          <Typography variant="h6" gutterBottom fontWeight="bold">
-            Summary
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card elevation={1}>
-                <CardContent>
-                  <Typography variant="h6" color="primary" fontWeight="bold">
-                    {summary.totalCategories}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Categories
-                  </Typography>
-                </CardContent>
-              </Card>
+        <Box mt={4}>
+          <Paper elevation={2} sx={{ p: 3, backgroundColor: '#f8f9fa' }}>
+            <Typography variant="h6" gutterBottom fontWeight="bold" color="primary">
+              📊 Project Summary
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card elevation={3} sx={{ 
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white'
+                }}>
+                  <CardContent>
+                    <Typography variant="h4" fontWeight="bold">
+                      {summary.totalCategories}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      Total Categories
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card elevation={3} sx={{ 
+                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                  color: 'white'
+                }}>
+                  <CardContent>
+                    <Typography variant="h4" fontWeight="bold">
+                      {summary.totalEffectiveHours.toLocaleString()}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      Effective Hours
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card elevation={3} sx={{ 
+                  background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                  color: 'white'
+                }}>
+                  <CardContent>
+                    <Typography variant="h4" fontWeight="bold">
+                      {LaborCategoryService.formatCurrency(summary.averageBurdenedRate)}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      Avg Burdened Rate
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card elevation={3} sx={{ 
+                  background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                  color: 'white'
+                }}>
+                  <CardContent>
+                    <Typography variant="h4" fontWeight="bold">
+                      {LaborCategoryService.formatCurrency(summary.totalBurdenedCost)}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      Total Labor Cost
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card elevation={1}>
-                <CardContent>
-                  <Typography variant="h6" color="primary" fontWeight="bold">
-                    {summary.totalEffectiveHours.toLocaleString()}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Effective Hours
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card elevation={1}>
-                <CardContent>
-                  <Typography variant="h6" color="success.main" fontWeight="bold">
-                    {LaborCategoryService.formatCurrency(summary.averageBurdenedRate)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Avg Burdened Rate
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card elevation={1}>
-                <CardContent>
-                  <Typography variant="h6" color="success.main" fontWeight="bold">
-                    {LaborCategoryService.formatCurrency(summary.totalBurdenedCost)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Labor Cost
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+            
+            {/* Additional Metrics */}
+            <Box mt={3}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={4}>
+                  <Box textAlign="center" p={2} sx={{ backgroundColor: 'rgba(25, 118, 210, 0.1)', borderRadius: 2 }}>
+                    <Typography variant="h6" color="primary" fontWeight="bold">
+                      {LaborCategoryService.formatCurrency(summary.totalBaseCost)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Total Base Cost
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Box textAlign="center" p={2} sx={{ backgroundColor: 'rgba(76, 175, 80, 0.1)', borderRadius: 2 }}>
+                    <Typography variant="h6" color="success.main" fontWeight="bold">
+                      {LaborCategoryService.formatCurrency(summary.totalBurdenedCost - summary.totalBaseCost)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Total Burden Cost
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Box textAlign="center" p={2} sx={{ backgroundColor: 'rgba(255, 152, 0, 0.1)', borderRadius: 2 }}>
+                    <Typography variant="h6" color="warning.main" fontWeight="bold">
+                      {((summary.totalBurdenedCost / summary.totalBaseCost - 1) * 100).toFixed(1)}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Burden Rate
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+          </Paper>
         </Box>
       )}
 
-      {/* Empty State */}
+      {/* Enhanced Empty State */}
       {categories.length === 0 && (
-        <Box textAlign="center" py={4}>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No labor categories added yet
-          </Typography>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Click "Add Category" to start building your project team
-          </Typography>
-          <Button
-            variant="outlined"
-            startIcon={<AddIcon />}
-            onClick={addCategory}
-            disabled={disabled}
-          >
-            Add First Category
-          </Button>
+        <Box textAlign="center" py={6}>
+          <Paper elevation={1} sx={{ p: 4, backgroundColor: '#f8f9fa' }}>
+            <Typography variant="h5" color="text.secondary" gutterBottom fontWeight="bold">
+              🚀 Ready to Build Your Team?
+            </Typography>
+            <Typography variant="body1" color="text.secondary" mb={3}>
+              Start by selecting from our pre-populated labor categories or create custom categories
+            </Typography>
+            <Box display="flex" gap={2} justifyContent="center" flexWrap="wrap">
+              <Button
+                variant="contained"
+                startIcon={<LibraryIcon />}
+                onClick={() => setLcatDialogOpen(true)}
+                disabled={disabled}
+                size="large"
+                sx={{ 
+                  backgroundColor: '#1976d2',
+                  '&:hover': { backgroundColor: '#1565c0' }
+                }}
+              >
+                Select Labor Category
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<AddIcon />}
+                onClick={addCategory}
+                disabled={disabled}
+                size="large"
+                sx={{ 
+                  borderColor: '#1976d2',
+                  color: '#1976d2',
+                  '&:hover': { 
+                    borderColor: '#1565c0',
+                    backgroundColor: 'rgba(25, 118, 210, 0.04)'
+                  }
+                }}
+              >
+                Create Custom Category
+              </Button>
+            </Box>
+          </Paper>
         </Box>
+      )}
+
+      {/* LCAT Selection Dialog */}
+      <LCATSelectionDialog
+        open={lcatDialogOpen}
+        onClose={() => setLcatDialogOpen(false)}
+        onSelect={handleLCATSelect}
+      />
+
+      {/* Speed Dial for Quick Actions */}
+      {categories.length > 0 && (
+        <SpeedDial
+          ariaLabel="Quick actions"
+          sx={{ position: 'fixed', bottom: 16, right: 16 }}
+          icon={<SpeedDialIcon />}
+          onClose={() => setSpeedDialOpen(false)}
+          onOpen={() => setSpeedDialOpen(true)}
+          open={speedDialOpen}
+        >
+          {speedDialActions.map((action) => (
+            <SpeedDialAction
+              key={action.name}
+              icon={action.icon}
+              tooltipTitle={action.name}
+              onClick={() => {
+                action.onClick();
+                setSpeedDialOpen(false);
+              }}
+            />
+          ))}
+        </SpeedDial>
       )}
     </Box>
   );
