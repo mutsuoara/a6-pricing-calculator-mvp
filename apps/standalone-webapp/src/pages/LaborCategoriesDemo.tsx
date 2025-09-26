@@ -95,6 +95,9 @@ export const LaborCategoriesDemo: React.FC = () => {
             <Typography variant="subtitle1" gutterBottom>
               Overhead Rate: {(overheadRate * 100).toFixed(1)}%
             </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Indirect costs for facilities, equipment, and administrative support. Typically 20-40% for government contracts.
+            </Typography>
             <Slider
               value={overheadRate}
               onChange={handleOverheadRateChange}
@@ -116,6 +119,9 @@ export const LaborCategoriesDemo: React.FC = () => {
             <Typography variant="subtitle1" gutterBottom>
               G&A Rate: {(gaRate * 100).toFixed(1)}%
             </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              General & Administrative costs for corporate overhead, executive management, and business development. Usually 8-15%.
+            </Typography>
             <Slider
               value={gaRate}
               onChange={handleGaRateChange}
@@ -136,6 +142,9 @@ export const LaborCategoriesDemo: React.FC = () => {
           <Grid item xs={12} md={4}>
             <Typography variant="subtitle1" gutterBottom>
               Fee Rate: {(feeRate * 100).toFixed(1)}%
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Profit margin added to total costs. Varies by contract type: FFP (5-15%), T&M (2-8%), CPFF (1-5%).
             </Typography>
             <Slider
               value={feeRate}

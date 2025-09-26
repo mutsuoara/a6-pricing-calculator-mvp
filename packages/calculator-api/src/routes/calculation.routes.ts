@@ -5,7 +5,6 @@
 
 import express from 'express';
 import { PricingCalculationService, CalculationInput, ScenarioInput } from '../services/pricing-calculation.service';
-import { authenticateJWT } from '../middleware/auth.middleware';
 
 const router = express.Router();
 

@@ -6,13 +6,10 @@
 
 import { 
   PricingSettings, 
-  LaborCategory as LaborCategoryType, 
-  OtherDirectCost as OtherDirectCostType,
   CalculationResult,
   LaborCategoryResult,
   OtherDirectCostResult,
   ScenarioComparison,
-  ContractType,
   ClearanceLevel,
   LocationType
 } from '@pricing-calculator/types';
@@ -130,7 +127,7 @@ export class PricingCalculationService {
     const totalCost = burdenedRate * effectiveHours;
 
     return {
-      id: laborCategory.id,
+      id: laborCategory.id || '',
       title: laborCategory.title,
       baseRate: laborCategory.baseRate,
       hours: laborCategory.hours,
@@ -159,7 +156,7 @@ export class PricingCalculationService {
     const totalAmount = odc.amount + taxAmount;
 
     return {
-      id: odc.id,
+      id: odc.id || '',
       description: odc.description,
       amount: odc.amount,
       category: odc.category,
@@ -198,6 +195,10 @@ export class PricingCalculationService {
 
     // Use first scenario as baseline
     const baseline = results[0];
+    if (!baseline) {
+      throw new Error('No baseline scenario found');
+    }
+    
     const comparisons = results.slice(1).map(scenario => {
       const laborVariance = scenario.result.totals.totalLaborCost - baseline.result.totals.totalLaborCost;
       const odcVariance = scenario.result.totals.totalODCCost - baseline.result.totals.totalODCCost;

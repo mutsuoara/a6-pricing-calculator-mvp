@@ -49,6 +49,7 @@ export interface CalculationResult {
     averageBurdenedRate: number;
   };
   settings: PricingSettings;
+  calculatedAt: string;
 }
 
 export interface LaborCategoryResult {
@@ -80,15 +81,20 @@ export interface OtherDirectCostResult {
   taxable: boolean;
   taxAmount: number;
   totalAmount: number;
+  taxRate: number;
 }
 
 export interface ScenarioComparison {
-  name: string;
-  settings: PricingSettings;
-  result: CalculationResult;
-  variance: {
-    totalCostVariance: number;
-    totalCostVariancePercent: number;
-  };
+  baseline: CalculationResult;
+  comparisons: Array<{
+    scenarioName: string;
+    laborVariance: number;
+    laborVariancePercent: number;
+    odcVariance: number;
+    totalVariance: number;
+    totalVariancePercent: number;
+    settings: PricingSettings;
+  }>;
+  comparedAt: string;
 }
 
