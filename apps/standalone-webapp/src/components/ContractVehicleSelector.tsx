@@ -50,7 +50,7 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
     const fetchVehicles = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:3002/api/labor-categories/contract-vehicles');
+        const response = await fetch('http://localhost:3001/api/labor-categories/contract-vehicles');
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

@@ -17,30 +17,13 @@ export interface ContractVehicle {
   createdBy: string;
 }
 
-export interface A6Level {
-  id: string;
-  name: string; // e.g., "Engineering V", "Product III"
-  category: 'Engineering' | 'Product' | 'Experience' | 'Management';
-  level: number; // 1-5 for Engineering, 1-3 for Product, etc.
-  description: string;
-  rateRange: {
-    min: number;
-    max: number;
-    typical: number;
-  };
-  clearanceRequirements: string[];
-  locationRequirements: string[];
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-}
+// A6Level interface removed - replaced with CompanyRole
 
 export interface ProjectRole {
   id: string;
   name: string; // e.g., "Engineering Lead (KP)", "Lead Product Manager (KP)"
   description: string;
-  a6LevelId: string;
+  companyRoleId: string; // References CompanyRole instead of A6Level
   typicalClearance: 'None' | 'Public Trust' | 'Secret' | 'Top Secret';
   typicalLocation: 'Remote' | 'On-site' | 'Hybrid';
   typicalHours: number; // Default hours per year
@@ -74,37 +57,11 @@ export interface CompanyRole {
   createdBy: string;
 }
 
-export interface ThreeWayMapping {
-  id: string;
-  contractVehicleId: string;
-  projectId: string;
-  spruceLCATId: string;
-  projectRoleId: string;
-  a6LevelId: string;
-  
-  // Rate information
-  spruceRate: number;
-  a6MinimumRate: number;
-  maxSubcontractorRate?: number;
-  
-  // Project-specific overrides
-  projectEscalationRate?: number;
-  projectStartDate?: string;
-  projectEndDate?: string;
-  
-  // Validation rules
-  allowRateOverride: boolean;
-  requireApproval: boolean;
-  
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-}
+// ThreeWayMapping interface removed - simplified architecture
 
 export interface RateValidationRule {
   id: string;
-  a6LevelId: string;
+  companyRoleId: string; // References CompanyRole instead of A6Level
   contractVehicleId?: string; // Optional - if null, applies to all vehicles
   projectId?: string; // Optional - if null, applies to all projects
   
@@ -124,7 +81,7 @@ export interface RateValidationRule {
 
 export interface AuditLog {
   id: string;
-  entityType: 'ContractVehicle' | 'A6Level' | 'ProjectRole' | 'SPRUCELCAT' | 'CompanyRole' | 'ThreeWayMapping' | 'RateValidationRule';
+  entityType: 'ContractVehicle' | 'ProjectRole' | 'SPRUCELCAT' | 'CompanyRole' | 'RateValidationRule';
   entityId: string;
   action: 'CREATE' | 'UPDATE' | 'DELETE' | 'IMPORT' | 'EXPORT';
   userId: string;
@@ -141,11 +98,9 @@ export interface AuditLog {
 
 export interface ImportTemplate {
   contractVehicles: ContractVehicle[];
-  a6Levels: A6Level[];
   projectRoles: ProjectRole[];
   spruceLCATs: SPRUCELCAT[];
   companyRoles: CompanyRole[];
-  threeWayMappings: ThreeWayMapping[];
   rateValidationRules: RateValidationRule[];
 }
 
@@ -180,14 +135,14 @@ export interface EnhancedLaborCategoryInput {
   projectId?: string;
   spruceLCATId?: string;
   projectRoleId?: string;
-  a6LevelId?: string;
+  companyRoleId?: string; // References CompanyRole instead of A6Level
   
   // Named Individual
   namedIndividual?: string;
   
   // Rate Information
   spruceRate?: number;
-  a6MinimumRate?: number;
+  companyMinimumRate?: number; // Renamed from a6MinimumRate
   finalProposalRate?: number;
   maxSubcontractorRate?: number;
   finalSubcontractorRate?: number;
@@ -227,10 +182,10 @@ export interface EnhancedLaborCategoryResult extends EnhancedLaborCategoryInput 
   finalRateDiscount?: number;
   rateComparison?: {
     spruceRate: number;
-    a6MinimumRate: number;
+    companyMinimumRate: number; // Renamed from a6MinimumRate
     proposalRate: number;
     discountFromSpruce: number;
-    aboveA6Minimum: boolean;
+    aboveCompanyMinimum: boolean; // Renamed from aboveA6Minimum
   };
   
   // Escalation calculations

@@ -4,7 +4,8 @@
  */
 
 import * as XLSX from 'xlsx';
-import { ImportTemplate, ContractVehicle, A6Level, ProjectRole, SPRUCELCAT, CompanyRole, ThreeWayMapping, RateValidationRule } from '../types/mapping';
+import { ImportTemplate, ContractVehicle, ProjectRole, SPRUCELCAT, CompanyRole, RateValidationRule } from '../types/mapping';
+import { companyConfigService } from '../config/company.config';
 
 export class TemplateService {
   
@@ -23,19 +24,11 @@ export class TemplateService {
     const contractVehiclesSheet = XLSX.utils.aoa_to_sheet(contractVehiclesData);
     XLSX.utils.book_append_sheet(workbook, contractVehiclesSheet, 'Contract Vehicles');
 
-    // A6 Levels Sheet
-    const a6LevelsData = [
-      ['ID', 'Name', 'Category', 'Level', 'Description', 'Min Rate', 'Max Rate', 'Typical Rate', 'Clearance Requirements', 'Location Requirements', 'Is Active', 'Created At', 'Updated At', 'Created By'],
-      ['', 'Engineering V', 'Engineering', '5', 'Senior Engineering Lead', '180', '250', '200', 'Secret,Top Secret', 'On-site,Hybrid', 'TRUE', '', '', ''],
-      ['', 'Engineering III', 'Engineering', '3', 'Mid-level Engineer', '120', '180', '150', 'None,Public Trust,Secret', 'Remote,On-site,Hybrid', 'TRUE', '', '', ''],
-      ['', 'Product III', 'Product', '3', 'Senior Product Manager', '140', '200', '170', 'None,Public Trust,Secret', 'Remote,On-site,Hybrid', 'TRUE', '', '', ''],
-    ];
-    const a6LevelsSheet = XLSX.utils.aoa_to_sheet(a6LevelsData);
-    XLSX.utils.book_append_sheet(workbook, a6LevelsSheet, 'A6 Levels');
+    // A6 Levels sheet removed - replaced with Company Roles
 
     // Project Roles Sheet
     const projectRolesData = [
-      ['ID', 'Name', 'Description', 'A6 Level ID', 'Typical Clearance', 'Typical Location', 'Typical Hours', 'Is Active', 'Created At', 'Updated At', 'Created By'],
+      ['ID', 'Name', 'Description', 'Company Role ID', 'Typical Clearance', 'Typical Location', 'Typical Hours', 'Is Active', 'Created At', 'Updated At', 'Created By'],
       ['', 'Engineering Lead (KP)', 'Key Personnel Engineering Lead', '', 'Secret', 'On-site', '2080', 'TRUE', '', '', ''],
       ['', 'Lead Product Manager (KP)', 'Key Personnel Product Manager', '', 'Public Trust', 'Hybrid', '2080', 'TRUE', '', '', ''],
     ];
@@ -52,27 +45,22 @@ export class TemplateService {
     XLSX.utils.book_append_sheet(workbook, spruceLCATsSheet, 'SPRUCE LCATs');
 
     // Company Roles Sheet
+    const companyConfig = companyConfigService.getConfig();
     const companyRolesData = [
       ['ID', 'Name', 'Practice Area', 'Description', 'Pay Band', 'Rate Increase (%)', 'Is Active', 'Created At', 'Updated At', 'Created By'],
-      ['', 'Senior Software Engineer', 'Engineering', 'Senior level software engineering role', 'Band 5', '3.0', 'TRUE', '', '', ''],
-      ['', 'Lead Product Manager', 'Product', 'Lead product management role', 'Senior Level', '2.5', 'TRUE', '', '', ''],
-      ['', 'Principal Data Scientist', 'Data Science', 'Principal level data science role', 'Principal Level', '4.0', 'TRUE', '', '', ''],
-      ['', 'Senior UX Designer', 'Design', 'Senior user experience design role', 'Band 4', '2.8', 'TRUE', '', '', ''],
+      ['', `Senior Software Engineer at ${companyConfig.name}`, 'Engineering', `Senior level software engineering role at ${companyConfig.name}`, 'Band 5', '3.0', 'TRUE', '', '', ''],
+      ['', `Lead Product Manager at ${companyConfig.name}`, 'Product', `Lead product management role at ${companyConfig.name}`, 'Senior Level', '2.5', 'TRUE', '', '', ''],
+      ['', `Principal Data Scientist at ${companyConfig.name}`, 'Data Science', `Principal level data science role at ${companyConfig.name}`, 'Principal Level', '4.0', 'TRUE', '', '', ''],
+      ['', `Senior UX Designer at ${companyConfig.name}`, 'Design', `Senior user experience design role at ${companyConfig.name}`, 'Band 4', '2.8', 'TRUE', '', '', ''],
     ];
     const companyRolesSheet = XLSX.utils.aoa_to_sheet(companyRolesData);
-    XLSX.utils.book_append_sheet(workbook, companyRolesSheet, 'Company Roles');
+    XLSX.utils.book_append_sheet(workbook, companyRolesSheet, companyConfigService.getLabels().companyRoles);
 
-    // Three-Way Mappings Sheet
-    const threeWayMappingsData = [
-      ['ID', 'Contract Vehicle ID', 'Project ID', 'SPRUCE LCAT ID', 'Project Role ID', 'A6 Level ID', 'SPRUCE Rate', 'A6 Minimum Rate', 'Max Subcontractor Rate', 'Project Escalation Rate (%)', 'Project Start Date', 'Project End Date', 'Allow Rate Override', 'Require Approval', 'Is Active', 'Created At', 'Updated At', 'Created By'],
-      ['', '', 'cross-benefits', '', '', '', '256.31', '201.63', '149.26', '2.0', '2024-01-01', '2028-12-31', 'TRUE', 'FALSE', 'TRUE', '', '', ''],
-    ];
-    const threeWayMappingsSheet = XLSX.utils.aoa_to_sheet(threeWayMappingsData);
-    XLSX.utils.book_append_sheet(workbook, threeWayMappingsSheet, 'Three-Way Mappings');
+    // Three-Way Mappings sheet removed - simplified architecture
 
     // Rate Validation Rules Sheet
     const rateValidationRulesData = [
-      ['ID', 'A6 Level ID', 'Contract Vehicle ID', 'Project ID', 'Min Rate', 'Max Rate', 'Typical Rate', 'Max Escalation Rate (%)', 'Min Escalation Rate (%)', 'Is Active', 'Created At', 'Updated At', 'Created By'],
+      ['ID', 'Company Role ID', 'Contract Vehicle ID', 'Project ID', 'Min Rate', 'Max Rate', 'Typical Rate', 'Max Escalation Rate (%)', 'Min Escalation Rate (%)', 'Is Active', 'Created At', 'Updated At', 'Created By'],
       ['', '', '', '', '100', '300', '200', '5.0', '0.0', 'TRUE', '', '', ''],
     ];
     const rateValidationRulesSheet = XLSX.utils.aoa_to_sheet(rateValidationRulesData);
@@ -82,15 +70,13 @@ export class TemplateService {
     const instructionsData = [
       ['LCAT Mapping Template Instructions'],
       [''],
-      ['This template contains 7 sheets for managing LCAT mappings:'],
+      ['This template contains 5 sheets for managing LCAT mappings:'],
       [''],
       ['1. Contract Vehicles: Define available contract vehicles (VA SPRUCE, GSA MAS, etc.)'],
-      ['2. A6 Levels: Define A6 organizational levels with rate ranges'],
-      ['3. Project Roles: Define specific project roles and their A6 level mappings'],
-      ['4. SPRUCE LCATs: Define official labor category titles'],
-      ['5. Company Roles: Define internal company roles with practice areas and pay bands'],
-      ['6. Three-Way Mappings: Connect vehicles, projects, and roles'],
-      ['7. Rate Validation Rules: Define rate validation criteria'],
+      ['2. Project Roles: Define specific project roles and their company role mappings'],
+      ['3. SPRUCE LCATs: Define official labor category titles'],
+      [`4. ${companyConfigService.getLabels().companyRoles}: Define internal ${companyConfigService.getConfig().name.toLowerCase()} roles with practice areas and pay bands`],
+      ['5. Rate Validation Rules: Define rate validation criteria'],
       [''],
       ['IMPORTANT NOTES:'],
       ['- Leave ID fields empty for new records (they will be auto-generated)'],
@@ -126,15 +112,13 @@ export class TemplateService {
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: 'array' });
           
-          const template: ImportTemplate = {
-            contractVehicles: this.parseContractVehicles(workbook),
-            a6Levels: this.parseA6Levels(workbook),
-            projectRoles: this.parseProjectRoles(workbook),
-            spruceLCATs: this.parseSPRUCELCATs(workbook),
-            companyRoles: this.parseCompanyRoles(workbook),
-            threeWayMappings: this.parseThreeWayMappings(workbook),
-            rateValidationRules: this.parseRateValidationRules(workbook),
-          };
+    const template: ImportTemplate = {
+      contractVehicles: this.parseContractVehicles(workbook),
+      projectRoles: this.parseProjectRoles(workbook),
+      spruceLCATs: this.parseSPRUCELCATs(workbook),
+      companyRoles: this.parseCompanyRoles(workbook),
+      rateValidationRules: this.parseRateValidationRules(workbook),
+    };
           
           resolve(template);
         } catch (error) {
@@ -152,7 +136,7 @@ export class TemplateService {
     if (!sheet) return [];
     
     const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
-    const headers = data[0];
+    // headers removed - not used in simplified architecture
     const rows = data.slice(1);
     
     return rows
@@ -172,34 +156,7 @@ export class TemplateService {
       }));
   }
 
-  private static parseA6Levels(workbook: XLSX.WorkBook): A6Level[] {
-    const sheet = workbook.Sheets['A6 Levels'];
-    if (!sheet) return [];
-    
-    const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
-    const rows = data.slice(1);
-    
-    return rows
-      .filter(row => row[1]) // Filter out empty rows
-      .map(row => ({
-        id: row[0] || '',
-        name: row[1] || '',
-        category: row[2] as 'Engineering' | 'Product' | 'Experience' | 'Management',
-        level: parseInt(row[3]) || 1,
-        description: row[4] || '',
-        rateRange: {
-          min: parseFloat(row[5]) || 0,
-          max: parseFloat(row[6]) || 0,
-          typical: parseFloat(row[7]) || 0,
-        },
-        clearanceRequirements: (row[8] || '').split(',').map(s => s.trim()).filter(Boolean),
-        locationRequirements: (row[9] || '').split(',').map(s => s.trim()).filter(Boolean),
-        isActive: row[10] === 'TRUE' || row[10] === true,
-        createdAt: row[11] || new Date().toISOString(),
-        updatedAt: row[12] || new Date().toISOString(),
-        createdBy: row[13] || 'import',
-      }));
-  }
+  // parseA6Levels method removed - replaced with Company Roles
 
   private static parseProjectRoles(workbook: XLSX.WorkBook): ProjectRole[] {
     const sheet = workbook.Sheets['Project Roles'];
@@ -214,7 +171,7 @@ export class TemplateService {
         id: row[0] || '',
         name: row[1] || '',
         description: row[2] || '',
-        a6LevelId: row[3] || '',
+        companyRoleId: row[3] || '',
         typicalClearance: row[4] as 'None' | 'Public Trust' | 'Secret' | 'Top Secret',
         typicalLocation: row[5] as 'Remote' | 'On-site' | 'Hybrid',
         typicalHours: parseInt(row[6]) || 2080,
@@ -247,7 +204,8 @@ export class TemplateService {
   }
 
   private static parseCompanyRoles(workbook: XLSX.WorkBook): CompanyRole[] {
-    const sheet = workbook.Sheets['Company Roles'];
+    const sheetName = companyConfigService.getLabels().companyRoles;
+    const sheet = workbook.Sheets[sheetName];
     if (!sheet) return [];
     
     const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
@@ -269,36 +227,7 @@ export class TemplateService {
       }));
   }
 
-  private static parseThreeWayMappings(workbook: XLSX.WorkBook): ThreeWayMapping[] {
-    const sheet = workbook.Sheets['Three-Way Mappings'];
-    if (!sheet) return [];
-    
-    const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
-    const rows = data.slice(1);
-    
-    return rows
-      .filter(row => row[2]) // Filter out empty rows (must have project ID)
-      .map(row => ({
-        id: row[0] || '',
-        contractVehicleId: row[1] || '',
-        projectId: row[2] || '',
-        spruceLCATId: row[3] || '',
-        projectRoleId: row[4] || '',
-        a6LevelId: row[5] || '',
-        spruceRate: parseFloat(row[6]) || 0,
-        a6MinimumRate: parseFloat(row[7]) || 0,
-        maxSubcontractorRate: parseFloat(row[8]) || undefined,
-        projectEscalationRate: row[9] ? parseFloat(row[9]) / 100 : undefined,
-        projectStartDate: row[10] || undefined,
-        projectEndDate: row[11] || undefined,
-        allowRateOverride: row[12] === 'TRUE' || row[12] === true,
-        requireApproval: row[13] === 'TRUE' || row[13] === true,
-        isActive: row[14] === 'TRUE' || row[14] === true,
-        createdAt: row[15] || new Date().toISOString(),
-        updatedAt: row[16] || new Date().toISOString(),
-        createdBy: row[17] || 'import',
-      }));
-  }
+  // parseThreeWayMappings method removed - simplified architecture
 
   private static parseRateValidationRules(workbook: XLSX.WorkBook): RateValidationRule[] {
     const sheet = workbook.Sheets['Rate Validation Rules'];
@@ -308,10 +237,10 @@ export class TemplateService {
     const rows = data.slice(1);
     
     return rows
-      .filter(row => row[1]) // Filter out empty rows (must have A6 Level ID)
+      .filter(row => row[1]) // Filter out empty rows (must have Company Role ID)
       .map(row => ({
         id: row[0] || '',
-        a6LevelId: row[1] || '',
+        companyRoleId: row[1] || '',
         contractVehicleId: row[2] || undefined,
         projectId: row[3] || undefined,
         minRate: parseFloat(row[4]) || 0,
@@ -338,10 +267,7 @@ export class TemplateService {
       XLSX.utils.book_append_sheet(workbook, contractVehiclesSheet, 'Contract Vehicles');
     }
 
-    if (template.a6Levels.length > 0) {
-      const a6LevelsSheet = XLSX.utils.json_to_sheet(template.a6Levels);
-      XLSX.utils.book_append_sheet(workbook, a6LevelsSheet, 'A6 Levels');
-    }
+    // A6 Levels sheet removed - replaced with Company Roles
 
     if (template.projectRoles.length > 0) {
       const projectRolesSheet = XLSX.utils.json_to_sheet(template.projectRoles);
@@ -355,13 +281,10 @@ export class TemplateService {
 
     if (template.companyRoles.length > 0) {
       const companyRolesSheet = XLSX.utils.json_to_sheet(template.companyRoles);
-      XLSX.utils.book_append_sheet(workbook, companyRolesSheet, 'Company Roles');
+      XLSX.utils.book_append_sheet(workbook, companyRolesSheet, companyConfigService.getLabels().companyRoles);
     }
 
-    if (template.threeWayMappings.length > 0) {
-      const threeWayMappingsSheet = XLSX.utils.json_to_sheet(template.threeWayMappings);
-      XLSX.utils.book_append_sheet(workbook, threeWayMappingsSheet, 'Three-Way Mappings');
-    }
+    // Three-Way Mappings sheet removed - simplified architecture
 
     if (template.rateValidationRules.length > 0) {
       const rateValidationRulesSheet = XLSX.utils.json_to_sheet(template.rateValidationRules);

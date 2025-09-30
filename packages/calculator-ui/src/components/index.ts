@@ -2,4 +2,4 @@
  * UI components exports
  */
 
-export { PricingCalculator } from './PricingCalculator';
+// No components to export at this time

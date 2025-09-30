@@ -50,13 +50,12 @@ import {
 } from '@mui/icons-material';
 import { MappingService } from '../services/mapping.service';
 import { TemplateService } from '../services/template.service';
+import { companyConfigService } from '../config/company.config';
 import {
   ContractVehicle,
-  A6Level,
   ProjectRole,
   SPRUCELCAT,
   CompanyRole,
-  ThreeWayMapping,
   RateValidationRule,
   ImportTemplate,
 } from '../types/mapping';
@@ -223,11 +222,11 @@ const CompanyRoleForm: React.FC<CompanyRoleFormProps> = ({ role, onSave, onCance
 const LCATManagement: React.FC = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [contractVehicles, setContractVehicles] = useState<ContractVehicle[]>([]);
-  const [a6Levels, setA6Levels] = useState<A6Level[]>([]);
+  // A6Levels removed - replaced with Company Roles
   const [projectRoles, setProjectRoles] = useState<ProjectRole[]>([]);
   const [spruceLCATs, setSpruceLCATs] = useState<SPRUCELCAT[]>([]);
   const [companyRoles, setCompanyRoles] = useState<CompanyRole[]>([]);
-  const [threeWayMappings, setThreeWayMappings] = useState<ThreeWayMapping[]>([]);
+  // Three-Way Mappings removed - simplified architecture
   const [rateValidationRules, setRateValidationRules] = useState<RateValidationRule[]>([]);
   
   const [loading, setLoading] = useState(false);
@@ -244,21 +243,17 @@ const LCATManagement: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [vehicles, levels, roles, lcats, companyRoles, mappings] = await Promise.all([
+      const [vehicles, roles, lcats, companyRoles] = await Promise.all([
         MappingService.getContractVehicles(),
-        MappingService.getA6Levels(),
         MappingService.getProjectRoles(),
         MappingService.getSPRUCELCATs(),
         MappingService.getCompanyRoles(),
-        MappingService.getThreeWayMappings(),
       ]);
       
       setContractVehicles(vehicles);
-      setA6Levels(levels);
       setProjectRoles(roles);
       setSpruceLCATs(lcats);
       setCompanyRoles(companyRoles);
-      setThreeWayMappings(mappings);
     } catch (error) {
       console.error('Error loading data:', error);
       setSnackbarMessage('Error loading data');
@@ -396,11 +391,9 @@ const LCATManagement: React.FC = () => {
               scrollButtons="auto"
             >
               <Tab label="Contract Vehicles" />
-              <Tab label="A6 Levels" />
               <Tab label="Project Roles" />
               <Tab label="SPRUCE LCATs" />
               <Tab label="Company Roles" />
-              <Tab label="Three-Way Mappings" />
               <Tab label="Rate Validation Rules" />
             </Tabs>
           </Toolbar>
@@ -474,83 +467,10 @@ const LCATManagement: React.FC = () => {
           </TableContainer>
         </TabPanel>
 
-        {/* A6 Levels Tab */}
-        <TabPanel value={currentTab} index={1}>
-          <Typography variant="h6" gutterBottom>
-            A6 Levels
-          </Typography>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Category</TableCell>
-                  <TableCell>Level</TableCell>
-                  <TableCell>Rate Range</TableCell>
-                  <TableCell>Requirements</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {a6Levels.map((level) => (
-                  <TableRow key={level.id}>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight="bold">
-                        {level.name}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip label={level.category} size="small" />
-                    </TableCell>
-                    <TableCell>{level.level}</TableCell>
-                    <TableCell>
-                      <Box>
-                        <Typography variant="body2">
-                          ${level.rateRange.min} - ${level.rateRange.max}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Typical: ${level.rateRange.typical}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box>
-                        <Typography variant="caption">
-                          Clearance: {level.clearanceRequirements.join(', ')}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Location: {level.locationRequirements.join(', ')}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        {getStatusIcon(level.isActive)}
-                        <Chip 
-                          label={level.isActive ? 'Active' : 'Inactive'} 
-                          color={getStatusColor(level.isActive) as any}
-                          size="small"
-                        />
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <IconButton size="small">
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton size="small" color="error">
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </TabPanel>
+        {/* A6 Levels Tab removed - replaced with Company Roles */}
 
         {/* Project Roles Tab */}
-        <TabPanel value={currentTab} index={2}>
+        <TabPanel value={currentTab} index={1}>
           <Typography variant="h6" gutterBottom>
             Project Roles
           </Typography>
@@ -569,7 +489,7 @@ const LCATManagement: React.FC = () => {
               </TableHead>
               <TableBody>
                 {projectRoles.map((role) => {
-                  const a6Level = a6Levels.find(level => level.id === role.a6LevelId);
+                  const companyRole = companyRoles.find(companyRole => companyRole.id === role.companyRoleId);
                   return (
                     <TableRow key={role.id}>
                       <TableCell>
@@ -583,8 +503,8 @@ const LCATManagement: React.FC = () => {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        {a6Level ? (
-                          <Chip label={a6Level.name} size="small" />
+                        {companyRole ? (
+                          <Chip label={companyRole.name} size="small" />
                         ) : (
                           'Unknown'
                         )}
@@ -623,7 +543,7 @@ const LCATManagement: React.FC = () => {
         </TabPanel>
 
         {/* SPRUCE LCATs Tab */}
-        <TabPanel value={currentTab} index={3}>
+        <TabPanel value={currentTab} index={2}>
           <Typography variant="h6" gutterBottom>
             SPRUCE LCATs
           </Typography>
@@ -676,12 +596,12 @@ const LCATManagement: React.FC = () => {
         </TabPanel>
 
         {/* Company Roles Tab */}
-        <TabPanel value={currentTab} index={4}>
+        <TabPanel value={currentTab} index={3}>
           <Typography variant="h6" gutterBottom>
-            Company Roles
+            {companyConfigService.getLabels().companyRoles}
           </Typography>
           <Alert severity="info" sx={{ mb: 2 }}>
-            Manage internal company roles with practice areas and pay bands.
+            Manage internal {companyConfigService.getConfig().name.toLowerCase()} roles with practice areas and pay bands.
           </Alert>
           <Box sx={{ mb: 2 }}>
             <Button
@@ -689,7 +609,7 @@ const LCATManagement: React.FC = () => {
               startIcon={<AddIcon />}
               onClick={() => setShowCompanyRoleDialog(true)}
             >
-              Add Company Role
+              Add {companyConfigService.getLabels().companyRole}
             </Button>
           </Box>
           <TableContainer>
@@ -741,91 +661,15 @@ const LCATManagement: React.FC = () => {
           </TableContainer>
         </TabPanel>
 
-        {/* Three-Way Mappings Tab */}
-        <TabPanel value={currentTab} index={5}>
-          <Typography variant="h6" gutterBottom>
-            Three-Way Mappings
-          </Typography>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            These mappings connect Contract Vehicles to specific Projects and A6 Roles.
-          </Alert>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Contract Vehicle</TableCell>
-                  <TableCell>Project</TableCell>
-                  <TableCell>SPRUCE LCAT</TableCell>
-                  <TableCell>Project Role</TableCell>
-                  <TableCell>A6 Level</TableCell>
-                  <TableCell>Rates</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {threeWayMappings.map((mapping) => {
-                  const vehicle = contractVehicles.find(v => v.id === mapping.contractVehicleId);
-                  const lcat = spruceLCATs.find(l => l.id === mapping.spruceLCATId);
-                  const role = projectRoles.find(r => r.id === mapping.projectRoleId);
-                  const a6Level = a6Levels.find(l => l.id === mapping.a6LevelId);
-                  
-                  return (
-                    <TableRow key={mapping.id}>
-                      <TableCell>
-                        <Chip label={vehicle?.name || 'Unknown'} size="small" />
-                      </TableCell>
-                      <TableCell>{mapping.projectId}</TableCell>
-                      <TableCell>
-                        <Chip label={lcat?.name || 'Unknown'} size="small" />
-                      </TableCell>
-                      <TableCell>{role?.name || 'Unknown'}</TableCell>
-                      <TableCell>
-                        <Chip label={a6Level?.name || 'Unknown'} size="small" />
-                      </TableCell>
-                      <TableCell>
-                        <Box>
-                          <Typography variant="body2">
-                            SPRUCE: ${mapping.spruceRate}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            A6 Min: ${mapping.a6MinimumRate}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          {getStatusIcon(mapping.isActive)}
-                          <Chip 
-                            label={mapping.isActive ? 'Active' : 'Inactive'} 
-                            color={getStatusColor(mapping.isActive) as any}
-                            size="small"
-                          />
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <IconButton size="small">
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton size="small" color="error">
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </TabPanel>
+        {/* Three-Way Mappings Tab removed - simplified architecture */}
 
         {/* Rate Validation Rules Tab */}
-        <TabPanel value={currentTab} index={6}>
+        <TabPanel value={currentTab} index={4}>
           <Typography variant="h6" gutterBottom>
             Rate Validation Rules
           </Typography>
           <Alert severity="warning" sx={{ mb: 2 }}>
-            These rules define rate ranges and validation criteria for different A6 levels and contract vehicles.
+            These rules define rate ranges and validation criteria for different Company Roles and contract vehicles.
           </Alert>
           <Typography variant="body2" color="text.secondary">
             Rate validation rules will be displayed here once implemented.
