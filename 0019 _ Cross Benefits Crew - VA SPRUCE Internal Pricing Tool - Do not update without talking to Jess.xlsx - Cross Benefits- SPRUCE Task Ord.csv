@@ -1,0 +1,420 @@
+Project,0019 | Cross Benefits Crew (VA-25-00035320),,,KEY,,,,,,,,,,,,,,,,,,,,,,
+PoP:,"Base Period: April 9, 2025 through April 7, 2026 
+Option Period 1: April 8, 2026 through April 6, 2027
+Option Period 2: April 7, 2027 through April 4, 2028
+
+Optional Task 1 (Base): 15 sprints starting 8/13/25 vs 9/1/25 (leaves a 2 sprint gap at the end of Optional Task 1- Base)
+Optional Task 1 (Option Period 1): 12 months 
+Optional Task 1 (Option Period 2): 12 months 
+
+Optional Task 2 (Base): 12 months 
+Optional Task 2 (Option Period 1): 12 months 
+Optional Task 2 (Option Period 2): 12 months 
+
+Optional Task 3: up to 60 days
+",,,Pricing Input- Jess,,,,,,,,,,,,,,,,,,,,,,
+Contract Budget:,"The Anticipated LoE for this Task Order is 16 FTEs for the base period, with an additional 7 FTEs anticipated to be picked up via Optional task 1 to follow-on the BMT II team and a second Optional Task two for an additional 9 FTEs.",,,Staffing Input- Josh/ Matt,Josh's Staffing Mural,,,,,,,,,,,,,,,,,,,,,
+,,,,Formula- Do Not Touch,,,,,,,,,,,,,,,,,,,,,,
+Updated 9/19/25,,,,,,Update formulas based on PoP,,,,,,7% profit,,,,,,Update formulas based on PoP,,6.5-7%,,,,,,
+PoP,Role Count,SPRUCE LCAT,Project Role,A6 Level,Named Individual,SPRUCE Rate,A6 Minimum Rate,Final Proposal Rate,Final Rate Discount,Prime of Sub Role ,Subcontractor Company,Maximum Subcontractor Rate,Final Subcontractor Rate,Capacity,Annual Hours,,Minimum Annual Revenue,Annual Salary Estimates,87.5%,Minimum Profit (%),Minimum Profit ($),,Total Contract Price,Actual Cost ($),Actual Profit (%),Actual Profit ($)
+,,,,,,,,,,,,,,,,,,,Wrap,,,,,,,
+Base,1,Delivery Manager,Delivery Manager, Delivery III,Pam Macalintal,$260.66,$162.70,$162.70,37.58%,Agile Six,,$151.31,N/A,1.0,1920,,"$312,379.89","$154,935.93","$135,568.94",7.00%,"$21,875.02",,"$312,380.05","$290,504.87",7.00%,"$21,875.18"
+Base,2,Accessibility Specialist,Senior Accessibility Engineer (KP),Engineering III,Tracy Tran,$275.07,$159.99,$160.49,41.65%,Agile Six,,$149.26,N/A,1.0,1920,,"$307,174.13","$152,353.95","$133,309.71",7.00%,"$21,510.47",,"$308,144.27","$285,663.66",7.30%,"$22,480.61"
+Base,3,Content Strategist,Senior UX Writer/ Content Designer (KP),Experience III,Cindy Lackey,$302.59,$151.26,$151.26,50.01%,Subcontractor,Coa,$140.67,$140.67,1.0,1920,,"$290,422.02","$144,045.15","$126,039.50",7.00%,"$20,337.37",,"$290,422.02","$270,086.40",7.00%,"$20,335.62"
+Base,4,Product Manager,Lead Product Manager (KP),Enterprise 6,Mike Collier,$324.16,$256.59,$162.69,49.81%,Agile Six,,$151.30,N/A,0.4583333333,1920,,"$492,659.04","$244,351.80","$213,807.83",7.00%,"$34,499.42",,"$143,169.99","$209,989.83",-46.67%,"-$66,819.84"
+Base,4.1,Product Manager,Lead Product Manager (KP),Product 3,Mark Carter,$324.16,$162.70,$162.69,49.81%,Agile Six,,$151.30,N/A,0.5833333333,1920,,"$312,379.89","$154,935.93","$135,568.94",7.00%,"$21,875.02",,"$182,216.35","$169,461.17",7.00%,"$12,755.18"
+Base,5,UX Designer,Lead Designer/ Researcher (KP),Experience III,Dillion Hawes,$302.59,$151.26,$151.26,50.01%,Subcontractor,Coa,$140.67,$140.67,1.0,1920,,"$290,422.02","$144,045.15","$126,039.50",7.00%,"$20,337.37",,"$290,422.02","$270,086.40",7.00%,"$20,335.62"
+Base,6,Software Engineer,Engineering Lead (KP),Engineering V,Aurora Hampton,$256.31,$201.63,$160.49,37.38%,Agile Six,,$149.26,N/A,1.0,1920,,"$387,124.39","$192,008.13","$168,007.11",7.00%,"$27,109.15",,"$308,144.27","$360,015.24",-16.83%,"-$51,870.97"
+Base,7,Software Engineer,Web & Mobile Engineer,Engineering III,Will Phelps,$256.31,$160.49,$160.49,37.38%,Subcontractor,Coa,$149.26,$149.26,1.0,1920,,"$308,144.27","$152,835.13","$133,730.73",7.00%,"$21,578.41",,"$308,144.27","$286,579.20",7.00%,"$21,565.07"
+Base,8,Software Engineer,Full Stack Engineer,Engineering II,Nathan Thomas,$256.31,$132.40,$132.40,48.34%,Subcontractor,Coa,$123.13,$129.13,1.0,1920,,"$254,202.94","$126,081.00","$110,320.88",7.00%,"$17,801.06",,"$254,202.94","$247,929.60",2.47%,"$6,273.34"
+Base,9,UX Designer,UX Generalist,Experience II,Kat Brinkley,$302.59,$135.82,$132.51,56.21%,Agile Six,,$123.23,N/A,0.7083,1920,,"$260,772.28","$129,339.30","$113,171.89",7.00%,"$18,261.09",,"$180,200.46","$171,770.67",4.68%,"$8,429.78"
+Base,10,Product Manager,Lead Product Manager (KP),Product III,Christian Crumlish,$324.16,$162.69,$162.69,49.81%,Subcontractor,Kind,$151.30,$151.30,1.0,1920,,"$312,370.89","$154,931.47","$135,565.03",7.00%,"$21,874.39",,"$312,370.89","$290,496.00",7.00%,"$21,874.89"
+Base,11,UX Designer,UX Generalist,Experience II,Lauren Dawson,$302.59,$135.82,$151.26,50.01%,Agile Six,,$140.67,N/A,1.0,1920,,"$260,772.95","$129,339.63","$113,172.18",7.00%,"$18,261.14",,"$290,422.02","$242,511.81",16.50%,"$47,910.22"
+Base,12,Software Engineer,Engineering Lead (KP),Engineering III,Grace Xu,$256.31,$160.49,$160.49,37.38%,Subcontractor,Kind,$149.26,$149.26,1.0,1920,,"$308,144.27","$152,835.13","$133,730.73",7.00%,"$21,578.41",,"$308,144.27","$286,579.20",7.00%,"$21,565.07"
+Base,13,Software Engineer,Web & Mobile Engineer,Engineering III,Randi Mays,$256.31,$160.49,$160.49,37.38%,Subcontractor,Kind,$149.26,$149.26,1.0,1920,,"$308,144.27","$152,835.13","$133,730.73",7.00%,"$21,578.41",,"$308,144.27","$286,579.20",7.00%,"$21,565.07"
+Base,14,Software Engineer,Full Stack Engineer,Engineering II,Jerry Sea ,$256.31,$132.40,$132.40,48.34%,Subcontractor,Kind,$123.13,$123.13,1.0,1920,,"$254,202.94","$126,081.00","$110,320.88",7.00%,"$17,801.06",,"$254,202.94","$236,409.60",7.00%,"$17,793.34"
+Base,15,UX Designer,Lead Designer/ Researcher (KP),Experience III,Kyra Berman-Gestring,$302.59,$151.26,$132.51,56.21%,Agile Six,,$123.23,$123.23,1.0,1920,,"$290,422.33","$144,045.30","$126,039.64",7.00%,"$20,337.40",,"$254,412.62","$270,084.94",-6.16%,"-$15,672.32"
+Base,16,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,17,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,18,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,19,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,20,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,21,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,22,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,23,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,24,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,25,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,26,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,27,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,28,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,29,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,30,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+Base,Add +,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,1,Delivery Manager,Delivery Manager, Delivery III,Pam Macalintal,$265.87,$168.39,$167.58,36.97%,Agile Six,,$155.85,N/A,1.0,1920,,"$323,313.18","$160,358.69","$140,313.85",7.00%,"$22,640.64",,"$321,751.45","$300,672.54",6.55%,"$21,078.91"
+OP1,2,Accessibility Specialist,Senior Accessibility Engineer (KP),Engineering III,Tracy Tran,$280.57,$165.59,$165.31,41.08%,Agile Six,,$153.74,N/A,1.0,1920,,"$317,925.22","$157,686.34","$137,975.55",7.00%,"$22,263.34",,"$317,388.60","$295,661.88",6.85%,"$21,726.71"
+OP1,3,Content Strategist,Senior UX Writer/ Content Designer (KP),Experience III,Cindy Lackey,$308.65,$156.56,$155.80,49.52%,Subcontractor,Coa,$144.89,$143.48,1.0,1920,,"$300,586.79","$149,086.73","$130,450.89",7.00%,"$21,049.18",,"$299,134.68","$275,481.60",7.91%,"$23,653.08"
+OP1,4,Product Manager,Lead Product Manager (KP),Product 3,Mark Carter,$330.64,$168.39,$167.57,49.32%,Agile Six,,$155.84,N/A,1.0,1920,,"$323,313.18","$160,358.69","$140,313.85",7.00%,"$22,640.64",,"$321,742.01","$300,672.54",6.55%,"$21,069.47"
+OP1,5,UX Designer,Lead Designer/ Researcher (KP),Experience III,Dillion Hawes,$308.65,$156.56,$155.80,49.52%,Subcontractor,Coa,$144.89,$143.48,1.0,1920,,"$300,586.79","$149,086.73","$130,450.89",7.00%,"$21,049.18",,"$299,134.68","$275,481.60",7.91%,"$23,653.08"
+OP1,6,Software Engineer,Engineering Lead (KP),Engineering V,Aurora Hampton,$261.43,$208.68,$165.31,36.77%,Agile Six,,$153.74,N/A,1.0,1920,,"$400,673.75","$198,728.41","$173,887.36",7.00%,"$28,057.97",,"$317,388.60","$372,615.78",-17.40%,"-$55,227.18"
+OP1,7,Software Engineer,Web & Mobile Engineer,Engineering III,Will Phelps,$261.43,$166.11,$165.31,36.77%,Subcontractor,Coa,$153.74,$152.25,1.0,1920,,"$318,929.32","$158,184.35","$138,411.31",7.00%,"$22,333.65",,"$317,388.60","$292,320.00",7.90%,"$25,068.60"
+OP1,8,Software Engineer,Full Stack Engineer,Engineering II,Nathan Thomas,$261.43,$137.03,$136.37,47.84%,Subcontractor,Coa,$126.82,$131.71,1.0,1920,,"$263,100.04","$130,493.84","$114,182.11",7.00%,"$18,424.10",,"$261,829.02","$252,883.20",3.42%,"$8,945.82"
+OP1,9,UX Designer,UX Generalist,Experience II,Kat Brinkley,$308.65,$140.57,$136.48,55.78%,Agile Six,,$126.93,N/A,1.0,1920,,"$269,899.31","$133,866.18","$117,132.90",7.00%,"$18,900.23",,"$262,045.00","$250,999.08",4.22%,"$11,045.92"
+OP1,10,Product Manager,Lead Product Manager (KP),Product III,Christian Crumlish,$330.64,$168.39,$167.57,49.32%,Subcontractor,Kind,$155.84,$154.33,1.0,1920,,"$323,303.87","$160,354.07","$140,309.81",7.00%,"$22,639.99",,"$321,742.01","$296,313.60",7.90%,"$25,428.41"
+OP1,11,UX Designer,UX Generalist,Experience III,Lauren Dawson,$308.65,$140.57,$155.80,49.52%,Agile Six,,$144.89,N/A,1.0,1920,,"$269,900.00","$133,866.52","$117,133.20",7.00%,"$18,900.28",,"$299,134.68","$250,999.72",16.09%,"$48,134.96"
+OP1,12,Software Engineer,Engineering Lead (KP),Engineering III,Grace Xu,$261.43,$166.11,$165.31,36.77%,Subcontractor,Kind,$153.74,$152.25,1.0,1920,,"$318,929.32","$158,184.35","$138,411.31",7.00%,"$22,333.65",,"$317,388.60","$292,320.00",7.90%,"$25,068.60"
+OP1,13,Software Engineer,Web & Mobile Engineer,Engineering III,Randi Mays,$261.43,$166.11,$165.31,36.77%,Subcontractor,Kind,$153.74,$152.25,1.0,1920,,"$318,929.32","$158,184.35","$138,411.31",7.00%,"$22,333.65",,"$317,388.60","$292,320.00",7.90%,"$25,068.60"
+OP1,14,Software Engineer,Full Stack Engineer,Engineering II,Jerry Sea ,$261.43,$137.03,$136.37,47.84%,Subcontractor,Kind,$126.82,$125.59,1.0,1920,,"$263,100.04","$130,493.84","$114,182.11",7.00%,"$18,424.10",,"$261,829.02","$241,132.80",7.90%,"$20,696.22"
+OP1,15,UX Designer,Lead Designer/ Researcher (KP),Experience II,Kyra Berman-Gestring,$308.65,$156.56,$136.48,55.78%,Agile Six,,$126.93,$125.70,1.0,1920,,"$300,587.11","$149,086.89","$130,451.02",7.00%,"$21,049.20",,"$262,045.00","$279,537.91",-6.68%,"-$17,492.91"
+OP1,16,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,17,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,18,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,19,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,20,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,21,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,22,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,23,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,24,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,25,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,26,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,27,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,28,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,29,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,30,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP1,Add +,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,1,Delivery Manager,Delivery Manager, Delivery III,Pam Macalintal,$271.19,$174.29,$172.61,36.35%,Agile Six,,$160.52,N/A,1.0,1920,,"$334,629.14","$165,971.24","$145,224.84",7.00%,"$23,433.06",,"$331,404.00","$311,196.08",6.10%,"$20,207.92"
+OP2,2,Accessibility Specialist,Senior Accessibility Engineer (KP),Engineering III,Tracy Tran,$286.18,$171.38,$170.27,40.50%,Agile Six,,$158.35,N/A,1.0,1920,,"$329,052.61","$163,205.36","$142,804.69",7.00%,"$23,042.56",,"$326,910.26","$306,010.05",6.39%,"$20,900.21"
+OP2,3,Content Strategist,Senior UX Writer/ Content Designer (KP),Experience III,Cindy Lackey,$314.82,$162.04,$160.47,49.03%,Subcontractor,Coa,$149.24,$146.35,1.0,1920,,"$311,107.33","$154,304.76","$135,016.67",7.00%,"$21,785.90",,"$308,108.72","$280,992.00",8.80%,"$27,116.72"
+OP2,4,Product Manager,Lead Product Manager (KP),Product 3,Mark Carter,$337.25,$174.29,$172.60,48.82%,Agile Six,,$160.52,N/A,1.0,1920,,"$334,629.14","$165,971.24","$145,224.84",7.00%,"$23,433.06",,"$331,394.27","$311,196.08",6.09%,"$20,198.19"
+OP2,5,UX Designer,Lead Designer/ Researcher (KP),Experience III,Dillion Hawes,$314.82,$162.04,$160.47,49.03%,Subcontractor,Coa,$149.24,$146.35,1.0,1920,,"$311,107.33","$154,304.76","$135,016.67",7.00%,"$21,785.90",,"$308,108.72","$280,992.00",8.80%,"$27,116.72"
+OP2,6,Software Engineer,Engineering Lead (KP),Engineering V,Aurora Hampton,$266.66,$215.99,$170.27,36.15%,Agile Six,,$158.35,N/A,1.0,1920,,"$414,697.33","$205,683.91","$179,973.42",7.00%,"$29,040.00",,"$326,910.26","$385,657.33",-17.97%,"-$58,747.07"
+OP2,7,Software Engineer,Web & Mobile Engineer,Engineering III,Will Phelps,$266.66,$171.92,$170.27,36.15%,Subcontractor,Coa,$158.35,$155.30,1.0,1920,,"$330,091.85","$163,720.81","$143,255.71",7.00%,"$23,115.33",,"$326,910.26","$298,176.00",8.79%,"$28,734.26"
+OP2,8,Software Engineer,Full Stack Engineer,Engineering II,Nathan Thomas,$266.66,$141.83,$140.46,47.33%,Subcontractor,Coa,$130.63,$134.34,1.0,1920,,"$272,308.54","$135,061.12","$118,178.48",7.00%,"$19,068.94",,"$269,683.90","$257,932.80",4.36%,"$11,751.10"
+OP2,9,UX Designer,UX Generalist,Experience II,Kat Brinkley,$314.82,$145.49,$140.58,55.35%,Agile Six,,$130.74,N/A,1.0,1920,,"$279,345.79","$138,551.49","$121,232.56",7.00%,"$19,561.74",,"$269,906.35","$259,784.05",3.75%,"$10,122.30"
+OP2,10,Product Manager,Lead Product Manager (KP),Product III,Christian Crumlish,$337.25,$174.28,$172.60,48.82%,Subcontractor,Kind,$160.52,$157.41,1.0,1920,,"$334,619.50","$165,966.46","$145,220.65",7.00%,"$23,432.39",,"$331,394.27","$302,227.20",8.80%,"$29,167.07"
+OP2,11,UX Designer,UX Generalist,Experience III,Lauren Dawson,$314.82,$145.49,$160.47,49.03%,Agile Six,,$149.24,N/A,1.0,1920,,"$279,346.50","$138,551.85","$121,232.86",7.00%,"$19,561.79",,"$308,108.72","$259,784.71",15.68%,"$48,324.02"
+OP2,12,Software Engineer,Engineering Lead (KP),Engineering III,Grace Xu,$266.66,$171.92,$170.27,36.15%,Subcontractor,Kind,$158.35,$155.30,1.0,1920,,"$330,091.85","$163,720.81","$143,255.71",7.00%,"$23,115.33",,"$326,910.26","$298,176.00",8.79%,"$28,734.26"
+OP2,13,Software Engineer,Web & Mobile Engineer,Engineering III,Randi Mays,$266.66,$171.92,$170.27,36.15%,Subcontractor,Kind,$158.35,$155.30,1.0,1920,,"$330,091.85","$163,720.81","$143,255.71",7.00%,"$23,115.33",,"$326,910.26","$298,176.00",8.79%,"$28,734.26"
+OP2,14,Software Engineer,Full Stack Engineer,Engineering II,Jerry Sea ,$266.66,$141.83,$140.46,47.33%,Subcontractor,Kind,$130.63,$128.10,1.0,1920,,"$272,308.54","$135,061.12","$118,178.48",7.00%,"$19,068.94",,"$269,683.90","$245,952.00",8.80%,"$23,731.90"
+OP2,15,UX Designer,Lead Designer/ Researcher (KP),Experience II,Kyra Berman-Gestring,$314.82,$162.04,$140.58,55.35%,Agile Six,,$130.74,$128.21,1.0,1920,,"$311,107.66","$154,304.93","$135,016.81",7.00%,"$21,785.93",,"$269,906.35","$289,321.74",-7.19%,"-$19,415.39"
+OP2,16,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,17,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,18,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,19,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,20,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,21,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,22,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,23,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,24,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,25,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,26,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,27,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,28,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,29,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,30,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP2,Add +,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,1,Product Manager,Lead Product Manager (KP),Product 3,Kirk Crawford,$324.16,$162.69,$146.07,54.94%,Agile Six,,$135.84,$135.84,0.5769,1920,,"$312,369.95","$154,931.00","$135,564.63",7.00%,"$21,874.32",,"$161,793.72","$167,586.93",-3.58%,"-$5,793.20"
+OP Task 1 - Base,2,UX Designer,Lead Designer / Researcher (KP),Experience III,Brian Wilke,$302.59,$151.26,$151.26,50.01%,Subcontractor,Copilot,$140.67,$140.00,0.5769,1920,,"$290,422.02","$144,045.15","$126,039.50",7.00%,"$20,337.37",,"$167,544.47","$155,070.72",7.45%,"$12,473.75"
+OP Task 1 - Base,3,Software Engineer,Engineering Lead (KP),Engineering III,Derek Fitchett,$256.31,$163.93,$160.49,37.38%,Agile Six,,$149.26,$149.26,0.5769,1920,,"$314,753.81","$156,113.36","$136,599.19",7.00%,"$22,041.26",,"$177,768.43","$168,865.87",5.01%,"$8,902.56"
+OP Task 1 - Base,4,UX Designer,UX Generalist,Experience 2,Tashi Islam,$302.59,$135.82,$132.51,56.21%,Agile Six,,$123.23,$123.23,0.5769,1920,,"$260,772.95","$129,339.63","$113,172.18",7.00%,"$18,261.14",,"$146,770.64","$139,905.06",4.68%,"$6,865.58"
+OP Task 1 - Base,5,Software Engineer,Full Stack Engineer,Engineering 2,Josh Drumm,$256.31,$135.71,$132.40,48.34%,Agile Six,,$123.13,$123.13,0.5769,1920,,"$260,558.02","$129,233.03","$113,078.90",7.00%,"$18,246.09",,"$146,649.67","$139,789.75",4.68%,"$6,859.92"
+OP Task 1 - Base,6,Software Engineer,Web & Mobile Engineer,Engineering II,Asiisii Malla,$256.31,$135.71,$132.40,48.34%,Agile Six,,$123.13,N/A,0.5769,1920,,"$260,558.32","$129,233.18","$113,079.03",7.00%,"$18,246.11",,"$146,649.67","$139,789.92",4.68%,"$6,859.76"
+OP Task 1 - Base,7,Software Engineer,QA Engineer,Engineering II,"Not filling, redid staffing mix",$256.31,#DIV/0!,$132.40,48.34%,,,$123.13,input needed,,,,,,,,,,,,,
+OP Task 1 - Base,8,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,9,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,10,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,11,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,12,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,13,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,14,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,15,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,16,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,17,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,18,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,19,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,20,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,21,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,22,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,23,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,24,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,25,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,26,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,27,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,28,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,29,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,30,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - Base,Add +,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,1,Product Manager,Lead Product Manager (KP),Product 3,Kirk Crawford,$330.64,$168.39,$150.45,54.50%,Agile Six,,$139.92,$139.92,1.0,1920,,"$323,302.89","$160,353.59","$140,309.39",7.00%,"$22,639.92",,"$288,867.28","$300,662.97",-4.08%,"-$11,795.69"
+OP Task 1 - OP1,2,UX Designer,Lead Designer / Researcher (KP),Experience III,Brian Wilke,$308.65,$156.56,$155.80,49.52%,Subcontractor,Copilot,$144.89,$142.80,1.0,1920,,"$300,586.79","$149,086.73","$130,450.89",7.00%,"$21,049.18",,"$299,134.68","$274,176.00",8.34%,"$24,958.68"
+OP Task 1 - OP1,3,Software Engineer,Engineering Lead (KP),Engineering III,Derek Fitchett,$261.43,$169.67,$155.80,40.40%,Agile Six,,$144.89,$144.89,1.0,1920,,"$325,770.19","$161,577.33","$141,380.16",7.00%,"$22,812.70",,"$299,134.68","$302,957.49",-1.28%,"-$3,822.81"
+OP Task 1 - OP1,4,UX Designer,UX Generalist,Experience 2,Tashi Islam,$308.65,$140.57,$136.48,55.78%,Agile Six,,$126.93,$126.93,1.0,1920,,"$269,900.00","$133,866.52","$117,133.20",7.00%,"$18,900.28",,"$262,045.00","$250,999.72",4.22%,"$11,045.28"
+OP Task 1 - OP1,5,Software Engineer,Full Stack Engineer,Engineering 2,Josh Drumm,$261.43,$140.46,$136.37,47.84%,Agile Six,,$126.82,$126.82,1.0,1920,,"$269,677.55","$133,756.19","$117,036.66",7.00%,"$18,884.70",,"$261,829.02","$250,792.85",4.22%,"$11,036.18"
+OP Task 1 - OP1,6,Software Engineer,Web & Mobile Engineer,Engineering II,Asiisii Malla,$261.43,$140.46,$136.37,47.84%,Agile Six,,$126.82,N/A,1.0,1920,,"$269,677.86","$133,756.34","$117,036.80",7.00%,"$18,884.72",,"$261,829.02","$250,793.14",4.21%,"$11,035.88"
+OP Task 1 - OP1,7,Software Engineer,QA Engineer,Engineering II,"Not filling, redid staffing mix",$261.43,#DIV/0!,$136.37,47.84%,,,$126.82,input needed,,,,"$261,829.02","$129,863.43","$113,630.50",7.00%,"$18,335.09",,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,8,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,9,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,10,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,11,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,12,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,13,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,14,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,15,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,16,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,17,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,18,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,19,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,20,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,21,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,22,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,23,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,24,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,25,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,26,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,27,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,28,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,29,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,30,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP1,Add +,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,1,Product Manager,Lead Product Manager (KP),Product 3,Kirk Crawford,$337.25,$174.28,$154.97,54.05%,Agile Six,,$144.12,$144.12,1.0,1920,,"$334,618.49","$165,965.96","$145,220.22",7.00%,"$23,432.32",,"$297,533.30","$311,186.18",-4.59%,"-$13,652.87"
+OP Task 1 - OP2,2,UX Designer,Lead Designer / Researcher (KP),Experience III,Brian Wilke,$314.82,$162.04,$160.47,49.03%,Subcontractor,Copilot,$149.24,$145.66,1.0,1920,,"$311,107.33","$154,304.76","$135,016.67",7.00%,"$21,785.90",,"$308,108.72","$279,659.52",9.23%,"$28,449.20"
+OP Task 1 - OP2,3,Software Engineer,Engineering Lead (KP),Engineering III,Derek Fitchett,$266.66,$175.61,$160.47,39.82%,Agile Six,,$149.24,$149.24,1.0,1920,,"$337,172.14","$167,232.53","$146,328.47",7.00%,"$23,611.14",,"$308,108.72","$313,561.00",-1.77%,"-$5,452.28"
+OP Task 1 - OP2,4,UX Designer,UX Generalist,Experience 2,Tashi Islam,$314.82,$145.49,$140.58,55.35%,Agile Six,,$130.74,$130.74,1.0,1920,,"$279,346.50","$138,551.85","$121,232.86",7.00%,"$19,561.79",,"$269,906.35","$259,784.71",3.75%,"$10,121.64"
+OP Task 1 - OP2,5,Software Engineer,Full Stack Engineer,Engineering 2,Josh Drumm,$266.66,$145.37,$140.46,47.33%,Agile Six,,$130.63,$130.63,1.0,1920,,"$279,116.26","$138,437.65","$121,132.95",7.00%,"$19,545.67",,"$269,683.90","$259,570.60",3.75%,"$10,113.30"
+OP Task 1 - OP2,6,Software Engineer,Web & Mobile Engineer,Engineering II,Asiisii Malla,$266.66,$145.37,$140.46,47.33%,Agile Six,,$130.63,N/A,1.0,1920,,"$279,116.59","$138,437.81","$121,133.09",7.00%,"$19,545.69",,"$269,683.90","$259,570.90",3.75%,"$10,113.00"
+OP Task 1 - OP2,7,Software Engineer,QA Engineer,Engineering II,"Not filling, redid staffing mix",$266.66,#DIV/0!,$140.46,47.33%,,,$130.63,input needed,,,,"$269,683.90","$133,759.33","$117,039.42",7.00%,"$18,885.15",,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,8,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,9,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,10,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,11,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,12,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,13,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,14,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,15,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,16,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,17,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,18,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,19,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,20,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,21,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,22,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,23,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,24,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,25,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,26,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,27,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,28,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,29,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,30,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 1 - OP2,Add +,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,1,Product Manager,Lead Product Manager (KP),Product III,Adrian Brewster,$324.16,$151.30,$135.84,58.09%,Agile Six,,$126.33,N/A,0.5769,1920,,"$290,503.13","$154,935.00","$135,568.13",0.00%,$0.00,,"$150,463.80","$167,591.25",-11.38%,"-$17,127.45"
+OP Task 2 - Base,2,UX Designer,Lead Designer/ Researcher (KP),Experience III,Melissa Lefevre,$302.59,$137.24,$140.67,53.51%,Agile Six,,$130.82,N/A,0.5769,1920,,"$263,497.50","$140,532.00","$122,965.50",0.00%,$0.00,,"$155,811.83","$152,011.71",2.44%,"$3,800.13"
+OP Task 2 - Base,3,Software Engineer,Engineering Lead (KP),Engineering III,Seth Darr,$256.31,$148.74,$149.25,41.77%,Agile Six,,$138.81,N/A,0.5769,1920,,"$285,571.88","$152,305.00","$133,266.88",0.00%,$0.00,,"$165,319.84","$164,746.41",0.35%,$573.43
+OP Task 2 - Base,4,Software Engineer,Web & Mobile Engineer,Engineering II,James Taggart,$256.31,$126.20,$123.13,51.96%,Subcontractor,Kind,$114.51,$135.63,0.5769,1920,,"$242,311.88","$129,233.00","$113,078.88",0.00%,$0.00,,"$136,380.24","$150,230.30",-10.16%,"-$13,850.06"
+OP Task 2 - Base,5,Software Engineer,Full Stack Engineer,Engineering II,Liana Fleming,$256.31,$126.20,$123.13,51.96%,Subcontractor,Kind,$114.51,$123.13,0.5769,1920,,"$242,311.88","$129,233.00","$113,078.88",0.00%,$0.00,,"$136,380.24","$136,384.70",0.00%,-$4.46
+OP Task 2 - Base,6,Front-end Engineer,Front End Engineer,Engineering I,"Not filling, redid staffing mix",$256.31,#DIV/0!,$103.60,59.58%,,,$96.35,$96.35,,,,"$198,914.06","$106,087.50","$92,826.56",0.00%,$0.00,,$0.00,$0.00,#DIV/0!,$0.00
+OP Task 2 - Base,7,UX Designer,UX Generalist,Experience I,Naomi Howe,$302.59,$103.50,$123.23,59.28%,Agile Six,,$114.60,N/A,0.5769,1920,,"$198,718.13","$105,983.00","$92,735.13",0.00%,$0.00,,"$136,492.74","$114,640.49",16.01%,"$21,852.25"
+OP Task 2 - Base,8,Content Writer,UX Content Designer & Writer,Experience III,Guy Schmidt,$302.59,$140.67,$123.23,59.28%,Agile Six,,$114.60,N/A,0.5769,1920,,"$270,084.38","$144,045.00","$126,039.38",0.00%,$0.00,,"$136,492.74","$155,811.68",-14.15%,"-$19,318.94"
+OP Task 2 - Base,9,Accessibility Specialist,Accessibility Engineer,Engineering II,"Not filling, redid staffing mix",$275.07,$123.13,$123.13,55.24%,Agile Six,,$114.51,$114.51,0.5769,1920,,"$236,401.88","$126,081.00","$110,320.88",0.00%,$0.00,,"$136,380.24","$136,380.24",0.00%,$0.00
+OP Task 2 - Base,10,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,11,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,12,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,13,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,14,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,15,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,16,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,17,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,18,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,19,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,20,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,21,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,22,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,23,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,24,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,25,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,26,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,27,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,28,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,29,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,30,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - Base,Add +,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,1,Product Manager,Lead Product Manager (KP),Product III,Adrian Brewster,$330.64,$167.48,$149.64,54.74%,Agile Six,,$139.17,N/A,1.0,1920,,"$321,567.35","$160,357.73","$140,313.01",6.50%,"$20,896.62",,"$287,309.18","$300,670.73",-4.65%,"-$13,361.55"
+OP Task 2 - OP1,2,UX Designer,Lead Designer/ Researcher (KP),Experience III,Melissa Lefevre,$308.65,$151.91,$154.96,49.79%,Agile Six,,$144.11,N/A,1.0,1920,,"$291,673.95","$145,450.62","$127,269.29",6.50%,"$18,954.03",,"$297,521.20","$272,719.91",8.34%,"$24,801.29"
+OP Task 2 - OP1,3,Software Engineer,Engineering Lead (KP),Engineering III,Seth Darr,$261.43,$164.64,$164.41,37.11%,Agile Six,,$152.91,N/A,1.0,1920,,"$316,108.79","$157,635.68","$137,931.22",6.50%,"$20,541.90",,"$315,676.65","$295,566.89",6.37%,"$20,109.76"
+OP Task 2 - OP1,4,Software Engineer,Web & Mobile Engineer,Engineering II,James Taggart,$261.43,$139.70,$135.63,48.12%,Subcontractor,Kind,$126.14,$138.34,1.0,1920,,"$268,222.89","$133,756.16","$117,036.64",6.50%,"$17,430.10",,"$260,416.76","$265,617.79",-2.00%,"-$5,201.03"
+OP Task 2 - OP1,5,Software Engineer,Full Stack Engineer,Engineering II,Liana Fleming,$261.43,$139.70,$135.63,48.12%,Subcontractor,Kind,$126.14,$125.59,1.0,1920,,"$268,222.89","$133,756.16","$117,036.64",6.50%,"$17,430.10",,"$260,416.76","$241,137.79",7.40%,"$19,278.97"
+OP Task 2 - OP1,6,Front-end Engineer,Front End Engineer,Engineering I,"Not filling, redid staffing mix",$261.43,#DIV/0!,$114.13,56.35%,,,$106.14,$106.14,,,,"$220,184.44","$109,800.56","$96,075.49",6.50%,"$14,308.39",,$0.00,$0.00,#DIV/0!,$0.00
+OP Task 2 - OP1,7,UX Designer,UX Generalist,Experience I,Naomi Howe,$308.65,$114.57,$135.75,56.02%,Agile Six,,$126.24,N/A,1.0,1920,,"$219,967.55","$109,692.41","$95,980.85",6.50%,"$14,294.29",,"$260,631.57","$205,673.26",21.09%,"$54,958.31"
+OP Task 2 - OP1,8,Content Writer,UX Content Designer & Writer,Experience III,Guy Schmidt,$308.65,$155.71,$135.75,56.02%,Agile Six,,$126.24,N/A,1.0,1920,,"$298,965.17","$149,086.58","$130,450.75",6.50%,"$19,427.84",,"$260,631.57","$279,537.33",-7.25%,"-$18,905.76"
+OP Task 2 - OP1,9,Accessibility Specialist,Accessibility Engineer,Engineering II,"Not filling, redid staffing mix",$280.57,$136.29,$135.63,51.66%,Agile Six,,$126.14,$126.14,1.0,1920,,"$261,680.92","$130,493.84","$114,182.11",6.50%,"$17,004.98",,"$260,416.76","$244,675.94",6.04%,"$15,740.82"
+OP Task 2 - OP1,10,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,11,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,12,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,13,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,14,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,15,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,16,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,17,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,18,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,19,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,20,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,21,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,22,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,23,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,24,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,25,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,26,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,27,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,28,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,29,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,30,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP1,Add +,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,1,Product Manager,Lead Product Manager (KP),Product III,Adrian Brewster,$337.25,$173.34,$154.13,54.30%,Agile Six,,$143.34,N/A,1.0,1920,,"$332,822.21","$165,970.25","$145,223.96",6.50%,"$21,628.00",,"$295,928.45","$311,194.21",-5.16%,"-$15,265.76"
+OP Task 2 - OP2,2,UX Designer,Lead Designer/ Researcher (KP),Experience III,Melissa Lefevre,$314.82,$157.23,$159.61,49.30%,Agile Six,,$148.44,N/A,1.0,1920,,"$301,882.53","$150,541.39","$131,723.72",6.50%,"$19,617.43",,"$306,446.83","$282,265.11",7.89%,"$24,181.73"
+OP Task 2 - OP2,3,Software Engineer,Engineering Lead (KP),Engineering III,Seth Darr,$266.66,$170.40,$169.35,36.49%,Agile Six,,$157.49,N/A,1.0,1920,,"$327,172.60","$163,152.92","$142,758.81",6.50%,"$21,260.87",,"$325,146.95","$305,911.73",5.92%,"$19,235.22"
+OP Task 2 - OP2,4,Software Engineer,Web & Mobile Engineer,Engineering II,James Taggart,$266.66,$144.59,$139.70,47.61%,Subcontractor,Kind,$129.92,$141.11,1.0,1920,,"$277,610.69","$138,437.62","$121,132.92",6.50%,"$18,040.15",,"$268,229.26","$270,930.15",-1.01%,"-$2,700.89"
+OP Task 2 - OP2,5,Software Engineer,Full Stack Engineer,Engineering II,Liana Fleming,$266.66,$144.59,$139.70,47.61%,Subcontractor,Kind,$129.92,$128.10,1.0,1920,,"$277,610.69","$138,437.62","$121,132.92",6.50%,"$18,040.15",,"$268,229.26","$245,960.55",8.30%,"$22,268.71"
+OP Task 2 - OP2,6,Front-end Engineer,Front End Engineer,Engineering I,"Not filling, redid staffing mix",$266.66,#DIV/0!,$117.55,55.92%,,,$109.32,$109.32,,,,"$227,890.90","$113,643.58","$99,438.13",6.50%,"$14,809.18",,$0.00,$0.00,#DIV/0!,$0.00
+OP Task 2 - OP2,7,UX Designer,UX Generalist,Experience I,Naomi Howe,$314.82,$118.58,$139.82,55.59%,Agile Six,,$130.03,N/A,1.0,1920,,"$227,666.42","$113,531.64","$99,340.18",6.50%,"$14,794.59",,"$268,450.52","$212,871.82",20.70%,"$55,578.69"
+OP Task 2 - OP2,8,Content Writer,UX Content Designer & Writer,Experience III,Guy Schmidt,$314.82,$161.16,$139.82,55.59%,Agile Six,,$130.03,N/A,1.0,1920,,"$309,428.95","$154,304.61","$135,016.53",6.50%,"$20,107.82",,"$268,450.52","$289,321.13",-7.77%,"-$20,870.62"
+OP Task 2 - OP2,9,Accessibility Specialist,Accessibility Engineer,Engineering II,"Not filling, redid staffing mix",$286.18,$141.06,$139.70,51.18%,Agile Six,,$129.92,$129.92,1.0,1920,,"$270,839.75","$135,061.12","$118,178.48",6.50%,"$17,600.15",,"$268,229.26","$253,239.60",5.59%,"$14,989.66"
+OP Task 2 - OP2,10,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,11,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,12,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,13,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,14,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,15,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,16,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,17,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,18,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,19,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,20,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,21,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,22,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,23,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,24,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,25,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,26,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,27,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,28,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,29,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,30,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 2 - OP2,Add +,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,1,Delivery Manager,Delivery Manager, Delivery III,,$260.66,$165.33,$165.33,36.57%,Agile Six,,$153.76,N/A,0.1667,1920,,"$317,442.68","$169,302.76","$148,139.92",0.00%,$0.00,,"$52,917.70","$52,917.70",0.00%,$0.00
+OP Task 3,2,Accessibility Specialist,Senior Accessibility Engineer (KP),Engineering III,,$275.07,$163.09,$163.09,40.71%,Agile Six,,$151.68,N/A,0.1667,1920,,"$313,138.25","$167,007.07","$146,131.18",0.00%,$0.00,,"$52,200.15","$52,200.15",0.00%,$0.00
+OP Task 3,3,Content Strategist,Senior UX Writer/ Content Designer (KP),Experience III,,$302.59,$153.71,$153.71,49.20%,Subcontractor,Coa,$142.95,$146.35,0.1667,1920,,"$295,128.79","$157,402.02","$137,726.77",0.00%,$0.00,,"$49,197.97","$46,841.37",4.79%,"$2,356.60"
+OP Task 3,4,Product Manager,Lead Product Manager (KP),Product III,,$324.16,$165.33,$165.33,49.00%,Agile Six,,$153.76,N/A,0.1667,1920,,"$317,433.37","$169,297.80","$148,135.57",0.00%,$0.00,,"$52,916.14","$52,916.14",0.00%,$0.00
+OP Task 3,5,UX Designer,Lead Designer/ Researcher (KP),Experience III,,$302.59,$153.71,$153.71,49.20%,Subcontractor,Coa,$142.95,$146.35,0.1667,1920,,"$295,128.79","$157,402.02","$137,726.77",0.00%,$0.00,,"$49,197.97","$46,841.37",4.79%,"$2,356.60"
+OP Task 3,6,Software Engineer,Engineering Lead (KP),Engineering III,,$256.31,$163.09,$163.09,36.37%,Agile Six,,$151.68,N/A,0.1667,1920,,"$313,138.25","$167,007.07","$146,131.18",0.00%,$0.00,,"$52,200.15","$52,200.15",0.00%,$0.00
+OP Task 3,7,Product Manager,Lead Product Manager (KP),Product III,,$324.16,$165.33,$165.33,49.00%,Subcontractor,Kind,$153.76,$157.41,0.1667,1920,,"$317,433.37","$169,297.80","$148,135.57",0.00%,$0.00,,"$52,916.14","$50,381.27",4.79%,"$2,534.87"
+OP Task 3,8,UX Designer,Lead Designer/ Researcher (KP),Experience III,,$302.59,$153.71,$153.71,49.20%,Agile Six,,$142.95,N/A,0.1667,1920,,"$295,128.79","$157,402.02","$137,726.77",0.00%,$0.00,,"$49,197.97","$49,197.97",0.00%,$0.00
+OP Task 3,9,Software Engineer,Engineering Lead (KP),Engineering III,,$256.31,$163.09,$163.09,36.37%,Subcontractor,Kind,$151.68,$155.30,0.1667,1920,,"$313,138.25","$167,007.07","$146,131.18",0.00%,$0.00,,"$52,200.15","$49,705.94",4.78%,"$2,494.21"
+OP Task 3,10,Product Manager,Lead Product Manager (KP),Product II,,$324.16,$148.44,$148.44,54.21%,Agile Six,,$138.05,$144.12,0.1667,1920,,"$284,998.89","$151,999.41","$132,999.48",0.00%,$0.00,,"$47,509.31","$47,509.31",0.00%,$0.00
+OP Task 3,11,UX Designer,Lead Designer / Researcher (KP),Experience III,,$302.59,$153.71,$153.71,49.20%,Subcontractor,Kind,$142.95,$145.66,0.1667,1920,,"$295,128.79","$157,402.02","$137,726.77",0.00%,$0.00,,"$49,197.97","$46,619.24",5.24%,"$2,578.73"
+OP Task 3,12,Software Engineer,Engineering Lead (KP),Experience III,,$256.31,$153.71,$153.71,40.03%,Agile Six,,$142.95,$149.24,0.1667,1920,,"$295,128.79","$157,402.02","$137,726.77",0.00%,$0.00,,"$49,197.97","$49,197.97",0.00%,$0.00
+OP Task 3,13,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,14,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,15,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,16,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,17,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,18,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,19,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,20,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,21,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,22,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,23,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,24,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,25,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,26,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,27,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,28,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,29,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,30,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+OP Task 3,Add +,,,,,#N/A,#N/A,,#N/A,,,$0.00,input needed,,0,,#N/A,#N/A,#N/A,#N/A,#N/A,,$0.00,#VALUE!,#VALUE!,#VALUE!
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+Contractual Prices for Labor (doesn't include Travel or Materials budgets),,,,,,,,,,,,,,,,,,,,,,,,,,
+PoP,Award,Mod 1,Mod 2,Mod 3,Mod 4,Mod 5,Mod 6,Mod 7,Mod 8,Mod 9,"Mod 10
+(anticipated)",Totals,,,Award Escalation %,,,,,,,,,,,
+Base ,"$4,407,257.50",,,,,,,,,,,"$4,407,257.50",,,#REF!,,,,,,,,,,,
+OP1,,,,,,,,,,,"$4,538,278.52","$4,538,278.52",,,-100.00%,,,,,,,,,,,
+OP2,,,,,,,,,,,"$4,673,215.92","$4,673,215.92",,,#DIV/0!,,,,,,,,,,,
+OP Task 1 - Base,,"$1,083,956.40",,,,,,,,,,"$1,083,956.40",,,#DIV/0!,,,,,,,,,,,
+OP Task 1 - OP1,,,,,,,,,,,"$1,934,668.84","$1,934,668.84",,,#DIV/0!,,,,,,,,,,,
+OP Task 1 - OP2,,,,,,,,,,,"$1,992,710.46","$1,992,710.46",,,3.00%,,,,,,,,,,,
+OP Task 2 - Base,,,"$1,268,540.25",,,,,,,,,"$1,268,540.25",,,-36.34%,,,,,,,,,,,
+OP Task 2 - OP1,,,,,,,,,,,"$2,422,137.64","$2,422,137.64",,,90.94%,,,,,,,,,,,
+OP Task 2 - OP2,,,,,,,,,,,"$2,494,809.72","$2,494,809.72",,,3.00%,,,,,,,,,,,
+OP Task 3,,,,,,,,,,,"$608,720.00","$608,720.00",,,#DIV/0!,,,,,,,,,,,
+Utilization of NTE (XXX) ,,,,,,,,,,,,,,,,,,,,,,,,,,
+Executed Contract Value,"$4,407,257.50","$5,491,213.90","$6,759,754.15","$6,759,754.15","$6,759,754.15","$6,759,754.15","$6,759,754.15","$6,759,754.15","$6,759,754.15","$6,759,754.15","$25,424,295.25","$25,424,295.25",,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+Actuals,,,,,,,,,,,,,,,,,,,,,,,,,,
+Period of Performance,,Coa,Kind,Copilot,"Sub 4 to Replace ""Apothesource""",Subcontractor Totals,A6 Totals,A6 + Subs Totals,,,,,,,,,,,,,,,,,,
+Base (12-months),Accounted for Revenue,"$1,143,191.25","$1,182,862.36",$0.00,,"$2,326,053.61","$1,979,090.03","$4,305,143.64",,,,,,,,,,,,,,,,,,
+,Cost,"$1,074,681.60","$1,100,064.00",$0.00,,"$2,174,745.60","$2,000,002.19","$4,174,747.79",,,,,,,,,,,,,,,,,,
+,A6 Profit,"$68,509.65","$82,798.36",$0.00,,"$151,308.01","$81,201.70","$232,509.71",,"$102,113.86","""extra profit""",,,,,,,,,,,,,,,
+,A6 Profit %,5.99%,7.00%,#DIV/0!,#DIV/0!,6.50%,4.10%,5.40%,,,,,,,,,,,,,,,,,,
+,% Workshare,24.38%,24.96%,0.00%,0.00%,49.34%,48.34%,100.00%,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+OP1,Accounted for Revenue,"$1,177,486.99","$1,218,348.23",$0.00,,"$2,395,835.22","$2,101,495.34","$4,497,330.56",,,,,,,,,,,,,,,,,,
+,Cost,"$1,096,166.40","$1,122,086.40",$0.00,,"$2,218,252.80","$2,051,159.45","$4,269,412.25",,,,,,,,,,,,,,,,,,
+,A6 Profit,"$81,320.59","$96,261.83",$0.00,,"$177,582.42","$91,283.85","$268,866.27",,"$40,947.96","""extra profit""",,,,,,,,,,,,,,,
+,A6 Profit %,6.91%,7.90%,#DIV/0!,#DIV/0!,7.41%,4.34%,5.98%,,,,,,,,,,,,,,,,,,
+,% Workshare,24.15%,24.72%,0.00%,0.00%,48.88%,50.22%,100.00%,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+OP2,Accounted for Revenue,"$1,212,811.60","$1,254,898.68",$0.00,,"$2,467,710.28","$2,164,540.20","$4,632,250.48",,,,,,,,,,,,,,,,,,
+,Cost,"$1,118,092.80","$1,144,531.20",$0.00,,"$2,262,624.00","$2,122,950.03","$4,385,574.03",,,,,,,,,,,,,,,,,,
+,A6 Profit,"$94,718.80","$110,367.48",$0.00,,"$205,086.28","$82,555.61","$287,641.89",,"$40,965.44","""extra profit""",,,,,,,,,,,,,,,
+,A6 Profit %,7.81%,8.79%,#DIV/0!,#DIV/0!,8.31%,3.81%,6.21%,,,,,,,,,,,,,,,,,,
+,% Workshare,23.93%,24.49%,0.00%,0.00%,48.42%,50.71%,100.00%,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+OP Task 1 - Base,Accounted for Revenue,$0.00,$0.00,"$167,544.47",,"$167,544.47","$779,632.14","$947,176.61",,,,,,,,,,,,,,,,,,
+,Cost,$0.00,$0.00,"$155,070.72",,"$155,070.72","$755,937.53","$911,008.25",,,,,,,,,,,,,,,,,,
+,A6 Profit,$0.00,$0.00,"$12,473.75",,"$12,473.75","$160,474.41","$172,948.15",,"$136,779.79","""extra profit""",,,,,,,,,,,,,,,
+,A6 Profit %,#DIV/0!,#DIV/0!,7.45%,#DIV/0!,7.45%,20.58%,18.26%,,,,,,,,,,,,,,,,,,
+,% Workshare,0.00%,0.00%,25.47%,0.00%,25.47%,73.08%,100.00%,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+OP Task 1 - OP1,Accounted for Revenue,$0.00,$0.00,"$299,134.68",,"$299,134.68","$1,373,705.02","$1,672,839.70",,,,,,,,,,,,,,,,,,
+,Cost,$0.00,$0.00,"$274,176.00",,"$274,176.00","$1,356,206.17","$1,630,382.17",,,,,,,,,,,,,,,,,,
+,A6 Profit,$0.00,$0.00,"$24,958.68",,"$24,958.68","$279,327.99","$304,286.67",,"$261,829.14","""extra profit""",,,,,,,,,,,,,,,
+,A6 Profit %,#DIV/0!,#DIV/0!,8.34%,#DIV/0!,8.34%,20.33%,18.19%,,,,,,,,,,,,,,,,,,
+,% Workshare,0.00%,0.00%,45.04%,0.00%,14.17%,72.29%,100.00%,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+OP Task 1 - OP2,Accounted for Revenue,$0.00,$0.00,"$308,108.72",,"$308,108.72","$1,414,916.17","$1,723,024.89",,,,,,,,,,,,,,,,,,
+,Cost,$0.00,$0.00,"$279,659.52",,"$279,659.52","$1,403,673.39","$1,683,332.91",,,,,,,,,,,,,,,,,,
+,A6 Profit,$0.00,$0.00,"$28,449.20",,"$28,449.20","$280,928.35","$309,377.55",,"$269,685.57","""extra profit""",,,,,,,,,,,,,,,
+,A6 Profit %,#DIV/0!,#DIV/0!,9.23%,,9.23%,19.85%,17.96%,,,,,,,,,,,,,,,,,,
+,% Workshare,0.00%,0.00%,45.94%,0.00%,14.03%,72.43%,100.00%,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+OP Task 2 - Base,Accounted for Revenue,$0.00,"$272,760.48",$0.00,,"$272,760.48","$880,961.20","$1,153,721.68",,,,,,,,,,,,,,,,,,
+,Cost,$0.00,"$286,615.00",$0.00,,"$286,615.00","$891,181.78","$1,177,796.78",,,,,,,,,,,,,,,,,,
+,A6 Profit,$0.00,"-$13,854.51",$0.00,,"-$13,854.51","$104,597.99","$90,743.47",,"$114,818.57","""extra profit""",,,,,,,,,,,,,,,
+,A6 Profit %,#DIV/0!,-5.08%,#DIV/0!,#DIV/0!,-5.08%,11.87%,7.87%,,,,,,,,,,,,,,,,,,
+,% Workshare,0.00%,22.59%,0.00%,0.00%,22.59%,68.35%,100.00%,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+OP Task 2 - OP1,Accounted for Revenue,$0.00,"$520,833.52",$0.00,,"$520,833.52","$1,682,186.93","$2,203,020.45",,,,,,,,,,,,,,,,,,
+,Cost,$0.00,"$506,755.58",$0.00,,"$506,755.58","$1,598,844.07","$2,105,599.65",,,,,,,,,,,,,,,,,,
+,A6 Profit,$0.00,"$14,077.93",$0.00,,"$14,077.93","$302,460.06","$316,537.99",,"$219,117.19","""extra profit""",,,,,,,,,,,,,,,
+,A6 Profit %,#DIV/0!,2.70%,#DIV/0!,#DIV/0!,2.70%,17.98%,14.37%,,,,,,,,,,,,,,,,,,
+,% Workshare,0.00%,20.92%,0.00%,0.00%,20.92%,70.03%,100.00%,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+OP Task 2 - OP2,Accounted for Revenue,$0.00,"$536,458.52",$0.00,$0.00,"$536,458.52","$1,732,652.54","$2,269,111.06",,,,,,,,,,,,,,,,,,
+,Cost,$0.00,"$516,890.70",$0.00,$0.00,"$516,890.70","$1,654,803.61","$2,171,694.30",,,,,,,,,,,,,,,,,,
+,A6 Profit,$0.00,"$19,567.83",$0.00,$0.00,"$19,567.83","$303,547.59","$323,115.42",,"$225,698.66","""extra profit""",,,,,,,,,,,,,,,
+,A6 Profit %,#DIV/0!,3.65%,#DIV/0!,#DIV/0!,3.65%,17.52%,14.24%,,,,,,,,,,,,,,,,,,
+,% Workshare,0.00%,20.72%,0.00%,0.00%,20.72%,70.23%,100.00%,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+OP Task 3,Accounted for Revenue,"$98,395.94","$154,314.26",$0.00,,"$252,710.20","$356,139.38","$608,849.58",,,,,,,,,,,,,,,,,,
+,Cost,"$93,682.73","$146,706.46",$0.00,,"$240,389.19","$356,139.38","$596,528.57",,,,,,,,,,,,,,,,,,
+,A6 Profit,"$4,713.21","$7,607.80",$0.00,,"$12,321.01",-$129.58,"$12,191.43",,-$129.58,"""extra profit""",,,,,,,,,,,,,,,
+,A6 Profit %,4.79%,4.93%,#DIV/0!,#DIV/0!,4.88%,-0.04%,2.00%,,,,,,,,,,,,,,,,,,
+,% Workshare,15.39%,24.10%,0.00%,0.00%,39.49%,60.53%,100.00%,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+Anticipated Contract Totals,Accounted for Revenue ,"$3,631,885.78","$5,140,476.06","$774,787.87",,"$7,357,143.58","$14,465,318.94","$24,012,468.65",,,,,,,,,,,,,,,,,,
+,Cost,"$3,382,623.53","$4,823,649.33","$708,906.24",,"$6,810,693.12","$14,190,897.58","$23,106,076.69",,,,,,,,,,,,,,,,,,
+,A6 Profit,"$249,262.25","$316,826.73","$65,881.63",,"$546,450.46","$1,686,247.95","$2,318,218.56",,"$1,411,826.60","""extra profit""",,,,,,,,,,,,,,,
+,A6 Profit %,6.86%,6.16%,8.50%,#DIV/0!,7.43%,11.66%,9.12%,,,,,,,,,,,,,,,,,,
+,% Workshare,13.30%,18.97%,2.79%,0.00%,26.79%,64.60%,100.00%,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,SDVOSB Workshare,80.69%,,,,,,,,,,,,,,,,,,,,

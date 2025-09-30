@@ -70,6 +70,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   disabled = false,
 }) => {
   const [editingState, setEditingState] = useState<EditingState>({});
+  const [originalCategories, setOriginalCategories] = useState<LaborCategoryInput[]>([]);
   const [errors, setErrors] = useState<Record<string, ValidationError[]>>({});
   const [summary, setSummary] = useState<LaborCategorySummary>({
     totalCategories: 0,
@@ -140,13 +141,26 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   };
 
   const startEditing = (index: number) => {
+    // Store the original category data before editing
+    setOriginalCategories([...categories]);
     setEditingState(prev => ({
       ...prev,
       [`category_${index}`]: true,
     }));
   };
 
-  const stopEditing = (index: number) => {
+  const saveEditing = (index: number) => {
+    setEditingState(prev => ({
+      ...prev,
+      [`category_${index}`]: false,
+    }));
+  };
+
+  const cancelEditing = (index: number) => {
+    // Revert to original category data
+    if (originalCategories.length > 0) {
+      onCategoriesChange([...originalCategories]);
+    }
     setEditingState(prev => ({
       ...prev,
       [`category_${index}`]: false,
@@ -566,7 +580,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                         <Tooltip title="Save">
                           <IconButton
                             size="small"
-                            onClick={() => stopEditing(index)}
+                            onClick={() => saveEditing(index)}
                             disabled={disabled}
                             color="primary"
                           >
@@ -576,7 +590,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                         <Tooltip title="Cancel">
                           <IconButton
                             size="small"
-                            onClick={() => stopEditing(index)}
+                            onClick={() => cancelEditing(index)}
                             disabled={disabled}
                             color="secondary"
                           >

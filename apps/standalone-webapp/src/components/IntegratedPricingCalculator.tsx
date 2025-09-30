@@ -21,6 +21,8 @@ import {
   Alert,
   Snackbar,
   Grid,
+  TextField,
+  Dialog,
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -34,17 +36,19 @@ import {
   AttachMoney as MoneyIcon,
   TrendingUp as TrendingUpIcon,
   Compare as CompareIcon,
+  Edit as EditIcon,
+  AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material';
 
 // Import existing components
 import LaborCategoriesInput from './LaborCategoriesInput';
 import CalculationResults from './CalculationResults';
 import ContractVehicleSelector from './ContractVehicleSelector';
-import UserPermissionsSelector from './UserPermissionsSelector';
 import ExportPanel from './ExportPanel';
+import AdminDashboard from './AdminDashboard';
 
 // Import types
-import { LaborCategoryInput, ValidationError, OverridePermissions } from '../types/labor-category';
+import { LaborCategoryInput, ValidationError } from '../types/labor-category';
 import { CalculationResult, PricingSettings, LaborCategoryInput as LaborCategoryInputType } from '@pricing-calculator/types';
 
 interface ProjectData {
@@ -116,13 +120,7 @@ const IntegratedPricingCalculator: React.FC = () => {
     otherDirectCosts: [],
   });
 
-  // State for validation and permissions
-  const [permissions, setPermissions] = useState<OverridePermissions>({
-    canOverrideRates: false,
-    canOverrideContractLimits: false,
-    canOverrideValidation: false,
-    userRole: 'analyst',
-  });
+  // State for validation
   const [validationWarnings] = useState<ValidationError[]>([]);
 
   // Calculation state
@@ -133,6 +131,9 @@ const IntegratedPricingCalculator: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [isEditingProjectName, setIsEditingProjectName] = useState(false);
+  const [editingProjectName, setEditingProjectName] = useState('');
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
@@ -144,6 +145,37 @@ const IntegratedPricingCalculator: React.FC = () => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleStartEditingProjectName = () => {
+    setEditingProjectName(projectData.name);
+    setIsEditingProjectName(true);
+  };
+
+  const handleSaveProjectName = () => {
+    if (editingProjectName.trim()) {
+      setProjectData(prev => ({
+        ...prev,
+        name: editingProjectName.trim(),
+        lastModified: new Date().toISOString(),
+      }));
+      setSnackbarMessage('Project name updated successfully!');
+      setSnackbarOpen(true);
+    }
+    setIsEditingProjectName(false);
+  };
+
+  const handleCancelEditingProjectName = () => {
+    setEditingProjectName('');
+    setIsEditingProjectName(false);
+  };
+
+  const handleProjectNameKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      handleSaveProjectName();
+    } else if (event.key === 'Escape') {
+      handleCancelEditingProjectName();
+    }
   };
 
   const handleSaveProject = () => {
@@ -192,8 +224,7 @@ const IntegratedPricingCalculator: React.FC = () => {
         projectData.otherDirectCosts,
         {
           projectId: projectData.id,
-          contractType: 'Fixed Price',
-          locationType: 'On-site',
+          contractType: 'FFP',
           periodOfPerformance: {
             startDate: new Date().toISOString(),
             endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
@@ -204,7 +235,7 @@ const IntegratedPricingCalculator: React.FC = () => {
         },
         {
           projectName: projectData.name,
-          contractVehicle: projectData.contractVehicle,
+          contractVehicle: projectData.contractVehicle || 'Unknown',
         }
       );
 
@@ -259,7 +290,6 @@ const IntegratedPricingCalculator: React.FC = () => {
     try {
       // Convert categories to the format expected by the calculation service
       const laborCategories: LaborCategoryInputType[] = projectData.laborCategories.map(cat => ({
-        id: cat.id || '',
         title: cat.title,
         baseRate: cat.baseRate,
         hours: cat.hours,
@@ -286,7 +316,7 @@ const IntegratedPricingCalculator: React.FC = () => {
         projectId: projectData.id,
         calculatedAt: new Date().toISOString(),
         settings,
-        laborCategories: laborCategories.map((lc) => {
+        laborCategories: laborCategories.map((lc, index) => {
           const clearancePremium = lc.clearanceLevel === 'Top Secret' ? 0.20 : 
                                  lc.clearanceLevel === 'Secret' ? 0.10 : 
                                  lc.clearanceLevel === 'Public Trust' ? 0.05 : 0;
@@ -298,7 +328,7 @@ const IntegratedPricingCalculator: React.FC = () => {
           const totalCost = burdenedRate * lc.hours * lc.ftePercentage;
 
           return {
-            id: lc.id ?? `temp-${Date.now()}-${Math.random()}`,
+            id: `temp-${Date.now()}-${index}`,
             title: lc.title,
             baseRate: lc.baseRate,
             hours: lc.hours,
@@ -376,9 +406,60 @@ const IntegratedPricingCalculator: React.FC = () => {
         <Box sx={{ p: 3 }}>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
             <Box>
-              <Typography variant="h4" fontWeight="bold">
-                {projectData.name}
-              </Typography>
+              {isEditingProjectName ? (
+                <Box display="flex" alignItems="center" gap={1}>
+                  <TextField
+                    value={editingProjectName}
+                    onChange={(e) => setEditingProjectName(e.target.value)}
+                    onKeyDown={handleProjectNameKeyPress}
+                    onBlur={handleSaveProjectName}
+                    autoFocus
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        fontSize: '2rem',
+                        fontWeight: 'bold',
+                        height: '48px',
+                      }
+                    }}
+                  />
+                  <Button
+                    size="small"
+                    onClick={handleSaveProjectName}
+                    color="primary"
+                    variant="contained"
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    size="small"
+                    onClick={handleCancelEditingProjectName}
+                    color="secondary"
+                    variant="outlined"
+                  >
+                    Cancel
+                  </Button>
+                </Box>
+              ) : (
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Typography 
+                    variant="h4" 
+                    fontWeight="bold"
+                    sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                    onClick={handleStartEditingProjectName}
+                  >
+                    {projectData.name}
+                  </Typography>
+                  <IconButton
+                    size="small"
+                    onClick={handleStartEditingProjectName}
+                    sx={{ ml: 1 }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              )}
               <Typography variant="body2" color="text.secondary">
                 Last modified: {new Date(projectData.lastModified).toLocaleDateString()}
               </Typography>
@@ -441,6 +522,21 @@ const IntegratedPricingCalculator: React.FC = () => {
             >
               Share
             </Button>
+            <Button
+              variant="outlined"
+              startIcon={<AdminIcon />}
+              onClick={() => setShowAdminDashboard(true)}
+              sx={{ 
+                borderColor: '#f44336',
+                color: '#f44336',
+                '&:hover': { 
+                  borderColor: '#d32f2f',
+                  backgroundColor: 'rgba(244, 67, 54, 0.04)'
+                }
+              }}
+            >
+              Admin
+            </Button>
           </Box>
         </Box>
       </Paper>
@@ -501,10 +597,10 @@ const IntegratedPricingCalculator: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <UserPermissionsSelector
-                permissions={permissions}
-                onPermissionsChange={setPermissions}
-              />
+              <Alert severity="info">
+                User permissions and override settings are managed in the Admin Dashboard.
+                Contact your administrator to modify permissions.
+              </Alert>
             </Grid>
           </Grid>
         </TabPanel>
@@ -561,8 +657,7 @@ const IntegratedPricingCalculator: React.FC = () => {
               otherDirectCosts={projectData.otherDirectCosts}
               settings={{
                 projectId: projectData.id,
-                contractType: 'Fixed Price',
-                locationType: 'On-site',
+                contractType: 'FFP',
                 periodOfPerformance: {
                   startDate: new Date().toISOString(),
                   endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
@@ -572,7 +667,7 @@ const IntegratedPricingCalculator: React.FC = () => {
                 feeRate: projectData.feeRate,
               }}
               projectName={projectData.name}
-              contractVehicle={projectData.contractVehicle}
+              contractVehicle={projectData.contractVehicle || 'Unknown'}
             />
           </Box>
         </TabPanel>
@@ -631,6 +726,27 @@ const IntegratedPricingCalculator: React.FC = () => {
         onClose={() => setSnackbarOpen(false)}
         message={snackbarMessage}
       />
+
+      {/* Admin Dashboard Dialog */}
+      <Dialog
+        open={showAdminDashboard}
+        onClose={() => setShowAdminDashboard(false)}
+        maxWidth="xl"
+        fullWidth
+        fullScreen
+      >
+        <Box sx={{ height: '100vh', overflow: 'auto' }}>
+          <AdminDashboard />
+          <Box sx={{ p: 2, textAlign: 'right' }}>
+            <Button
+              variant="contained"
+              onClick={() => setShowAdminDashboard(false)}
+            >
+              Close Admin Dashboard
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
     </Box>
   );
 };
