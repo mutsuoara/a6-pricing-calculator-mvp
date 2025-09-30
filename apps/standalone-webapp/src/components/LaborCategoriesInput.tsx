@@ -339,7 +339,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }}>
                 <Box display="flex" alignItems="center" gap={0.5}>
                   Company Role
-                  <Tooltip title="Mapped internal company role">
+                  <Tooltip title="Always editable dropdown - frequently changed during planning">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -363,7 +363,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Final Rate
-                  <Tooltip title="Manual final rate entry">
+                  <Tooltip title="Always editable - frequently changed during planning">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -473,60 +473,60 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                     )}
                   </TableCell>
 
-                  {/* Company Role */}
+                  {/* Company Role - Always Editable */}
                   <TableCell>
-                    {editing ? (
-                      <FormControl fullWidth size="small">
-                        <InputLabel>Select Company Role</InputLabel>
-                        <Select
-                          value={category.companyRoleId || ''}
-                          onChange={(e) => {
-                            const selectedRole = companyRoles.find(r => r.id === e.target.value);
-                            if (selectedRole) {
-                              updateCategory(index, 'companyRoleId', selectedRole.id);
-                              updateCategory(index, 'companyRoleName', selectedRole.name);
-                              updateCategory(index, 'companyRoleRate', selectedRole.payBand);
-                              // Update final rate to company role rate
-                              updateCategory(index, 'finalRate', selectedRole.payBand);
-                            }
-                          }}
-                          disabled={disabled}
-                        >
-                          <MenuItem value="">
-                            <em>No Company Role</em>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Company Role</InputLabel>
+                      <Select
+                        value={category.companyRoleId || ''}
+                        onChange={(e) => {
+                          const selectedRole = companyRoles.find(r => r.id === e.target.value);
+                          if (selectedRole) {
+                            updateCategory(index, 'companyRoleId', selectedRole.id);
+                            updateCategory(index, 'companyRoleName', selectedRole.name);
+                            updateCategory(index, 'companyRoleRate', selectedRole.payBand);
+                            // Update final rate to company role rate
+                            updateCategory(index, 'finalRate', selectedRole.payBand);
+                            // Update base rate for calculations
+                            updateCategory(index, 'baseRate', selectedRole.payBand);
+                            // Update metadata
+                            updateCategory(index, 'finalRateMetadata', {
+                              source: 'company',
+                              reason: `Mapped to ${selectedRole.name}`,
+                              timestamp: new Date().toISOString(),
+                              userId: 'current-user', // In real app, get from auth context
+                            });
+                          } else {
+                            // Clear company role
+                            updateCategory(index, 'companyRoleId', '');
+                            updateCategory(index, 'companyRoleName', '');
+                            updateCategory(index, 'companyRoleRate', 0);
+                          }
+                        }}
+                        disabled={disabled}
+                        sx={{
+                          '& .MuiSelect-select': {
+                            fontWeight: 'medium'
+                          }
+                        }}
+                      >
+                        <MenuItem value="">
+                          <em>No Company Role</em>
+                        </MenuItem>
+                        {companyRoles.map((role) => (
+                          <MenuItem key={role.id} value={role.id}>
+                            <Box>
+                              <Typography variant="body2" fontWeight="medium">
+                                {role.name}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {role.practiceArea} - ${role.payBand.toLocaleString()}
+                              </Typography>
+                            </Box>
                           </MenuItem>
-                          {companyRoles.map((role) => (
-                            <MenuItem key={role.id} value={role.id}>
-                              <Box>
-                                <Typography variant="body2" fontWeight="medium">
-                                  {role.name}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {role.practiceArea} - ${role.payBand.toLocaleString()}
-                                </Typography>
-                              </Box>
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    ) : (
-                      <Box>
-                        {category.companyRoleId ? (
-                          <Box>
-                            <Typography variant="body2" fontWeight="medium">
-                              {category.companyRoleName}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              ${category.companyRoleRate?.toLocaleString()}
-                            </Typography>
-                          </Box>
-                        ) : (
-                          <Typography variant="body2" color="text.secondary">
-                            No company role mapped
-                          </Typography>
-                        )}
-                      </Box>
-                    )}
+                        ))}
+                      </Select>
+                    </FormControl>
                   </TableCell>
 
                   {/* LCAT Rate */}
@@ -543,25 +543,39 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                     </Typography>
                   </TableCell>
 
-                  {/* Final Rate */}
+                  {/* Final Rate - Always Editable */}
                   <TableCell align="right">
-                    {editing ? (
-                      <TextField
-                        size="small"
-                        type="number"
-                        value={category.finalRate || ''}
-                        onChange={(e) => updateCategory(index, 'finalRate', parseFloat(e.target.value) || 0)}
-                        disabled={disabled}
-                        sx={{ width: 100 }}
-                        InputProps={{
-                          startAdornment: <Typography sx={{ mr: 0.5 }}>$</Typography>
-                        }}
-                      />
-                    ) : (
-                      <Typography variant="body2" fontWeight="bold" color="primary">
-                        ${category.finalRate?.toFixed(2) || '0.00'}
-                      </Typography>
-                    )}
+                    <TextField
+                      size="small"
+                      type="number"
+                      value={category.finalRate || ''}
+                      onChange={(e) => {
+                        const newRate = parseFloat(e.target.value) || 0;
+                        updateCategory(index, 'finalRate', newRate);
+                        // Update base rate to match final rate for calculations
+                        updateCategory(index, 'baseRate', newRate);
+                        // Update metadata
+                        updateCategory(index, 'finalRateMetadata', {
+                          source: 'manual',
+                          reason: 'Manual rate entry',
+                          timestamp: new Date().toISOString(),
+                          userId: 'current-user', // In real app, get from auth context
+                        });
+                      }}
+                      disabled={disabled}
+                      sx={{ 
+                        width: 120,
+                        '& .MuiInputBase-input': {
+                          textAlign: 'right',
+                          fontWeight: 'bold',
+                          color: 'primary.main'
+                        }
+                      }}
+                      InputProps={{
+                        startAdornment: <Typography sx={{ mr: 0.5, fontWeight: 'bold' }}>$</Typography>
+                      }}
+                      placeholder="0.00"
+                    />
                   </TableCell>
 
 
