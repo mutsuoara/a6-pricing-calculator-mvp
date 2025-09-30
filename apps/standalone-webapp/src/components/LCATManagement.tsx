@@ -54,7 +54,7 @@ import { companyConfigService } from '../config/company.config';
 import {
   ContractVehicle,
   ProjectRole,
-  SPRUCELCAT,
+  LCAT,
   CompanyRole,
   RateValidationRule,
   ImportTemplate,
@@ -224,7 +224,7 @@ const LCATManagement: React.FC = () => {
   const [contractVehicles, setContractVehicles] = useState<ContractVehicle[]>([]);
   // A6Levels removed - replaced with Company Roles
   const [projectRoles, setProjectRoles] = useState<ProjectRole[]>([]);
-  const [spruceLCATs, setSpruceLCATs] = useState<SPRUCELCAT[]>([]);
+  const [lcats, setLcats] = useState<LCAT[]>([]);
   const [companyRoles, setCompanyRoles] = useState<CompanyRole[]>([]);
   // Three-Way Mappings removed - simplified architecture
   const [rateValidationRules, setRateValidationRules] = useState<RateValidationRule[]>([]);
@@ -233,6 +233,9 @@ const LCATManagement: React.FC = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importPreview, setImportPreview] = useState<ImportTemplate | null>(null);
+  const [showImportPreview, setShowImportPreview] = useState(false);
+  const [importMode, setImportMode] = useState<'merge' | 'replace'>('merge');
   const [showCompanyRoleDialog, setShowCompanyRoleDialog] = useState(false);
   const [editingCompanyRole, setEditingCompanyRole] = useState<CompanyRole | null>(null);
 
@@ -243,16 +246,16 @@ const LCATManagement: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [vehicles, roles, lcats, companyRoles] = await Promise.all([
+      const [vehicles, roles, lcatsData, companyRoles] = await Promise.all([
         MappingService.getContractVehicles(),
         MappingService.getProjectRoles(),
-        MappingService.getSPRUCELCATs(),
+        MappingService.getLCATs(),
         MappingService.getCompanyRoles(),
       ]);
       
       setContractVehicles(vehicles);
       setProjectRoles(roles);
-      setSpruceLCATs(lcats);
+      setLcats(lcatsData);
       setCompanyRoles(companyRoles);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -279,18 +282,104 @@ const LCATManagement: React.FC = () => {
     }
   };
 
-  const handleImport = async (file: File) => {
+  const handleFileSelect = async (file: File) => {
     try {
+      setLoading(true);
       const template = await MappingService.importFromExcel(file);
-      // Process imported data
-      setSnackbarMessage('Data imported successfully');
-      setSnackbarOpen(true);
+      setImportPreview(template);
+      setShowImportPreview(true);
       setImportDialogOpen(false);
-      loadData();
+    } catch (error) {
+      console.error('Error parsing file:', error);
+      setSnackbarMessage(`File parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!importPreview) return;
+    
+    try {
+      setLoading(true);
+      
+      // Process and display imported data
+      const importSummary = {
+        contractVehicles: importPreview.contractVehicles.length,
+        lcats: importPreview.lcats.length,
+        projectRoles: importPreview.projectRoles.length,
+        companyRoles: importPreview.companyRoles.length,
+        rateValidationRules: importPreview.rateValidationRules.length,
+      };
+      
+      // Group LCATs by vehicle for better display
+      const lcatsByVehicle = importPreview.lcats.reduce((acc, lcat) => {
+        if (!acc[lcat.vehicle]) {
+          acc[lcat.vehicle] = [];
+        }
+        acc[lcat.vehicle].push(lcat);
+        return acc;
+      }, {} as Record<string, LCAT[]>);
+      
+      console.log('Import Summary:', importSummary);
+      console.log('LCATs by Vehicle:', lcatsByVehicle);
+      
+      // ACTUALLY PERSIST THE IMPORTED DATA TO STATE
+      // In a real app, this would be a backend call
+      if (importMode === 'replace') {
+        // Replace all existing data
+        setContractVehicles(importPreview.contractVehicles);
+        setLcats(importPreview.lcats);
+        setProjectRoles(importPreview.projectRoles);
+        setCompanyRoles(importPreview.companyRoles);
+        setRateValidationRules(importPreview.rateValidationRules);
+      } else {
+        // Merge with existing data (default behavior) - with deduplication
+        setContractVehicles(prev => {
+          const existing = new Set(prev.map(v => v.id));
+          const newVehicles = importPreview.contractVehicles.filter(v => !existing.has(v.id));
+          return [...prev, ...newVehicles];
+        });
+        
+        setLcats(prev => {
+          const existing = new Set(prev.map(l => l.id));
+          const newLcats = importPreview.lcats.filter(l => !existing.has(l.id));
+          return [...prev, ...newLcats];
+        });
+        
+        setProjectRoles(prev => {
+          const existing = new Set(prev.map(r => r.id));
+          const newRoles = importPreview.projectRoles.filter(r => !existing.has(r.id));
+          return [...prev, ...newRoles];
+        });
+        
+        setCompanyRoles(prev => {
+          const existing = new Set(prev.map(r => r.id));
+          const newRoles = importPreview.companyRoles.filter(r => !existing.has(r.id));
+          return [...prev, ...newRoles];
+        });
+        
+        setRateValidationRules(prev => {
+          const existing = new Set(prev.map(r => r.id));
+          const newRules = importPreview.rateValidationRules.filter(r => !existing.has(r.id));
+          return [...prev, ...newRules];
+        });
+      }
+      
+      // Show detailed success message
+      const message = `Import successful! Added: ${importSummary.contractVehicles} vehicles, ${importSummary.lcats} LCATs, ${importSummary.projectRoles} project roles, ${importSummary.companyRoles} company roles, ${importSummary.rateValidationRules} validation rules`;
+      setSnackbarMessage(message);
+      setSnackbarOpen(true);
+      setShowImportPreview(false);
+      setImportPreview(null);
+      
     } catch (error) {
       console.error('Error importing data:', error);
-      setSnackbarMessage('Error importing data');
+      setSnackbarMessage(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -371,6 +460,22 @@ const LCATManagement: React.FC = () => {
           </Button>
           <Button
             variant="outlined"
+            color="warning"
+            startIcon={<DeleteIcon />}
+            onClick={() => {
+              setContractVehicles([]);
+              setLcats([]);
+              setProjectRoles([]);
+              setCompanyRoles([]);
+              setRateValidationRules([]);
+              setSnackbarMessage('All data cleared');
+              setSnackbarOpen(true);
+            }}
+          >
+            Clear All Data
+          </Button>
+          <Button
+            variant="outlined"
             startIcon={<RefreshIcon />}
             onClick={loadData}
             disabled={loading}
@@ -391,9 +496,9 @@ const LCATManagement: React.FC = () => {
               scrollButtons="auto"
             >
               <Tab label="Contract Vehicles" />
+              <Tab label="LCATs" />
               <Tab label="Project Roles" />
-              <Tab label="SPRUCE LCATs" />
-              <Tab label="Company Roles" />
+              <Tab label="Agile Six Roles" />
               <Tab label="Rate Validation Rules" />
             </Tabs>
           </Toolbar>
@@ -470,7 +575,7 @@ const LCATManagement: React.FC = () => {
         {/* A6 Levels Tab removed - replaced with Company Roles */}
 
         {/* Project Roles Tab */}
-        <TabPanel value={currentTab} index={1}>
+        <TabPanel value={currentTab} index={2}>
           <Typography variant="h6" gutterBottom>
             Project Roles
           </Typography>
@@ -479,9 +584,7 @@ const LCATManagement: React.FC = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Role Name</TableCell>
-                  <TableCell>A6 Level</TableCell>
                   <TableCell>Typical Clearance</TableCell>
-                  <TableCell>Typical Location</TableCell>
                   <TableCell>Typical Hours</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
@@ -489,7 +592,6 @@ const LCATManagement: React.FC = () => {
               </TableHead>
               <TableBody>
                 {projectRoles.map((role) => {
-                  const companyRole = companyRoles.find(companyRole => companyRole.id === role.companyRoleId);
                   return (
                     <TableRow key={role.id}>
                       <TableCell>
@@ -503,17 +605,7 @@ const LCATManagement: React.FC = () => {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        {companyRole ? (
-                          <Chip label={companyRole.name} size="small" />
-                        ) : (
-                          'Unknown'
-                        )}
-                      </TableCell>
-                      <TableCell>
                         <Chip label={role.typicalClearance} size="small" />
-                      </TableCell>
-                      <TableCell>
-                        <Chip label={role.typicalLocation} size="small" />
                       </TableCell>
                       <TableCell>{role.typicalHours.toLocaleString()}</TableCell>
                       <TableCell>
@@ -542,25 +634,33 @@ const LCATManagement: React.FC = () => {
           </TableContainer>
         </TabPanel>
 
-        {/* SPRUCE LCATs Tab */}
-        <TabPanel value={currentTab} index={2}>
+        {/* LCATs Tab */}
+        <TabPanel value={currentTab} index={1}>
           <Typography variant="h6" gutterBottom>
-            SPRUCE LCATs
+            LCATs
           </Typography>
+          <Alert severity="info" sx={{ mb: 2 }}>
+            Manage labor category titles with rates for all contract vehicles.
+          </Alert>
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell>Vehicle</TableCell>
                   <TableCell>LCAT Name</TableCell>
                   <TableCell>Code</TableCell>
                   <TableCell>Description</TableCell>
+                  <TableCell>Rate</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {spruceLCATs.map((lcat) => (
+                {lcats.map((lcat) => (
                   <TableRow key={lcat.id}>
+                    <TableCell>
+                      <Chip label={lcat.vehicle} size="small" color="primary" />
+                    </TableCell>
                     <TableCell>
                       <Typography variant="body2" fontWeight="bold">
                         {lcat.name}
@@ -570,6 +670,11 @@ const LCATManagement: React.FC = () => {
                       <Chip label={lcat.code} size="small" />
                     </TableCell>
                     <TableCell>{lcat.description}</TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="bold" color="primary">
+                        ${lcat.rate?.toFixed(2) || '0.00'}
+                      </Typography>
+                    </TableCell>
                     <TableCell>
                       <Box display="flex" alignItems="center" gap={1}>
                         {getStatusIcon(lcat.isActive)}
@@ -595,13 +700,13 @@ const LCATManagement: React.FC = () => {
           </TableContainer>
         </TabPanel>
 
-        {/* Company Roles Tab */}
+        {/* Agile Six Roles Tab */}
         <TabPanel value={currentTab} index={3}>
           <Typography variant="h6" gutterBottom>
-            {companyConfigService.getLabels().companyRoles}
+            Agile Six Roles
           </Typography>
           <Alert severity="info" sx={{ mb: 2 }}>
-            Manage internal {companyConfigService.getConfig().name.toLowerCase()} roles with practice areas and pay bands.
+            Manage internal Agile Six roles with practice areas and pay bands (dollar amounts).
           </Alert>
           <Box sx={{ mb: 2 }}>
             <Button
@@ -633,7 +738,11 @@ const LCATManagement: React.FC = () => {
                       <Chip label={role.practiceArea} size="small" />
                     </TableCell>
                     <TableCell>{role.description}</TableCell>
-                    <TableCell>{role.payBand}</TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="bold" color="primary">
+                        ${role.payBand?.toLocaleString() || '0'}
+                      </Typography>
+                    </TableCell>
                     <TableCell>{(role.rateIncrease * 100).toFixed(1)}%</TableCell>
                     <TableCell>
                       <Chip
@@ -678,20 +787,35 @@ const LCATManagement: React.FC = () => {
       </Paper>
 
       {/* Import Dialog */}
-      <Dialog open={importDialogOpen} onClose={() => setImportDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={importDialogOpen} onClose={() => setImportDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>Import LCAT Data</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             <Alert severity="info" sx={{ mb: 2 }}>
-              Please download the template first, populate it with your data, then upload it here.
+              Import LCAT data from Excel files. The file should contain the following sheets:
+            </Alert>
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" gutterBottom>
+                <strong>Expected Excel Structure:</strong>
+              </Typography>
+              <ul>
+                <li><strong>Contract Vehicles:</strong> Available contract vehicles (VA SPRUCE, GSA MAS, etc.)</li>
+                <li><strong>LCATs:</strong> Labor category titles with rates for all vehicles</li>
+                <li><strong>Project Roles:</strong> Specific project roles with clearance and hours</li>
+                <li><strong>Agile Six Roles:</strong> Internal company roles with pay bands (dollar amounts)</li>
+                <li><strong>Rate Validation Rules:</strong> Rate validation criteria</li>
+              </ul>
+            </Box>
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <strong>Note:</strong> This will replace existing data. Make sure to download the current template first if you want to preserve existing data.
             </Alert>
             <input
               type="file"
-              accept=".xlsx,.xls,.csv"
+              accept=".xlsx,.xls"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                  handleImport(file);
+                  handleFileSelect(file);
                 }
               }}
               style={{ width: '100%', padding: '8px' }}
@@ -700,6 +824,186 @@ const LCATManagement: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setImportDialogOpen(false)}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Import Preview Dialog */}
+      <Dialog open={showImportPreview} onClose={() => setShowImportPreview(false)} maxWidth="lg" fullWidth>
+        <DialogTitle>Import Preview</DialogTitle>
+        <DialogContent>
+          {importPreview && (
+            <Box sx={{ pt: 2 }}>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                Review the data that will be imported. Click "Confirm Import" to proceed or "Cancel" to abort.
+              </Alert>
+              
+              {/* Import Mode Selection */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" gutterBottom>Import Mode</Typography>
+                <FormControl component="fieldset">
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button
+                      variant={importMode === 'merge' ? 'contained' : 'outlined'}
+                      onClick={() => setImportMode('merge')}
+                      size="small"
+                    >
+                      Merge with existing data
+                    </Button>
+                    <Button
+                      variant={importMode === 'replace' ? 'contained' : 'outlined'}
+                      onClick={() => setImportMode('replace')}
+                      size="small"
+                      color="warning"
+                    >
+                      Replace all data
+                    </Button>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    {importMode === 'merge' 
+                      ? 'New data will be added to existing data' 
+                      : 'All existing data will be replaced with imported data'
+                    }
+                  </Typography>
+                </FormControl>
+              </Box>
+              
+              {/* Import Summary */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" gutterBottom>Import Summary</Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6} sm={3}>
+                    <Paper sx={{ p: 2, textAlign: 'center' }}>
+                      <Typography variant="h4" color="primary">{importPreview.contractVehicles.length}</Typography>
+                      <Typography variant="body2">Contract Vehicles</Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Paper sx={{ p: 2, textAlign: 'center' }}>
+                      <Typography variant="h4" color="primary">{importPreview.lcats.length}</Typography>
+                      <Typography variant="body2">LCATs</Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Paper sx={{ p: 2, textAlign: 'center' }}>
+                      <Typography variant="h4" color="primary">{importPreview.projectRoles.length}</Typography>
+                      <Typography variant="body2">Project Roles</Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Paper sx={{ p: 2, textAlign: 'center' }}>
+                      <Typography variant="h4" color="primary">{importPreview.companyRoles.length}</Typography>
+                      <Typography variant="body2">Company Roles</Typography>
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              {/* LCATs by Vehicle */}
+              {importPreview.lcats.length > 0 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" gutterBottom>LCATs by Vehicle</Typography>
+                  {Object.entries(
+                    importPreview.lcats.reduce((acc, lcat) => {
+                      if (!acc[lcat.vehicle]) acc[lcat.vehicle] = [];
+                      acc[lcat.vehicle].push(lcat);
+                      return acc;
+                    }, {} as Record<string, LCAT[]>)
+                  ).map(([vehicle, lcats]) => (
+                    <Box key={vehicle} sx={{ mb: 2 }}>
+                      <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                        {vehicle} ({lcats.length} LCATs)
+                      </Typography>
+                      <TableContainer component={Paper} variant="outlined">
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Name</TableCell>
+                              <TableCell>Code</TableCell>
+                              <TableCell>Rate</TableCell>
+                              <TableCell>Status</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {lcats.slice(0, 5).map((lcat) => (
+                              <TableRow key={lcat.id}>
+                                <TableCell>{lcat.name}</TableCell>
+                                <TableCell>
+                                  <Chip label={lcat.code} size="small" />
+                                </TableCell>
+                                <TableCell>${lcat.rate.toFixed(2)}</TableCell>
+                                <TableCell>
+                                  <Chip 
+                                    label={lcat.isActive ? 'Active' : 'Inactive'} 
+                                    color={lcat.isActive ? 'success' : 'default'} 
+                                    size="small"
+                                  />
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            {lcats.length > 5 && (
+                              <TableRow>
+                                <TableCell colSpan={4} align="center">
+                                  <Typography variant="body2" color="text.secondary">
+                                    ... and {lcats.length - 5} more
+                                  </Typography>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+
+              {/* Contract Vehicles Preview */}
+              {importPreview.contractVehicles.length > 0 && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" gutterBottom>Contract Vehicles</Typography>
+                  <TableContainer component={Paper} variant="outlined">
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Name</TableCell>
+                          <TableCell>Code</TableCell>
+                          <TableCell>Start Date</TableCell>
+                          <TableCell>End Date</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {importPreview.contractVehicles.slice(0, 5).map((vehicle) => (
+                          <TableRow key={vehicle.id}>
+                            <TableCell>{vehicle.name}</TableCell>
+                            <TableCell>
+                              <Chip label={vehicle.code} size="small" />
+                            </TableCell>
+                            <TableCell>{vehicle.startDate}</TableCell>
+                            <TableCell>{vehicle.endDate}</TableCell>
+                          </TableRow>
+                        ))}
+                        {importPreview.contractVehicles.length > 5 && (
+                          <TableRow>
+                            <TableCell colSpan={4} align="center">
+                              <Typography variant="body2" color="text.secondary">
+                                ... and {importPreview.contractVehicles.length - 5} more
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowImportPreview(false)}>Cancel</Button>
+          <Button onClick={handleConfirmImport} variant="contained" color="primary">
+            Confirm Import
+          </Button>
         </DialogActions>
       </Dialog>
 

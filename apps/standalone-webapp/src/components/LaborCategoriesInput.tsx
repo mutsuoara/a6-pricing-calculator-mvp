@@ -46,7 +46,9 @@ import {
 } from '@mui/icons-material';
 import { LaborCategoryInput, LaborCategoryResult, LaborCategorySummary, ValidationError } from '../types/labor-category';
 import { LaborCategoryService } from '../services/labor-category.service';
-import LCATSelectionDialog from './LCATSelectionDialog';
+import { LCAT, CompanyRole, ProjectRole } from '../types/mapping';
+import { MappingService } from '../services/mapping.service';
+import { LCATProjectRoleSelectionDialog } from './LCATProjectRoleSelectionDialog';
 
 interface LaborCategoriesInputProps {
   categories: LaborCategoryInput[];
@@ -83,6 +85,20 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   });
   const [lcatDialogOpen, setLcatDialogOpen] = useState(false);
   const [speedDialOpen, setSpeedDialOpen] = useState(false);
+  const [companyRoles, setCompanyRoles] = useState<CompanyRole[]>([]);
+
+  // Load Company Role data
+  useEffect(() => {
+    const loadCompanyRoles = async () => {
+      try {
+        const companyRolesData = await MappingService.getCompanyRoles();
+        setCompanyRoles(companyRolesData);
+      } catch (error) {
+        console.error('Error loading Company Role data:', error);
+      }
+    };
+    loadCompanyRoles();
+  }, []);
 
   // Calculate summary whenever categories or rates change
   useEffect(() => {
@@ -140,6 +156,50 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     onCategoriesChange(newCategories);
   };
 
+  // Handle LCAT + Project Role selection from dialog
+  const handleLCATProjectRoleSelection = (selection: {
+    lcat: LCAT;
+    projectRole: ProjectRole;
+    companyRole?: CompanyRole;
+    finalRate?: number;
+  }) => {
+    const newCategory: LaborCategoryInput = {
+      id: `temp-${Date.now()}`,
+      title: `${selection.lcat.name} - ${selection.projectRole.name}`,
+      baseRate: selection.finalRate || selection.lcat.rate,
+      hours: 0,
+      ftePercentage: 100,
+      clearanceLevel: 'None',
+      location: 'Remote',
+      // LCAT data
+      lcatId: selection.lcat.id,
+      lcatName: selection.lcat.name,
+      lcatCode: selection.lcat.code,
+      lcatDescription: selection.lcat.description,
+      lcatRate: selection.lcat.rate,
+      vehicle: selection.lcat.vehicle,
+      // Project Role data
+      projectRoleId: selection.projectRole.id,
+      projectRoleName: selection.projectRole.name,
+      projectRoleDescription: selection.projectRole.description,
+      // Company Role data
+      companyRoleId: selection.companyRole?.id,
+      companyRoleName: selection.companyRole?.name,
+      companyRoleRate: selection.companyRole?.payBand,
+      // Final Rate with metadata
+      finalRate: selection.finalRate,
+      finalRateMetadata: {
+        source: selection.companyRole ? 'company' : 'lcat',
+        reason: selection.companyRole ? 'Mapped to company role' : 'Using LCAT rate',
+        timestamp: new Date().toISOString(),
+        userId: 'current-user', // In real app, get from auth context
+      },
+    };
+    
+    const newCategories = [...categories, newCategory];
+    onCategoriesChange(newCategories);
+  };
+
   const startEditing = (index: number) => {
     // Store the original category data before editing
     setOriginalCategories([...categories]);
@@ -179,32 +239,6 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     return LaborCategoryService.calculateTotalCost(category, overheadRate, gaRate, feeRate);
   };
 
-  const handleLCATSelect = (template: any) => {
-    // Get typical rate for the template (use first available vehicle rate or average)
-    const vehicleCodes = Object.keys(template.vehicleRates);
-    const typicalRate = vehicleCodes.length > 0 
-      ? template.vehicleRates[vehicleCodes[0]].typicalRate
-      : 75; // Fallback rate
-
-    const newCategory: LaborCategoryInput = {
-      id: Date.now().toString(),
-      title: template.title,
-      baseRate: typicalRate,
-      hours: template.typicalHours || 2080,
-      ftePercentage: 100,
-      clearanceLevel: template.typicalClearanceLevel,
-      location: template.typicalLocation,
-    };
-    
-    const newCategories = [...categories, newCategory];
-    onCategoriesChange(newCategories);
-    
-    // Start editing the new category
-    setEditingState(prev => ({
-      ...prev,
-      [`category_${newCategories.length - 1}`]: true,
-    }));
-  };
 
   const duplicateCategory = (index: number) => {
     const categoryToDuplicate = categories[index];
@@ -277,22 +311,9 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
           >
             Select Labor Category
           </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={addCategory}
-            disabled={disabled}
-            sx={{ 
-              backgroundColor: '#1976d2',
-              minWidth: '180px',
-              height: '40px',
-              '&:hover': { backgroundColor: '#1565c0' }
-            }}
-          >
-            Add Labor Category
-          </Button>
         </Box>
       </Box>
+
 
       {/* Categories Table */}
       <TableContainer component={Paper} elevation={2}>
@@ -301,16 +322,48 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
               <TableCell sx={{ fontWeight: 'bold' }}>
                 <Box display="flex" alignItems="center" gap={0.5}>
-                  Title
-                  <Tooltip title="Labor category job title or role name">
+                  LCAT
+                  <Tooltip title="Selected LCAT from management system">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>
+                <Box display="flex" alignItems="center" gap={0.5}>
+                  Project Role
+                  <Tooltip title="Selected project role from management system">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>
+                <Box display="flex" alignItems="center" gap={0.5}>
+                  Company Role
+                  <Tooltip title="Mapped internal company role">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
               </TableCell>
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
-                  Base Rate
-                  <Tooltip title="Hourly rate before burden (overhead, G&A, fee)">
+                  LCAT Rate
+                  <Tooltip title="Rate from selected LCAT">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Company Rate
+                  <Tooltip title="Rate from company role">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Final Rate
+                  <Tooltip title="Manual final rate entry">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -381,63 +434,136 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               
               return (
                 <TableRow key={index} hover>
-                  {/* Title */}
+                  {/* LCAT */}
                   <TableCell>
-                    {editing ? (
-                      <TextField
-                        fullWidth
-                        size="small"
-                        value={category.title}
-                        onChange={(e) => updateCategory(index, 'title', e.target.value)}
-                        error={!!getFieldError(index, 'title')}
-                        disabled={disabled}
-                        sx={{ 
-                          '& .MuiFormHelperText-root': { 
-                            position: 'absolute', 
-                            top: '100%', 
-                            left: 0,
-                            margin: 0,
-                            fontSize: '0.75rem'
-                          }
-                        }}
-                        helperText={getFieldError(index, 'title')}
-                      />
+                    {category.lcatId ? (
+                      <Box>
+                        <Typography variant="body2" fontWeight="medium">
+                          {category.lcatName}
+                        </Typography>
+                        <Chip 
+                          label={`${category.vehicle} - ${category.lcatCode}`} 
+                          size="small" 
+                          color="primary" 
+                          sx={{ mt: 0.5 }}
+                        />
+                      </Box>
                     ) : (
-                      <Typography variant="body2" fontWeight="medium">
-                        {category.title || 'Untitled Category'}
+                      <Typography variant="body2" color="text.secondary">
+                        No LCAT selected
                       </Typography>
                     )}
                   </TableCell>
 
-                  {/* Base Rate */}
+                  {/* Project Role */}
+                  <TableCell>
+                    {category.projectRoleId ? (
+                      <Box>
+                        <Typography variant="body2" fontWeight="medium">
+                          {category.projectRoleName}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {category.projectRoleDescription}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        No project role
+                      </Typography>
+                    )}
+                  </TableCell>
+
+                  {/* Company Role */}
+                  <TableCell>
+                    {editing ? (
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Select Company Role</InputLabel>
+                        <Select
+                          value={category.companyRoleId || ''}
+                          onChange={(e) => {
+                            const selectedRole = companyRoles.find(r => r.id === e.target.value);
+                            if (selectedRole) {
+                              updateCategory(index, 'companyRoleId', selectedRole.id);
+                              updateCategory(index, 'companyRoleName', selectedRole.name);
+                              updateCategory(index, 'companyRoleRate', selectedRole.payBand);
+                              // Update final rate to company role rate
+                              updateCategory(index, 'finalRate', selectedRole.payBand);
+                            }
+                          }}
+                          disabled={disabled}
+                        >
+                          <MenuItem value="">
+                            <em>No Company Role</em>
+                          </MenuItem>
+                          {companyRoles.map((role) => (
+                            <MenuItem key={role.id} value={role.id}>
+                              <Box>
+                                <Typography variant="body2" fontWeight="medium">
+                                  {role.name}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {role.practiceArea} - ${role.payBand.toLocaleString()}
+                                </Typography>
+                              </Box>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    ) : (
+                      <Box>
+                        {category.companyRoleId ? (
+                          <Box>
+                            <Typography variant="body2" fontWeight="medium">
+                              {category.companyRoleName}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              ${category.companyRoleRate?.toLocaleString()}
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">
+                            No company role mapped
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
+                  </TableCell>
+
+                  {/* LCAT Rate */}
+                  <TableCell align="right">
+                    <Typography variant="body2" fontWeight="medium">
+                      ${category.lcatRate?.toFixed(2) || '0.00'}
+                    </Typography>
+                  </TableCell>
+
+                  {/* Company Rate */}
+                  <TableCell align="right">
+                    <Typography variant="body2" fontWeight="medium">
+                      ${category.companyRoleRate?.toFixed(2) || '0.00'}
+                    </Typography>
+                  </TableCell>
+
+                  {/* Final Rate */}
                   <TableCell align="right">
                     {editing ? (
                       <TextField
                         size="small"
                         type="number"
-                        value={category.baseRate}
-                        onChange={(e) => updateCategory(index, 'baseRate', parseFloat(e.target.value) || 0)}
-                        error={!!getFieldError(index, 'baseRate')}
+                        value={category.finalRate || ''}
+                        onChange={(e) => updateCategory(index, 'finalRate', parseFloat(e.target.value) || 0)}
                         disabled={disabled}
-                        sx={{ 
-                          width: 100,
-                          '& .MuiFormHelperText-root': { 
-                            position: 'absolute', 
-                            top: '100%', 
-                            left: 0,
-                            margin: 0,
-                            fontSize: '0.75rem'
-                          }
+                        sx={{ width: 100 }}
+                        InputProps={{
+                          startAdornment: <Typography sx={{ mr: 0.5 }}>$</Typography>
                         }}
-                        helperText={getFieldError(index, 'baseRate')}
-                        inputProps={{ min: 1, max: 1000, step: 0.01 }}
                       />
                     ) : (
-                      <Typography variant="body2">
-                        {LaborCategoryService.formatCurrency(category.baseRate)}
+                      <Typography variant="body2" fontWeight="bold" color="primary">
+                        ${category.finalRate?.toFixed(2) || '0.00'}
                       </Typography>
                     )}
                   </TableCell>
+
 
                   {/* Hours */}
                   <TableCell align="right">
@@ -795,12 +921,6 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
         </Box>
       )}
 
-      {/* LCAT Selection Dialog */}
-      <LCATSelectionDialog
-        open={lcatDialogOpen}
-        onClose={() => setLcatDialogOpen(false)}
-        onSelect={handleLCATSelect}
-      />
 
       {/* Speed Dial for Quick Actions */}
       {categories.length > 0 && (
@@ -825,6 +945,13 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
           ))}
         </SpeedDial>
       )}
+
+      {/* LCAT Project Role Selection Dialog */}
+      <LCATProjectRoleSelectionDialog
+        open={lcatDialogOpen}
+        onClose={() => setLcatDialogOpen(false)}
+        onSelect={handleLCATProjectRoleSelection}
+      />
     </Box>
   );
 };

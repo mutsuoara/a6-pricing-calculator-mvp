@@ -23,9 +23,7 @@ export interface ProjectRole {
   id: string;
   name: string; // e.g., "Engineering Lead (KP)", "Lead Product Manager (KP)"
   description: string;
-  companyRoleId: string; // References CompanyRole instead of A6Level
   typicalClearance: 'None' | 'Public Trust' | 'Secret' | 'Top Secret';
-  typicalLocation: 'Remote' | 'On-site' | 'Hybrid';
   typicalHours: number; // Default hours per year
   isActive: boolean;
   createdAt: string;
@@ -33,23 +31,28 @@ export interface ProjectRole {
   createdBy: string;
 }
 
-export interface SPRUCELCAT {
+export interface LCAT {
   id: string;
+  vehicle: string; // Contract vehicle (e.g., "VA SPRUCE", "GSA MAS", "8(a)", "SBIR")
   name: string; // e.g., "Software Engineer", "Product Manager"
   code: string; // e.g., "SWE", "PM"
   description: string;
+  rate: number; // Generic rate field for any vehicle
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
   createdBy: string;
 }
 
+// Keep SPRUCELCAT for backward compatibility, but it's now just an alias
+export type SPRUCELCAT = LCAT;
+
 export interface CompanyRole {
   id: string;
   name: string; // e.g., "Senior Software Engineer", "Lead Product Manager"
   practiceArea: string; // e.g., "Engineering", "Product", "Design", "Data Science"
   description: string;
-  payBand: string; // e.g., "Band 5", "Senior Level", "Principal Level"
+  payBand: number; // Pay Band as dollar amount (e.g., 120000 for $120,000)
   rateIncrease: number; // Annual rate increase percentage (e.g., 0.03 for 3%)
   isActive: boolean;
   createdAt: string;
@@ -99,7 +102,7 @@ export interface AuditLog {
 export interface ImportTemplate {
   contractVehicles: ContractVehicle[];
   projectRoles: ProjectRole[];
-  spruceLCATs: SPRUCELCAT[];
+  lcats: LCAT[];
   companyRoles: CompanyRole[];
   rateValidationRules: RateValidationRule[];
 }

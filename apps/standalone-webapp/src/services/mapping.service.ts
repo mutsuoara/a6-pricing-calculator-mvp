@@ -7,7 +7,7 @@ import * as XLSX from 'xlsx';
 import {
   ContractVehicle,
   ProjectRole,
-  SPRUCELCAT,
+  LCAT,
   CompanyRole,
   AuditLog,
   ImportTemplate,
@@ -72,9 +72,7 @@ export class MappingService {
         id: '1',
         name: 'Engineering Lead (KP)',
         description: 'Key Personnel Engineering Lead',
-        companyRoleId: '1',
         typicalClearance: 'Secret',
-        typicalLocation: 'On-site',
         typicalHours: 2080,
         isActive: true,
         createdAt: '2024-01-01T00:00:00Z',
@@ -85,9 +83,7 @@ export class MappingService {
         id: '2',
         name: 'Lead Product Manager (KP)',
         description: 'Key Personnel Product Manager',
-        companyRoleId: '3',
         typicalClearance: 'Public Trust',
-        typicalLocation: 'Hybrid',
         typicalHours: 2080,
         isActive: true,
         createdAt: '2024-01-01T00:00:00Z',
@@ -97,14 +93,16 @@ export class MappingService {
     ];
   }
 
-  // SPRUCE LCAT Management
-  static async getSPRUCELCATs(): Promise<SPRUCELCAT[]> {
+  // LCAT Management
+  static async getLCATs(): Promise<LCAT[]> {
     return [
       {
         id: '1',
+        vehicle: 'VA SPRUCE',
         name: 'Software Engineer',
         code: 'SWE',
         description: 'Software Engineering position',
+        rate: 256.31,
         isActive: true,
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
@@ -112,15 +110,46 @@ export class MappingService {
       },
       {
         id: '2',
+        vehicle: 'VA SPRUCE',
         name: 'Product Manager',
         code: 'PM',
         description: 'Product Management position',
+        rate: 324.16,
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        createdBy: 'system',
+      },
+      {
+        id: '3',
+        vehicle: 'GSA MAS',
+        name: 'Software Engineer',
+        code: 'SWE',
+        description: 'Software Engineering position',
+        rate: 245.50,
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        createdBy: 'system',
+      },
+      {
+        id: '4',
+        vehicle: 'GSA MAS',
+        name: 'Product Manager',
+        code: 'PM',
+        description: 'Product Management position',
+        rate: 310.25,
         isActive: true,
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
         createdBy: 'system',
       },
     ];
+  }
+
+  // Backward compatibility
+  static async getSPRUCELCATs(): Promise<LCAT[]> {
+    return this.getLCATs();
   }
 
   // Company Role Management
@@ -131,7 +160,7 @@ export class MappingService {
         name: 'Senior Software Engineer',
         practiceArea: 'Engineering',
         description: 'Senior level software engineering role with 5+ years experience',
-        payBand: 'Band 5',
+        payBand: 120000, // $120,000
         rateIncrease: 0.03, // 3% annual increase
         isActive: true,
         createdAt: '2024-01-01T00:00:00Z',
@@ -143,7 +172,7 @@ export class MappingService {
         name: 'Lead Product Manager',
         practiceArea: 'Product',
         description: 'Lead product management role with strategic responsibilities',
-        payBand: 'Senior Level',
+        payBand: 110000, // $110,000
         rateIncrease: 0.025, // 2.5% annual increase
         isActive: true,
         createdAt: '2024-01-01T00:00:00Z',
@@ -155,7 +184,7 @@ export class MappingService {
         name: 'Principal Data Scientist',
         practiceArea: 'Data Science',
         description: 'Principal level data science role with advanced analytics expertise',
-        payBand: 'Principal Level',
+        payBand: 130000, // $130,000
         rateIncrease: 0.04, // 4% annual increase
         isActive: true,
         createdAt: '2024-01-01T00:00:00Z',
@@ -167,7 +196,7 @@ export class MappingService {
         name: 'Senior UX Designer',
         practiceArea: 'Design',
         description: 'Senior user experience design role with leadership responsibilities',
-        payBand: 'Band 4',
+        payBand: 105000, // $105,000
         rateIncrease: 0.028, // 2.8% annual increase
         isActive: true,
         createdAt: '2024-01-01T00:00:00Z',
@@ -361,7 +390,7 @@ export class MappingService {
     return {
       contractVehicles: [],
       projectRoles: [],
-      spruceLCATs: [],
+      lcats: [],
       companyRoles: [],
       rateValidationRules: [],
     };

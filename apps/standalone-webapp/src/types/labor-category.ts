@@ -11,6 +11,29 @@ export interface LaborCategoryInput {
   ftePercentage: number;
   clearanceLevel: 'None' | 'Public Trust' | 'Secret' | 'Top Secret';
   location: 'Remote' | 'On-site' | 'Hybrid';
+  // LCAT Integration fields
+  lcatId?: string;
+  lcatName?: string;
+  lcatCode?: string;
+  lcatDescription?: string;
+  lcatRate?: number;
+  vehicle?: string;
+  // Project Role fields
+  projectRoleId?: string;
+  projectRoleName?: string;
+  projectRoleDescription?: string;
+  // Company Role fields
+  companyRoleId?: string;
+  companyRoleName?: string;
+  companyRoleRate?: number;
+  // Final Rate with metadata
+  finalRate?: number;
+  finalRateMetadata?: {
+    source: 'lcat' | 'company' | 'manual';
+    reason?: string;
+    timestamp?: string;
+    userId?: string;
+  };
 }
 
 export interface LaborCategoryResult {
