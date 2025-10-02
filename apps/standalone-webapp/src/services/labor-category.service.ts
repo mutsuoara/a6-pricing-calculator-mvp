@@ -221,6 +221,16 @@ export class LaborCategoryService {
       ftePercentage: 100,
       clearanceLevel: 'None',
       location: 'Remote',
+      companyRoleId: '',
+      companyRoleName: '',
+      companyRoleRate: 0,
+      finalRate: 0,
+      finalRateMetadata: {
+        source: 'manual',
+        reason: 'New empty category',
+        timestamp: new Date().toISOString(),
+        userId: 'current-user',
+      },
     };
   }
 

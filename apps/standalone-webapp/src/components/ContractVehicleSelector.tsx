@@ -3,7 +3,7 @@
  * Allows users to select contract vehicles and view their rate limits
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   FormControl,
@@ -17,23 +17,19 @@ import {
   Grid,
   Alert,
   CircularProgress,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from '@mui/material';
-import { Info as InfoIcon } from '@mui/icons-material';
-
-interface ContractVehicle {
-  id: string;
-  name: string;
-  code: string;
-  description: string;
-  maxOverheadRate: number | string;
-  maxGaRate: number | string;
-  maxFeeRate: number | string;
-  complianceRequirements: string[];
-}
+import { Info as InfoIcon, Add as AddIcon } from '@mui/icons-material';
+import { useContractVehicles } from '../hooks/useContractVehicles';
 
 interface ContractVehicleSelectorProps {
   selectedVehicle: string | undefined;
-  onVehicleChange: (vehicle: string | undefined) => void;
+  onVehicleChange: (vehicle: string | undefined, burdenedRates?: { overheadRate: number; gaRate: number; feeRate: number }) => void;
   disabled?: boolean;
 }
 
@@ -42,76 +38,53 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
   onVehicleChange,
   disabled = false,
 }) => {
-  const [vehicles, setVehicles] = useState<ContractVehicle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { vehicles, loading, error, createVehicle } = useContractVehicles();
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newVehicle, setNewVehicle] = useState({
+    name: '',
+    code: '',
+    description: '',
+    escalationRate: 0.03,
+    startDate: '',
+    endDate: '',
+    maxOverheadRate: 40,
+    maxGaRate: 15,
+    maxFeeRate: 10,
+    complianceRequirements: [] as string[],
+  });
 
-  useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('http://localhost:3001/api/labor-categories/contract-vehicles');
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        setVehicles(data.data || []);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching contract vehicles:', err);
-        setError('Failed to load contract vehicles');
-        // Fallback to hardcoded vehicles
-        setVehicles([
-          {
-            id: '1',
-            name: 'GSA MAS',
-            code: 'GSA_MAS',
-            description: 'General Services Administration Multiple Award Schedule',
-            maxOverheadRate: 40.00,
-            maxGaRate: 15.00,
-            maxFeeRate: 10.00,
-            complianceRequirements: ['GSA compliance', 'SIN requirements'],
-          },
-          {
-            id: '2',
-            name: 'VA SPRUCE',
-            code: 'VA_SPRUCE',
-            description: 'VA Strategic Partnering for Readiness in Underserved Communities',
-            maxOverheadRate: 35.00,
-            maxGaRate: 12.00,
-            maxFeeRate: 8.00,
-            complianceRequirements: ['VA compliance', 'Healthcare focus'],
-          },
-          {
-            id: '3',
-            name: 'OPM (GSA)',
-            code: 'OPM_GSA',
-            description: 'Office of Personnel Management through GSA',
-            maxOverheadRate: 38.00,
-            maxGaRate: 14.00,
-            maxFeeRate: 9.00,
-            complianceRequirements: ['OPM compliance', 'HR services'],
-          },
-          {
-            id: '4',
-            name: 'HHS SWIFT (GSA)',
-            code: 'HHS_SWIFT_GSA',
-            description: 'Health and Human Services SWIFT through GSA',
-            maxOverheadRate: 42.00,
-            maxGaRate: 16.00,
-            maxFeeRate: 11.00,
-            complianceRequirements: ['HHS compliance', 'Healthcare IT'],
-          },
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchVehicles();
-  }, []);
+  const handleCreateVehicle = async () => {
+    try {
+      const createdVehicle = await createVehicle({
+        ...newVehicle,
+        tenantId: '00000000-0000-0000-0000-000000000000',
+        createdBy: 'user',
+        isActive: true,
+      });
+      
+      onVehicleChange(createdVehicle.name, {
+        overheadRate: createdVehicle.maxOverheadRate / 100,
+        gaRate: createdVehicle.maxGaRate / 100,
+        feeRate: createdVehicle.maxFeeRate / 100,
+      });
+      setShowCreateDialog(false);
+      setNewVehicle({
+        name: '',
+        code: '',
+        description: '',
+        escalationRate: 0.03,
+        startDate: '',
+        endDate: '',
+        maxOverheadRate: 40,
+        maxGaRate: 15,
+        maxFeeRate: 10,
+        complianceRequirements: [],
+      });
+    } catch (err) {
+      console.error('Error creating contract vehicle:', err);
+    }
+  };
 
   const selectedVehicleData = vehicles.find(v => v.name === selectedVehicle);
 
@@ -132,7 +105,23 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
         <InputLabel>Contract Vehicle</InputLabel>
         <Select
           value={selectedVehicle || ''}
-          onChange={(e) => onVehicleChange(e.target.value || undefined)}
+          onChange={(e) => {
+            const vehicle = e.target.value;
+            if (vehicle) {
+              const selectedVehicleData = vehicles.find(v => v.name === vehicle);
+              if (selectedVehicleData) {
+                onVehicleChange(vehicle, {
+                  overheadRate: selectedVehicleData.maxOverheadRate / 100,
+                  gaRate: selectedVehicleData.maxGaRate / 100,
+                  feeRate: selectedVehicleData.maxFeeRate / 100,
+                });
+              } else {
+                onVehicleChange(vehicle);
+              }
+            } else {
+              onVehicleChange(undefined);
+            }
+          }}
           label="Contract Vehicle"
         >
           <MenuItem value="">
@@ -150,6 +139,14 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
               </Box>
             </MenuItem>
           ))}
+          <MenuItem value="__CREATE_NEW__" onClick={(e) => { e.stopPropagation(); setShowCreateDialog(true); }}>
+            <Box display="flex" alignItems="center" gap={1}>
+              <AddIcon fontSize="small" />
+              <Typography variant="body1" color="primary">
+                Create New Contract Vehicle
+              </Typography>
+            </Box>
+          </MenuItem>
         </Select>
       </FormControl>
 
@@ -231,6 +228,115 @@ export const ContractVehicleSelector: React.FC<ContractVehicleSelectorProps> = (
           </Typography>
         </Alert>
       )}
+
+      {/* Create New Contract Vehicle Dialog */}
+      <Dialog open={showCreateDialog} onClose={() => setShowCreateDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Create New Contract Vehicle</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Name"
+                  value={newVehicle.name}
+                  onChange={(e) => setNewVehicle(prev => ({ ...prev, name: e.target.value }))}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Code"
+                  value={newVehicle.code}
+                  onChange={(e) => setNewVehicle(prev => ({ ...prev, code: e.target.value }))}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Description"
+                  value={newVehicle.description}
+                  onChange={(e) => setNewVehicle(prev => ({ ...prev, description: e.target.value }))}
+                  multiline
+                  rows={2}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Start Date"
+                  type="date"
+                  value={newVehicle.startDate}
+                  onChange={(e) => setNewVehicle(prev => ({ ...prev, startDate: e.target.value }))}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="End Date"
+                  type="date"
+                  value={newVehicle.endDate}
+                  onChange={(e) => setNewVehicle(prev => ({ ...prev, endDate: e.target.value }))}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  label="Escalation Rate (%)"
+                  type="number"
+                  value={newVehicle.escalationRate * 100}
+                  onChange={(e) => setNewVehicle(prev => ({ ...prev, escalationRate: (parseFloat(e.target.value) || 0) / 100 }))}
+                  inputProps={{ step: 0.1, min: 0, max: 100 }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  label="Max Overhead Rate (%)"
+                  type="number"
+                  value={newVehicle.maxOverheadRate}
+                  onChange={(e) => setNewVehicle(prev => ({ ...prev, maxOverheadRate: parseFloat(e.target.value) || 0 }))}
+                  inputProps={{ step: 0.1, min: 0, max: 100 }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  label="Max G&A Rate (%)"
+                  type="number"
+                  value={newVehicle.maxGaRate}
+                  onChange={(e) => setNewVehicle(prev => ({ ...prev, maxGaRate: parseFloat(e.target.value) || 0 }))}
+                  inputProps={{ step: 0.1, min: 0, max: 100 }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  label="Max Fee Rate (%)"
+                  type="number"
+                  value={newVehicle.maxFeeRate}
+                  onChange={(e) => setNewVehicle(prev => ({ ...prev, maxFeeRate: parseFloat(e.target.value) || 0 }))}
+                  inputProps={{ step: 0.1, min: 0, max: 100 }}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowCreateDialog(false)}>Cancel</Button>
+          <Button 
+            onClick={handleCreateVehicle} 
+            variant="contained" 
+            disabled={!newVehicle.name || !newVehicle.code}
+          >
+            Create Contract Vehicle
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

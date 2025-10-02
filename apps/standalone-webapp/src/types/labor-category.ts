@@ -23,12 +23,12 @@ export interface LaborCategoryInput {
   projectRoleName?: string;
   projectRoleDescription?: string;
   // Company Role fields
-  companyRoleId?: string;
-  companyRoleName?: string;
-  companyRoleRate?: number;
+  companyRoleId: string;
+  companyRoleName: string;
+  companyRoleRate: number;
   // Final Rate with metadata
-  finalRate?: number;
-  finalRateMetadata?: {
+  finalRate: number;
+  finalRateMetadata: {
     source: 'lcat' | 'company' | 'manual';
     reason?: string;
     timestamp?: string;

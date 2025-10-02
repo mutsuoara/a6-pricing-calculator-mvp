@@ -48,11 +48,14 @@ import { LaborCategoryInput, LaborCategoryResult, LaborCategorySummary, Validati
 import { LaborCategoryService } from '../services/labor-category.service';
 import { LCAT, CompanyRole, ProjectRole } from '../types/mapping';
 import { MappingService } from '../services/mapping.service';
+import { getSalaryConversionInfo } from '../utils/salary-conversion';
+import { formatNumberWithCommas, formatCurrencyWithCommas, formatPercentageWithCommas } from '../utils/number-formatting';
+import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LCATProjectRoleSelectionDialog } from './LCATProjectRoleSelectionDialog';
 
 interface LaborCategoriesInputProps {
   categories: LaborCategoryInput[];
-  onCategoriesChange: (categories: LaborCategoryInput[]) => void;
+  onCategoriesChange: (categories: LaborCategoryInput[] | ((prev: LaborCategoryInput[]) => LaborCategoryInput[])) => void;
   overheadRate: number;
   gaRate: number;
   feeRate: number;
@@ -71,6 +74,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   feeRate,
   disabled = false,
 }) => {
+  const { calculateWrapAmount } = useSystemSettings();
   const [editingState, setEditingState] = useState<EditingState>({});
   const [originalCategories, setOriginalCategories] = useState<LaborCategoryInput[]>([]);
   const [errors, setErrors] = useState<Record<string, ValidationError[]>>({});
@@ -91,7 +95,9 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   useEffect(() => {
     const loadCompanyRoles = async () => {
       try {
+        console.log('Loading company roles...');
         const companyRolesData = await MappingService.getCompanyRoles();
+        console.log('Loaded company roles:', companyRolesData);
         setCompanyRoles(companyRolesData);
       } catch (error) {
         console.error('Error loading Company Role data:', error);
@@ -151,8 +157,10 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   };
 
   const updateCategory = (index: number, field: keyof LaborCategoryInput, value: any) => {
+    console.log(`updateCategory called: index=${index}, field=${field}, value=`, value);
     const newCategories = [...categories];
     newCategories[index] = { ...newCategories[index], [field]: value };
+    console.log('Updated category:', newCategories[index]);
     onCategoriesChange(newCategories);
   };
 
@@ -160,6 +168,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   const handleLCATProjectRoleSelection = (selection: {
     lcat: LCAT;
     projectRole: ProjectRole;
+    hours?: number;
     companyRole?: CompanyRole;
     finalRate?: number;
   }) => {
@@ -167,9 +176,9 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
       id: `temp-${Date.now()}`,
       title: `${selection.lcat.name} - ${selection.projectRole.name}`,
       baseRate: selection.finalRate || selection.lcat.rate,
-      hours: 0,
+      hours: selection.hours || selection.projectRole.typicalHours, // Use project role hours
       ftePercentage: 100,
-      clearanceLevel: 'None',
+      clearanceLevel: selection.projectRole.typicalClearance as any, // Use project role clearance
       location: 'Remote',
       // LCAT data
       lcatId: selection.lcat.id,
@@ -183,11 +192,11 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
       projectRoleName: selection.projectRole.name,
       projectRoleDescription: selection.projectRole.description,
       // Company Role data
-      companyRoleId: selection.companyRole?.id,
-      companyRoleName: selection.companyRole?.name,
-      companyRoleRate: selection.companyRole?.payBand,
+      companyRoleId: selection.companyRole?.id || '',
+      companyRoleName: selection.companyRole?.name || '',
+      companyRoleRate: selection.companyRole?.rate || 0,
       // Final Rate with metadata
-      finalRate: selection.finalRate,
+      finalRate: selection.finalRate || selection.lcat.rate,
       finalRateMetadata: {
         source: selection.companyRole ? 'company' : 'lcat',
         reason: selection.companyRole ? 'Mapped to company role' : 'Using LCAT rate',
@@ -196,8 +205,12 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
       },
     };
     
-    const newCategories = [...categories, newCategory];
-    onCategoriesChange(newCategories);
+    // Use functional update to ensure we get the latest state
+    onCategoriesChange((prevCategories: LaborCategoryInput[]) => {
+      const updated = [...prevCategories, newCategory];
+      console.log(`Adding labor category: ${newCategory.title}. Total categories: ${updated.length}`);
+      return updated;
+    });
   };
 
   const startEditing = (index: number) => {
@@ -355,7 +368,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Company Rate
-                  <Tooltip title="Rate from company role">
+                  <Tooltip title="Annual salary from company role (used to calculate hourly Final Rate)">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -363,7 +376,15 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Final Rate
-                  <Tooltip title="Always editable - frequently changed during planning">
+                  <Tooltip title="Always editable - shows hourly rate. When company role selected, converts annual salary to hourly (annual ÷ hours)">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Final Rate Discount
+                  <Tooltip title="Discount percentage: (LCAT Rate - Final Rate) ÷ LCAT Rate">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -404,6 +425,22 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                 <Box display="flex" alignItems="center" justifyContent="center" gap={0.5}>
                   Location
                   <Tooltip title="Work location type">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Annual Salary Estimates
+                  <Tooltip title="Annual salary from company role">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Wrap
+                  <Tooltip title="System-wide wrap rate × Annual Salary Estimates (Configured in Admin Dashboard)">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -480,27 +517,50 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                       <Select
                         value={category.companyRoleId || ''}
                         onChange={(e) => {
+                          console.log('Company Role onChange triggered:', e.target.value);
                           const selectedRole = companyRoles.find(r => r.id === e.target.value);
+                          console.log('Selected role:', selectedRole);
                           if (selectedRole) {
-                            updateCategory(index, 'companyRoleId', selectedRole.id);
-                            updateCategory(index, 'companyRoleName', selectedRole.name);
-                            updateCategory(index, 'companyRoleRate', selectedRole.payBand);
-                            // Update final rate to company role rate
-                            updateCategory(index, 'finalRate', selectedRole.payBand);
-                            // Update base rate for calculations
-                            updateCategory(index, 'baseRate', selectedRole.payBand);
-                            // Update metadata
-                            updateCategory(index, 'finalRateMetadata', {
-                              source: 'company',
-                              reason: `Mapped to ${selectedRole.name}`,
-                              timestamp: new Date().toISOString(),
-                              userId: 'current-user', // In real app, get from auth context
-                            });
+                            console.log('Updating category with role:', selectedRole.name, selectedRole.rate);
+                            // Convert annual salary to hourly rate (annual salary ÷ hours)
+                            const hourlyRate = Math.round((selectedRole.rate / category.hours) * 100) / 100; // Round to 2 decimal places
+                            console.log(`Converting annual salary ${formatCurrencyWithCommas(selectedRole.rate, false)} to hourly rate: ${formatCurrencyWithCommas(hourlyRate, true)} (÷ ${formatNumberWithCommas(category.hours)} hours)`);
+                            
+                            // Batch all updates into a single state change
+                            const newCategories = [...categories];
+                            newCategories[index] = {
+                              ...newCategories[index],
+                              companyRoleId: selectedRole.id,
+                              companyRoleName: selectedRole.name,
+                              companyRoleRate: selectedRole.rate, // Keep annual rate for reference
+                              finalRate: hourlyRate, // Use hourly rate for calculations (rounded to 2 decimals)
+                              baseRate: hourlyRate, // Use hourly rate for base calculations (rounded to 2 decimals)
+                              finalRateMetadata: {
+                                source: 'company',
+                                reason: `Mapped to ${selectedRole.name} (${formatCurrencyWithCommas(selectedRole.rate, false)} annual ÷ ${formatNumberWithCommas(category.hours)} hours = ${formatCurrencyWithCommas(hourlyRate, true)}/hour)`,
+                                timestamp: new Date().toISOString(),
+                                userId: 'current-user', // In real app, get from auth context
+                              }
+                            };
+                            console.log('Updated category:', newCategories[index]);
+                            onCategoriesChange(newCategories);
                           } else {
+                            console.log('Clearing company role');
                             // Clear company role
-                            updateCategory(index, 'companyRoleId', '');
-                            updateCategory(index, 'companyRoleName', '');
-                            updateCategory(index, 'companyRoleRate', 0);
+                            const newCategories = [...categories];
+                            newCategories[index] = {
+                              ...newCategories[index],
+                              companyRoleId: '',
+                              companyRoleName: '',
+                              companyRoleRate: 0,
+                              finalRateMetadata: {
+                                source: 'manual',
+                                reason: 'Company role cleared',
+                                timestamp: new Date().toISOString(),
+                                userId: 'current-user',
+                              }
+                            };
+                            onCategoriesChange(newCategories);
                           }
                         }}
                         disabled={disabled}
@@ -520,7 +580,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                                 {role.name}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
-                                {role.practiceArea} - ${role.payBand.toLocaleString()}
+                                {role.practiceArea} - {getSalaryConversionInfo(role.rate).annual} / {getSalaryConversionInfo(role.rate).hourly}
                               </Typography>
                             </Box>
                           </MenuItem>
@@ -532,15 +592,20 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                   {/* LCAT Rate */}
                   <TableCell align="right">
                     <Typography variant="body2" fontWeight="medium">
-                      ${category.lcatRate?.toFixed(2) || '0.00'}
+                      {formatCurrencyWithCommas(category.lcatRate || 0, true)}
                     </Typography>
                   </TableCell>
 
                   {/* Company Rate */}
                   <TableCell align="right">
-                    <Typography variant="body2" fontWeight="medium">
-                      ${category.companyRoleRate?.toFixed(2) || '0.00'}
-                    </Typography>
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold" color="primary">
+                        {category.companyRoleRate ? formatCurrencyWithCommas(category.companyRoleRate / category.hours, true) : '$0.00'}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {formatCurrencyWithCommas(category.companyRoleRate || 0, false)}
+                      </Typography>
+                    </Box>
                   </TableCell>
 
                   {/* Final Rate - Always Editable */}
@@ -549,18 +614,26 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                       size="small"
                       type="number"
                       value={category.finalRate || ''}
+                      inputProps={{ step: 0.01 }}
                       onChange={(e) => {
-                        const newRate = parseFloat(e.target.value) || 0;
-                        updateCategory(index, 'finalRate', newRate);
-                        // Update base rate to match final rate for calculations
-                        updateCategory(index, 'baseRate', newRate);
-                        // Update metadata
-                        updateCategory(index, 'finalRateMetadata', {
-                          source: 'manual',
-                          reason: 'Manual rate entry',
-                          timestamp: new Date().toISOString(),
-                          userId: 'current-user', // In real app, get from auth context
-                        });
+                        console.log('Final Rate onChange triggered:', e.target.value);
+                        const newRate = Math.round((parseFloat(e.target.value) || 0) * 100) / 100; // Round to 2 decimal places
+                        console.log('Parsed rate:', newRate);
+                        // Batch all updates into a single state change
+                        const newCategories = [...categories];
+                        newCategories[index] = {
+                          ...newCategories[index],
+                          finalRate: newRate,
+                          baseRate: newRate,
+                          finalRateMetadata: {
+                            source: 'manual',
+                            reason: 'Manual rate entry',
+                            timestamp: new Date().toISOString(),
+                            userId: 'current-user', // In real app, get from auth context
+                          }
+                        };
+                        console.log('Updated category finalRate to:', newRate);
+                        onCategoriesChange(newCategories);
                       }}
                       disabled={disabled}
                       sx={{ 
@@ -578,6 +651,18 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                     />
                   </TableCell>
 
+                  {/* Final Rate Discount */}
+                  <TableCell align="right">
+                    <Typography variant="body2" fontWeight="bold" color="secondary">
+                      {(() => {
+                        const lcatRate = Number(category.lcatRate || 0);
+                        const finalRate = Number(category.finalRate || 0);
+                        if (lcatRate === 0) return 'N/A';
+                        const discount = ((lcatRate - finalRate) / lcatRate) * 100;
+                        return formatPercentageWithCommas(discount, 1);
+                      })()}
+                    </Typography>
+                  </TableCell>
 
                   {/* Hours */}
                   <TableCell align="right">
@@ -634,7 +719,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                       />
                     ) : (
                       <Typography variant="body2">
-                        {category.ftePercentage.toFixed(1)}%
+                        {formatPercentageWithCommas(category.ftePercentage, 1)}
                       </Typography>
                     )}
                   </TableCell>
@@ -697,6 +782,22 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                         </Typography>
                       </Tooltip>
                     )}
+                  </TableCell>
+
+                  {/* Annual Salary Estimates */}
+                  <TableCell align="right">
+                    <Typography variant="body2" fontWeight="bold" color="primary">
+                      {formatCurrencyWithCommas(category.companyRoleRate || 0, false)}
+                    </Typography>
+                  </TableCell>
+
+                  {/* Wrap */}
+                  <TableCell align="right">
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold" color="secondary">
+                        {formatCurrencyWithCommas(calculateWrapAmount(category.companyRoleRate || 0), false)}
+                      </Typography>
+                    </Box>
                   </TableCell>
 
                   {/* Burdened Rate */}

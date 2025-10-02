@@ -35,13 +35,13 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 
-// Rate limiting
+// Rate limiting - More lenient for development
 const limiter = rateLimit({
-  windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000', 10), // 15 minutes
-  max: parseInt(process.env['RATE_LIMIT_MAX'] || '100', 10), // limit each IP to 100 requests per windowMs
+  windowMs: parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '60000', 10), // 1 minute
+  max: parseInt(process.env['RATE_LIMIT_MAX'] || '1000', 10), // limit each IP to 1000 requests per minute
   message: {
     error: 'Too many requests from this IP, please try again later.',
-    retryAfter: Math.ceil(parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '900000', 10) / 1000)
+    retryAfter: Math.ceil(parseInt(process.env['RATE_LIMIT_WINDOW_MS'] || '60000', 10) / 1000)
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -52,11 +52,12 @@ app.use(limiter as any);
 
 // CORS configuration
 app.use(cors({
-  origin: process.env['CORS_ORIGIN'] || 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}) as any);
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
+}));
 
 // Session configuration for OAuth
 app.use(session({
@@ -155,6 +156,10 @@ app.use('/api/labor-categories', laborCategoryRoutes);
 // Export routes
 import exportRoutes from './routes/export.routes';
 app.use('/api/export', exportRoutes);
+
+// LCAT Management routes
+import lcatManagementRoutes from './routes/lcatManagement.routes';
+app.use('/api/lcat-management', lcatManagementRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

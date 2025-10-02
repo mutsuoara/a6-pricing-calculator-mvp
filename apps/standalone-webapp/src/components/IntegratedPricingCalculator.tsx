@@ -106,6 +106,16 @@ const IntegratedPricingCalculator: React.FC = () => {
         ftePercentage: 100,
         clearanceLevel: 'Secret',
         location: 'On-site',
+        companyRoleId: '',
+        companyRoleName: '',
+        companyRoleRate: 0,
+        finalRate: 85.00,
+        finalRateMetadata: {
+          source: 'manual',
+          reason: 'Demo project',
+          timestamp: new Date().toISOString(),
+          userId: 'demo-user',
+        },
       },
       {
         id: '2',
@@ -115,6 +125,16 @@ const IntegratedPricingCalculator: React.FC = () => {
         ftePercentage: 100,
         clearanceLevel: 'Public Trust',
         location: 'On-site',
+        companyRoleId: '',
+        companyRoleName: '',
+        companyRoleRate: 0,
+        finalRate: 95.00,
+        finalRateMetadata: {
+          source: 'manual',
+          reason: 'Demo project',
+          timestamp: new Date().toISOString(),
+          userId: 'demo-user',
+        },
       },
     ],
     otherDirectCosts: [],
@@ -262,20 +282,25 @@ const IntegratedPricingCalculator: React.FC = () => {
     handleMenuClose();
   };
 
-  const handleCategoriesChange = (newCategories: LaborCategoryInput[]) => {
+  const handleCategoriesChange = (newCategories: LaborCategoryInput[] | ((prev: LaborCategoryInput[]) => LaborCategoryInput[])) => {
     setProjectData(prev => ({
       ...prev,
-      laborCategories: newCategories,
+      laborCategories: typeof newCategories === 'function' ? newCategories(prev.laborCategories) : newCategories,
       lastModified: new Date().toISOString(),
     }));
   };
 
 
-  const handleContractVehicleChange = (vehicle: string | undefined) => {
+  const handleContractVehicleChange = (vehicle: string | undefined, burdenedRates?: { overheadRate: number; gaRate: number; feeRate: number }) => {
     setProjectData(prev => ({
       ...prev,
       contractVehicle: vehicle,
       lastModified: new Date().toISOString(),
+      ...(burdenedRates && {
+        overheadRate: burdenedRates.overheadRate,
+        gaRate: burdenedRates.gaRate,
+        feeRate: burdenedRates.feeRate,
+      }),
     }));
   };
 
@@ -603,6 +628,53 @@ const IntegratedPricingCalculator: React.FC = () => {
               </Alert>
             </Grid>
           </Grid>
+          
+          {/* Current Burdened Rates Display */}
+          {projectData.contractVehicle && (
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Current Burdened Rates
+              </Typography>
+              <Alert severity="success" sx={{ mb: 2 }}>
+                Burdened rates are automatically loaded from the selected contract vehicle: <strong>{projectData.contractVehicle}</strong>
+              </Alert>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
+                  <Box sx={{ p: 2, border: 1, borderColor: 'divider', borderRadius: 1, textAlign: 'center' }}>
+                    <Typography variant="h4" color="primary">
+                      {(projectData.overheadRate * 100).toFixed(1)}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Overhead Rate
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Box sx={{ p: 2, border: 1, borderColor: 'divider', borderRadius: 1, textAlign: 'center' }}>
+                    <Typography variant="h4" color="secondary">
+                      {(projectData.gaRate * 100).toFixed(1)}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      G&A Rate
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <Box sx={{ p: 2, border: 1, borderColor: 'divider', borderRadius: 1, textAlign: 'center' }}>
+                    <Typography variant="h4" color="success.main">
+                      {(projectData.feeRate * 100).toFixed(1)}%
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Fee Rate
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                To modify these rates, edit the contract vehicle in Admin Dashboard → LCAT Management → Contract Vehicles
+              </Typography>
+            </Box>
+          )}
         </TabPanel>
 
         <TabPanel value={currentTab} index={1}>

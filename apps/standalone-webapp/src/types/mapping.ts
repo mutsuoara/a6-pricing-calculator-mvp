@@ -11,10 +11,15 @@ export interface ContractVehicle {
   startDate?: string;
   endDate?: string;
   escalationRate: number; // Annual escalation rate (e.g., 0.02 for 2%)
+  maxOverheadRate: number; // Maximum overhead rate percentage
+  maxGaRate: number; // Maximum G&A rate percentage
+  maxFeeRate: number; // Maximum fee rate percentage
+  complianceRequirements: string[]; // Array of compliance requirements
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
   createdBy: string;
+  tenantId?: string; // Optional tenant ID for multi-tenancy
 }
 
 // A6Level interface removed - replaced with CompanyRole
@@ -52,7 +57,7 @@ export interface CompanyRole {
   name: string; // e.g., "Senior Software Engineer", "Lead Product Manager"
   practiceArea: string; // e.g., "Engineering", "Product", "Design", "Data Science"
   description: string;
-  payBand: number; // Pay Band as dollar amount (e.g., 120000 for $120,000)
+  rate: number; // Rate as dollar amount (e.g., 120000 for $120,000)
   rateIncrease: number; // Annual rate increase percentage (e.g., 0.03 for 3%)
   isActive: boolean;
   createdAt: string;

@@ -12,8 +12,6 @@ import {
   Tab,
   AppBar,
   Toolbar,
-  Card,
-  CardContent,
   Grid,
   Button,
   Alert,
@@ -34,9 +32,9 @@ import {
   Select,
   MenuItem,
   Chip,
-  Divider,
   Tooltip,
   Snackbar,
+  Autocomplete,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -51,12 +49,12 @@ import {
 import { MappingService } from '../services/mapping.service';
 import { TemplateService } from '../services/template.service';
 import { companyConfigService } from '../config/company.config';
+import { getSalaryConversionInfo } from '../utils/salary-conversion';
 import {
   ContractVehicle,
   ProjectRole,
   LCAT,
   CompanyRole,
-  RateValidationRule,
   ImportTemplate,
 } from '../types/mapping';
 
@@ -92,36 +90,44 @@ const CompanyRoleForm: React.FC<CompanyRoleFormProps> = ({ role, onSave, onCance
     name: role?.name || '',
     practiceArea: role?.practiceArea || '',
     description: role?.description || '',
-    payBand: role?.payBand || '',
+    rate: role?.rate || 0,
     rateIncrease: role?.rateIncrease || 0,
     isActive: role?.isActive ?? true,
   });
 
-  const practiceAreas = [
-    'Engineering',
-    'Product',
-    'Design',
-    'Data Science',
-    'Management',
-    'Operations',
-  ];
+  // Get practice areas from existing company roles
+  const [practiceAreas, setPracticeAreas] = useState<string[]>([]);
+  
+  useEffect(() => {
+    const loadPracticeAreas = async () => {
+      try {
+        const existingRoles = await MappingService.getCompanyRoles();
+        const uniquePracticeAreas = [...new Set(existingRoles.map(role => role.practiceArea))];
+        setPracticeAreas(uniquePracticeAreas.sort());
+      } catch (error) {
+        console.error('Error loading practice areas:', error);
+        // Fallback to default practice areas
+        setPracticeAreas([
+          'Engineering',
+          'Product',
+          'Design',
+          'Data Science',
+          'Management',
+          'Operations',
+        ]);
+      }
+    };
+    
+    loadPracticeAreas();
+  }, []);
 
-  const payBands = [
-    'Band 1',
-    'Band 2',
-    'Band 3',
-    'Band 4',
-    'Band 5',
-    'Junior Level',
-    'Mid Level',
-    'Senior Level',
-    'Principal Level',
-    'Executive Level',
-  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    onSave({
+      ...formData,
+      createdBy: 'current-user', // In real app, get from auth context
+    });
   };
 
   return (
@@ -137,20 +143,36 @@ const CompanyRoleForm: React.FC<CompanyRoleFormProps> = ({ role, onSave, onCance
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <FormControl fullWidth required>
-            <InputLabel>Practice Area</InputLabel>
-            <Select
-              value={formData.practiceArea}
-              onChange={(e) => setFormData(prev => ({ ...prev, practiceArea: e.target.value }))}
-              label="Practice Area"
-            >
-              {practiceAreas.map((area) => (
-                <MenuItem key={area} value={area}>
-                  {area}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Autocomplete
+            freeSolo
+            options={practiceAreas}
+            value={formData.practiceArea}
+            onChange={(_, newValue) => {
+              setFormData(prev => ({ ...prev, practiceArea: newValue || '' }));
+            }}
+            onInputChange={(_, newInputValue) => {
+              setFormData(prev => ({ ...prev, practiceArea: newInputValue }));
+            }}
+            renderInput={(params) => (
+              // @ts-ignore - Material-UI Autocomplete params type issue
+              <TextField
+                {...params}
+                label="Practice Area"
+                required
+                placeholder="Select or enter practice area"
+              />
+            )}
+            renderOption={(props, option) => (
+              <Box component="li" {...props}>
+                <Box>
+                  <Typography variant="body2">{option}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {practiceAreas.includes(option) ? 'Existing' : 'New'}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+          />
         </Grid>
         <Grid item xs={12}>
           <TextField
@@ -164,20 +186,16 @@ const CompanyRoleForm: React.FC<CompanyRoleFormProps> = ({ role, onSave, onCance
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <FormControl fullWidth required>
-            <InputLabel>Pay Band</InputLabel>
-            <Select
-              value={formData.payBand}
-              onChange={(e) => setFormData(prev => ({ ...prev, payBand: e.target.value }))}
-              label="Pay Band"
-            >
-              {payBands.map((band) => (
-                <MenuItem key={band} value={band}>
-                  {band}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <TextField
+            fullWidth
+            required
+            label="Rate (Annual)"
+            type="number"
+            value={formData.rate}
+            onChange={(e) => setFormData(prev => ({ ...prev, rate: parseFloat(e.target.value) || 0 }))}
+            placeholder="e.g., 120000"
+            helperText="Enter annual salary in dollars"
+          />
         </Grid>
         <Grid item xs={12} sm={6}>
           <TextField
@@ -196,14 +214,14 @@ const CompanyRoleForm: React.FC<CompanyRoleFormProps> = ({ role, onSave, onCance
         <Grid item xs={12}>
           <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
-            <Select
-              value={formData.isActive}
-              onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.value as boolean }))}
-              label="Status"
-            >
-              <MenuItem value={true}>Active</MenuItem>
-              <MenuItem value={false}>Inactive</MenuItem>
-            </Select>
+                  <Select
+                    value={formData.isActive}
+                    onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.value === 'true' }))}
+                    label="Status"
+                  >
+                    <MenuItem value="true">Active</MenuItem>
+                    <MenuItem value="false">Inactive</MenuItem>
+                  </Select>
           </FormControl>
         </Grid>
       </Grid>
@@ -227,7 +245,6 @@ const LCATManagement: React.FC = () => {
   const [lcats, setLcats] = useState<LCAT[]>([]);
   const [companyRoles, setCompanyRoles] = useState<CompanyRole[]>([]);
   // Three-Way Mappings removed - simplified architecture
-  const [rateValidationRules, setRateValidationRules] = useState<RateValidationRule[]>([]);
   
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -238,6 +255,14 @@ const LCATManagement: React.FC = () => {
   const [importMode, setImportMode] = useState<'merge' | 'replace'>('merge');
   const [showCompanyRoleDialog, setShowCompanyRoleDialog] = useState(false);
   const [editingCompanyRole, setEditingCompanyRole] = useState<CompanyRole | null>(null);
+  
+  // Edit dialogs for other entity types
+  const [showContractVehicleDialog, setShowContractVehicleDialog] = useState(false);
+  const [editingContractVehicle, setEditingContractVehicle] = useState<ContractVehicle | null>(null);
+  const [showLCATDialog, setShowLCATDialog] = useState(false);
+  const [editingLCAT, setEditingLCAT] = useState<LCAT | null>(null);
+  const [showProjectRoleDialog, setShowProjectRoleDialog] = useState(false);
+  const [editingProjectRole, setEditingProjectRole] = useState<ProjectRole | null>(null);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
@@ -246,12 +271,20 @@ const LCATManagement: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
+      console.log('🔄 Loading data from database...');
       const [vehicles, roles, lcatsData, companyRoles] = await Promise.all([
         MappingService.getContractVehicles(),
         MappingService.getProjectRoles(),
         MappingService.getLCATs(),
         MappingService.getCompanyRoles(),
       ]);
+      
+      console.log('📊 Data loaded:', {
+        vehicles: vehicles.length,
+        roles: roles.length,
+        lcats: lcatsData.length,
+        companyRoles: companyRoles.length
+      });
       
       setContractVehicles(vehicles);
       setProjectRoles(roles);
@@ -318,54 +351,21 @@ const LCATManagement: React.FC = () => {
         if (!acc[lcat.vehicle]) {
           acc[lcat.vehicle] = [];
         }
-        acc[lcat.vehicle].push(lcat);
+        acc[lcat.vehicle]?.push(lcat);
         return acc;
       }, {} as Record<string, LCAT[]>);
       
       console.log('Import Summary:', importSummary);
       console.log('LCATs by Vehicle:', lcatsByVehicle);
       
-      // ACTUALLY PERSIST THE IMPORTED DATA TO STATE
-      // In a real app, this would be a backend call
+      // Import to database based on mode
       if (importMode === 'replace') {
-        // Replace all existing data
-        setContractVehicles(importPreview.contractVehicles);
-        setLcats(importPreview.lcats);
-        setProjectRoles(importPreview.projectRoles);
-        setCompanyRoles(importPreview.companyRoles);
-        setRateValidationRules(importPreview.rateValidationRules);
-      } else {
-        // Merge with existing data (default behavior) - with deduplication
-        setContractVehicles(prev => {
-          const existing = new Set(prev.map(v => v.id));
-          const newVehicles = importPreview.contractVehicles.filter(v => !existing.has(v.id));
-          return [...prev, ...newVehicles];
-        });
-        
-        setLcats(prev => {
-          const existing = new Set(prev.map(l => l.id));
-          const newLcats = importPreview.lcats.filter(l => !existing.has(l.id));
-          return [...prev, ...newLcats];
-        });
-        
-        setProjectRoles(prev => {
-          const existing = new Set(prev.map(r => r.id));
-          const newRoles = importPreview.projectRoles.filter(r => !existing.has(r.id));
-          return [...prev, ...newRoles];
-        });
-        
-        setCompanyRoles(prev => {
-          const existing = new Set(prev.map(r => r.id));
-          const newRoles = importPreview.companyRoles.filter(r => !existing.has(r.id));
-          return [...prev, ...newRoles];
-        });
-        
-        setRateValidationRules(prev => {
-          const existing = new Set(prev.map(r => r.id));
-          const newRules = importPreview.rateValidationRules.filter(r => !existing.has(r.id));
-          return [...prev, ...newRules];
-        });
+        // Clear all data first
+        await MappingService.clearAllData();
       }
+      
+      // Import the data
+      await MappingService.bulkImportToDatabase(importPreview);
       
       // Show detailed success message
       const message = `Import successful! Added: ${importSummary.contractVehicles} vehicles, ${importSummary.lcats} LCATs, ${importSummary.projectRoles} project roles, ${importSummary.companyRoles} company roles, ${importSummary.rateValidationRules} validation rules`;
@@ -373,6 +373,9 @@ const LCATManagement: React.FC = () => {
       setSnackbarOpen(true);
       setShowImportPreview(false);
       setImportPreview(null);
+      
+      // Reload data from database to ensure consistency
+      await loadData();
       
     } catch (error) {
       console.error('Error importing data:', error);
@@ -431,6 +434,133 @@ const LCATManagement: React.FC = () => {
     }
   };
 
+  // Contract Vehicles handlers
+  const handleEditContractVehicle = (vehicle: ContractVehicle) => {
+    setEditingContractVehicle(vehicle);
+    setShowContractVehicleDialog(true);
+  };
+
+  const handleDeleteContractVehicle = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this contract vehicle?')) {
+      try {
+        await MappingService.deleteContractVehicle(id);
+        setContractVehicles(prev => prev.filter(vehicle => vehicle.id !== id));
+        setSnackbarMessage('Contract vehicle deleted successfully');
+        setSnackbarOpen(true);
+      } catch (error) {
+        console.error('Error deleting contract vehicle:', error);
+        setSnackbarMessage('Error deleting contract vehicle');
+        setSnackbarOpen(true);
+      }
+    }
+  };
+
+  // LCATs handlers
+  const handleEditLCAT = (lcat: LCAT) => {
+    setEditingLCAT(lcat);
+    setShowLCATDialog(true);
+  };
+
+  const handleDeleteLCAT = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this LCAT?')) {
+      try {
+        await MappingService.deleteLCAT(id);
+        setLcats(prev => prev.filter(lcat => lcat.id !== id));
+        setSnackbarMessage('LCAT deleted successfully');
+        setSnackbarOpen(true);
+      } catch (error) {
+        console.error('Error deleting LCAT:', error);
+        setSnackbarMessage('Error deleting LCAT');
+        setSnackbarOpen(true);
+      }
+    }
+  };
+
+  // Project Roles handlers
+  const handleEditProjectRole = (role: ProjectRole) => {
+    setEditingProjectRole(role);
+    setShowProjectRoleDialog(true);
+  };
+
+  const handleDeleteProjectRole = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this project role?')) {
+      try {
+        await MappingService.deleteProjectRole(id);
+        setProjectRoles(prev => prev.filter(role => role.id !== id));
+        setSnackbarMessage('Project role deleted successfully');
+        setSnackbarOpen(true);
+      } catch (error) {
+        console.error('Error deleting project role:', error);
+        setSnackbarMessage('Error deleting project role');
+        setSnackbarOpen(true);
+      }
+    }
+  };
+
+  // Save handlers for new entity types
+  const handleSaveContractVehicle = async (vehicleData: Omit<ContractVehicle, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      if (editingContractVehicle) {
+        await MappingService.updateContractVehicle(editingContractVehicle.id, vehicleData);
+        setContractVehicles(prev => prev.map(vehicle => vehicle.id === editingContractVehicle.id ? { ...vehicle, ...vehicleData } : vehicle));
+        setSnackbarMessage('Contract vehicle updated successfully');
+      } else {
+        const newVehicle = await MappingService.createContractVehicle(vehicleData);
+        setContractVehicles(prev => [...prev, newVehicle]);
+        setSnackbarMessage('Contract vehicle created successfully');
+      }
+      setShowContractVehicleDialog(false);
+      setEditingContractVehicle(null);
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error saving contract vehicle:', error);
+      setSnackbarMessage('Error saving contract vehicle');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleSaveLCAT = async (lcatData: Omit<LCAT, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      if (editingLCAT) {
+        await MappingService.updateLCAT(editingLCAT.id, lcatData);
+        setLcats(prev => prev.map(lcat => lcat.id === editingLCAT.id ? { ...lcat, ...lcatData } : lcat));
+        setSnackbarMessage('LCAT updated successfully');
+      } else {
+        const newLCAT = await MappingService.createLCAT(lcatData);
+        setLcats(prev => [...prev, newLCAT]);
+        setSnackbarMessage('LCAT created successfully');
+      }
+      setShowLCATDialog(false);
+      setEditingLCAT(null);
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error saving LCAT:', error);
+      setSnackbarMessage('Error saving LCAT');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleSaveProjectRole = async (roleData: Omit<ProjectRole, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      if (editingProjectRole) {
+        await MappingService.updateProjectRole(editingProjectRole.id, roleData);
+        setProjectRoles(prev => prev.map(role => role.id === editingProjectRole.id ? { ...role, ...roleData } : role));
+        setSnackbarMessage('Project role updated successfully');
+      } else {
+        const newRole = await MappingService.createProjectRole(roleData);
+        setProjectRoles(prev => [...prev, newRole]);
+        setSnackbarMessage('Project role created successfully');
+      }
+      setShowProjectRoleDialog(false);
+      setEditingProjectRole(null);
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error saving project role:', error);
+      setSnackbarMessage('Error saving project role');
+      setSnackbarOpen(true);
+    }
+  };
+
   return (
     <Box>
       {/* Header */}
@@ -462,15 +592,26 @@ const LCATManagement: React.FC = () => {
             variant="outlined"
             color="warning"
             startIcon={<DeleteIcon />}
-            onClick={() => {
-              setContractVehicles([]);
-              setLcats([]);
-              setProjectRoles([]);
-              setCompanyRoles([]);
-              setRateValidationRules([]);
-              setSnackbarMessage('All data cleared');
-              setSnackbarOpen(true);
+            onClick={async () => {
+              try {
+                setLoading(true);
+                await MappingService.clearAllData();
+                // Clear frontend state
+                setContractVehicles([]);
+                setLcats([]);
+                setProjectRoles([]);
+                setCompanyRoles([]);
+                setSnackbarMessage('All data cleared from database and frontend');
+                setSnackbarOpen(true);
+              } catch (error) {
+                console.error('Error clearing all data:', error);
+                setSnackbarMessage(`Error clearing data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                setSnackbarOpen(true);
+              } finally {
+                setLoading(false);
+              }
             }}
+            disabled={loading}
           >
             Clear All Data
           </Button>
@@ -517,13 +658,14 @@ const LCATManagement: React.FC = () => {
                   <TableCell>Code</TableCell>
                   <TableCell>Escalation Rate</TableCell>
                   <TableCell>Date Range</TableCell>
+                  <TableCell>Burdened Rates</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {contractVehicles.map((vehicle) => (
-                  <TableRow key={vehicle.id}>
+                {contractVehicles.map((vehicle, index) => (
+                  <TableRow key={vehicle.id || `vehicle-${index}`}>
                     <TableCell>
                       <Box>
                         <Typography variant="body2" fontWeight="bold">
@@ -538,7 +680,7 @@ const LCATManagement: React.FC = () => {
                       <Chip label={vehicle.code} size="small" />
                     </TableCell>
                     <TableCell>
-                      {(vehicle.escalationRate * 100).toFixed(1)}%
+                      {(Number(vehicle.escalationRate || 0) * 100).toFixed(1)}%
                     </TableCell>
                     <TableCell>
                       {vehicle.startDate && vehicle.endDate ? (
@@ -546,6 +688,19 @@ const LCATManagement: React.FC = () => {
                       ) : (
                         'No dates set'
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          OH: {(Number(vehicle.maxOverheadRate || 0)).toFixed(1)}%
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          G&A: {(Number(vehicle.maxGaRate || 0)).toFixed(1)}%
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Fee: {(Number(vehicle.maxFeeRate || 0)).toFixed(1)}%
+                        </Typography>
+                      </Box>
                     </TableCell>
                     <TableCell>
                       <Box display="flex" alignItems="center" gap={1}>
@@ -558,12 +713,16 @@ const LCATManagement: React.FC = () => {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <IconButton size="small">
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton size="small" color="error">
-                        <DeleteIcon />
-                      </IconButton>
+                      <Tooltip title="Edit Contract Vehicle">
+                        <IconButton size="small" onClick={() => handleEditContractVehicle(vehicle)}>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Contract Vehicle">
+                        <IconButton size="small" color="error" onClick={() => handleDeleteContractVehicle(vehicle.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -591,9 +750,9 @@ const LCATManagement: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {projectRoles.map((role) => {
+                {projectRoles.map((role, index) => {
                   return (
-                    <TableRow key={role.id}>
+                    <TableRow key={role.id || `role-${index}`}>
                       <TableCell>
                         <Box>
                           <Typography variant="body2" fontWeight="bold">
@@ -619,12 +778,16 @@ const LCATManagement: React.FC = () => {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <IconButton size="small">
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton size="small" color="error">
-                          <DeleteIcon />
-                        </IconButton>
+                        <Tooltip title="Edit Project Role">
+                          <IconButton size="small" onClick={() => handleEditProjectRole(role)}>
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete Project Role">
+                          <IconButton size="small" color="error" onClick={() => handleDeleteProjectRole(role.id)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
                       </TableCell>
                     </TableRow>
                   );
@@ -656,8 +819,8 @@ const LCATManagement: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {lcats.map((lcat) => (
-                  <TableRow key={lcat.id}>
+                {lcats.map((lcat, index) => (
+                  <TableRow key={lcat.id || `lcat-${index}`}>
                     <TableCell>
                       <Chip label={lcat.vehicle} size="small" color="primary" />
                     </TableCell>
@@ -672,7 +835,7 @@ const LCATManagement: React.FC = () => {
                     <TableCell>{lcat.description}</TableCell>
                     <TableCell>
                       <Typography variant="body2" fontWeight="bold" color="primary">
-                        ${lcat.rate?.toFixed(2) || '0.00'}
+                        ${Number(lcat.rate || 0).toFixed(2)}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -686,12 +849,16 @@ const LCATManagement: React.FC = () => {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <IconButton size="small">
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton size="small" color="error">
-                        <DeleteIcon />
-                      </IconButton>
+                      <Tooltip title="Edit LCAT">
+                        <IconButton size="small" onClick={() => handleEditLCAT(lcat)}>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete LCAT">
+                        <IconButton size="small" color="error" onClick={() => handleDeleteLCAT(lcat.id)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -724,15 +891,16 @@ const LCATManagement: React.FC = () => {
                   <TableCell>Name</TableCell>
                   <TableCell>Practice Area</TableCell>
                   <TableCell>Description</TableCell>
-                  <TableCell>Pay Band</TableCell>
+                  <TableCell>Rate (Annual)</TableCell>
+                  <TableCell>Hourly Rate</TableCell>
                   <TableCell>Rate Increase</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {companyRoles.map((role) => (
-                  <TableRow key={role.id}>
+                {companyRoles.map((role, index) => (
+                  <TableRow key={role.id || `company-role-${index}`}>
                     <TableCell>{role.name}</TableCell>
                     <TableCell>
                       <Chip label={role.practiceArea} size="small" />
@@ -740,7 +908,12 @@ const LCATManagement: React.FC = () => {
                     <TableCell>{role.description}</TableCell>
                     <TableCell>
                       <Typography variant="body2" fontWeight="bold" color="primary">
-                        ${role.payBand?.toLocaleString() || '0'}
+                        {getSalaryConversionInfo(role.rate || 0).annual}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="medium" color="secondary">
+                        {getSalaryConversionInfo(role.rate || 0).hourly}
                       </Typography>
                     </TableCell>
                     <TableCell>{(role.rateIncrease * 100).toFixed(1)}%</TableCell>
@@ -905,7 +1078,7 @@ const LCATManagement: React.FC = () => {
                   {Object.entries(
                     importPreview.lcats.reduce((acc, lcat) => {
                       if (!acc[lcat.vehicle]) acc[lcat.vehicle] = [];
-                      acc[lcat.vehicle].push(lcat);
+                      acc[lcat.vehicle]?.push(lcat);
                       return acc;
                     }, {} as Record<string, LCAT[]>)
                   ).map(([vehicle, lcats]) => (
@@ -924,13 +1097,13 @@ const LCATManagement: React.FC = () => {
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {lcats.slice(0, 5).map((lcat) => (
-                              <TableRow key={lcat.id}>
+                            {lcats.slice(0, 5).map((lcat, index) => (
+                              <TableRow key={lcat.id || `preview-lcat-${index}`}>
                                 <TableCell>{lcat.name}</TableCell>
                                 <TableCell>
                                   <Chip label={lcat.code} size="small" />
                                 </TableCell>
-                                <TableCell>${lcat.rate.toFixed(2)}</TableCell>
+                                <TableCell>${Number(lcat.rate || 0).toFixed(2)}</TableCell>
                                 <TableCell>
                                   <Chip 
                                     label={lcat.isActive ? 'Active' : 'Inactive'} 
@@ -972,8 +1145,8 @@ const LCATManagement: React.FC = () => {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {importPreview.contractVehicles.slice(0, 5).map((vehicle) => (
-                          <TableRow key={vehicle.id}>
+                        {importPreview.contractVehicles.slice(0, 5).map((vehicle, index) => (
+                          <TableRow key={vehicle.id || `preview-vehicle-${index}`}>
                             <TableCell>{vehicle.name}</TableCell>
                             <TableCell>
                               <Chip label={vehicle.code} size="small" />
@@ -1022,6 +1195,291 @@ const LCATManagement: React.FC = () => {
             }}
           />
         </DialogContent>
+      </Dialog>
+
+      {/* Contract Vehicle Dialog */}
+      <Dialog open={showContractVehicleDialog} onClose={() => setShowContractVehicleDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          {editingContractVehicle ? 'Edit Contract Vehicle' : 'Add Contract Vehicle'}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Name"
+                  value={editingContractVehicle?.name || ''}
+                  onChange={(e) => setEditingContractVehicle(prev => prev ? { ...prev, name: e.target.value } : null)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Code"
+                  value={editingContractVehicle?.code || ''}
+                  onChange={(e) => setEditingContractVehicle(prev => prev ? { ...prev, code: e.target.value } : null)}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Description"
+                  multiline
+                  rows={3}
+                  value={editingContractVehicle?.description || ''}
+                  onChange={(e) => setEditingContractVehicle(prev => prev ? { ...prev, description: e.target.value } : null)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Escalation Rate (%)"
+                  type="number"
+                  value={editingContractVehicle ? (Number(editingContractVehicle.escalationRate || 0) * 100) : 0}
+                  onChange={(e) => setEditingContractVehicle(prev => prev ? { ...prev, escalationRate: (parseFloat(e.target.value) || 0) / 100 } : null)}
+                  inputProps={{ step: 0.1, min: 0, max: 100 }}
+                  helperText="Enter percentage (e.g., 3.0 for 3%)"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Start Date"
+                  type="date"
+                  value={editingContractVehicle?.startDate || ''}
+                  onChange={(e) => setEditingContractVehicle(prev => prev ? { ...prev, startDate: e.target.value } : null)}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="End Date"
+                  type="date"
+                  value={editingContractVehicle?.endDate || ''}
+                  onChange={(e) => setEditingContractVehicle(prev => prev ? { ...prev, endDate: e.target.value } : null)}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={editingContractVehicle?.isActive ?? true}
+                    onChange={(e) => setEditingContractVehicle(prev => prev ? { ...prev, isActive: e.target.value === 'true' } : null)}
+                    label="Status"
+                  >
+                    <MenuItem value="true">Active</MenuItem>
+                    <MenuItem value="false">Inactive</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              
+              {/* Burdened Rate Fields */}
+              <Grid item xs={12}>
+                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                  Burdened Rate Limits
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  label="Max Overhead Rate (%)"
+                  type="number"
+                  value={editingContractVehicle?.maxOverheadRate || 0}
+                  onChange={(e) => setEditingContractVehicle(prev => prev ? { ...prev, maxOverheadRate: parseFloat(e.target.value) || 0 } : null)}
+                  inputProps={{ step: 0.1, min: 0, max: 100 }}
+                  helperText="Maximum overhead rate percentage"
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  label="Max G&A Rate (%)"
+                  type="number"
+                  value={editingContractVehicle?.maxGaRate || 0}
+                  onChange={(e) => setEditingContractVehicle(prev => prev ? { ...prev, maxGaRate: parseFloat(e.target.value) || 0 } : null)}
+                  inputProps={{ step: 0.1, min: 0, max: 100 }}
+                  helperText="Maximum G&A rate percentage"
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  label="Max Fee Rate (%)"
+                  type="number"
+                  value={editingContractVehicle?.maxFeeRate || 0}
+                  onChange={(e) => setEditingContractVehicle(prev => prev ? { ...prev, maxFeeRate: parseFloat(e.target.value) || 0 } : null)}
+                  inputProps={{ step: 0.1, min: 0, max: 100 }}
+                  helperText="Maximum fee rate percentage"
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowContractVehicleDialog(false)}>Cancel</Button>
+          <Button onClick={() => editingContractVehicle && handleSaveContractVehicle(editingContractVehicle)} variant="contained" color="primary" disabled={!editingContractVehicle}>
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* LCAT Dialog */}
+      <Dialog open={showLCATDialog} onClose={() => setShowLCATDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          {editingLCAT ? 'Edit LCAT' : 'Add LCAT'}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Vehicle"
+                  value={editingLCAT?.vehicle || ''}
+                  onChange={(e) => setEditingLCAT(prev => prev ? { ...prev, vehicle: e.target.value } : null)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Name"
+                  value={editingLCAT?.name || ''}
+                  onChange={(e) => setEditingLCAT(prev => prev ? { ...prev, name: e.target.value } : null)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Code"
+                  value={editingLCAT?.code || ''}
+                  onChange={(e) => setEditingLCAT(prev => prev ? { ...prev, code: e.target.value } : null)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Rate"
+                  type="number"
+                  value={editingLCAT?.rate || 0}
+                  onChange={(e) => setEditingLCAT(prev => prev ? { ...prev, rate: parseFloat(e.target.value) || 0 } : null)}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Description"
+                  multiline
+                  rows={3}
+                  value={editingLCAT?.description || ''}
+                  onChange={(e) => setEditingLCAT(prev => prev ? { ...prev, description: e.target.value } : null)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={editingLCAT?.isActive ?? true}
+                    onChange={(e) => setEditingLCAT(prev => prev ? { ...prev, isActive: e.target.value === 'true' } : null)}
+                    label="Status"
+                  >
+                    <MenuItem value="true">Active</MenuItem>
+                    <MenuItem value="false">Inactive</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowLCATDialog(false)}>Cancel</Button>
+          <Button onClick={() => editingLCAT && handleSaveLCAT(editingLCAT)} variant="contained" color="primary" disabled={!editingLCAT}>
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Project Role Dialog */}
+      <Dialog open={showProjectRoleDialog} onClose={() => setShowProjectRoleDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          {editingProjectRole ? 'Edit Project Role' : 'Add Project Role'}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  required
+                  label="Name"
+                  value={editingProjectRole?.name || ''}
+                  onChange={(e) => setEditingProjectRole(prev => prev ? { ...prev, name: e.target.value } : null)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Typical Clearance</InputLabel>
+                  <Select
+                    value={editingProjectRole?.typicalClearance || 'None'}
+                    onChange={(e) => setEditingProjectRole(prev => prev ? { ...prev, typicalClearance: e.target.value as 'None' | 'Public Trust' | 'Secret' | 'Top Secret' } : null)}
+                    label="Typical Clearance"
+                  >
+                    <MenuItem value="None">None</MenuItem>
+                    <MenuItem value="Public Trust">Public Trust</MenuItem>
+                    <MenuItem value="Secret">Secret</MenuItem>
+                    <MenuItem value="Top Secret">Top Secret</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Typical Hours"
+                  type="number"
+                  value={editingProjectRole?.typicalHours || 2080}
+                  onChange={(e) => setEditingProjectRole(prev => prev ? { ...prev, typicalHours: parseInt(e.target.value) || 2080 } : null)}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Description"
+                  multiline
+                  rows={3}
+                  value={editingProjectRole?.description || ''}
+                  onChange={(e) => setEditingProjectRole(prev => prev ? { ...prev, description: e.target.value } : null)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={editingProjectRole?.isActive ?? true}
+                    onChange={(e) => setEditingProjectRole(prev => prev ? { ...prev, isActive: e.target.value === 'true' } : null)}
+                    label="Status"
+                  >
+                    <MenuItem value="true">Active</MenuItem>
+                    <MenuItem value="false">Inactive</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowProjectRoleDialog(false)}>Cancel</Button>
+          <Button onClick={() => editingProjectRole && handleSaveProjectRole(editingProjectRole)} variant="contained" color="primary" disabled={!editingProjectRole}>
+            Save
+          </Button>
+        </DialogActions>
       </Dialog>
 
       {/* Snackbar */}

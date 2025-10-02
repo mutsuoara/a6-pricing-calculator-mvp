@@ -18,8 +18,8 @@ export class TemplateService {
     // Contract Vehicles Sheet (1st position)
     const contractVehiclesData = [
       ['ID', 'Name', 'Code', 'Description', 'Start Date', 'End Date', 'Escalation Rate (%)', 'Is Active', 'Created At', 'Updated At', 'Created By'],
-      ['', 'VA SPRUCE', 'VA_SPRUCE', 'VA Software Product and User Experience Contract', '2024-01-01', '2028-12-31', '2.0', 'TRUE', '', '', ''],
-      ['', 'GSA MAS', 'GSA_MAS', 'GSA Multiple Award Schedule', '2024-01-01', '2029-12-31', '1.5', 'TRUE', '', '', ''],
+      ['', 'VA SPRUCE', 'VA_SPRUCE', 'VA Software Product and User Experience Contract', '2024-01-01', '2028-12-31', '3.0', 'TRUE', '', '', ''],
+      ['', 'GSA MAS', 'GSA_MAS', 'GSA Multiple Award Schedule', '2024-01-01', '2029-12-31', '3.0', 'TRUE', '', '', ''],
     ];
     const contractVehiclesSheet = XLSX.utils.aoa_to_sheet(contractVehiclesData);
     XLSX.utils.book_append_sheet(workbook, contractVehiclesSheet, 'Contract Vehicles');
@@ -47,11 +47,15 @@ export class TemplateService {
     // Agile Six Roles Sheet (4th position)
     const companyConfig = companyConfigService.getConfig();
     const companyRolesData = [
-      ['ID', 'Name', 'Practice Area', 'Description', 'Pay Band (($dollar amount))', 'Rate Increase', 'Is Active', 'Created At', 'Updated At', 'Created By'],
+      ['ID', 'Name', 'Practice Area', 'Description', 'Rate (($dollar amount))', 'Rate Increase', 'Is Active', 'Created At', 'Updated At', 'Created By'],
       ['', `Senior Software Engineer at ${companyConfig.name}`, 'Engineering', `Senior level software engineering role at ${companyConfig.name}`, '120000', '3.0', 'TRUE', '', '', ''],
       ['', `Lead Product Manager at ${companyConfig.name}`, 'Product', `Lead product management role at ${companyConfig.name}`, '110000', '2.5', 'TRUE', '', '', ''],
       ['', `Principal Data Scientist at ${companyConfig.name}`, 'Data Science', `Principal level data science role at ${companyConfig.name}`, '130000', '4.0', 'TRUE', '', '', ''],
       ['', `Senior UX Designer at ${companyConfig.name}`, 'Design', `Senior user experience design role at ${companyConfig.name}`, '105000', '2.8', 'TRUE', '', '', ''],
+      ['', `Cybersecurity Engineer at ${companyConfig.name}`, 'Cybersecurity', `Cybersecurity engineering role at ${companyConfig.name}`, '125000', '3.5', 'TRUE', '', '', ''],
+      ['', `DevOps Engineer at ${companyConfig.name}`, 'DevOps', `DevOps engineering role at ${companyConfig.name}`, '115000', '3.2', 'TRUE', '', '', ''],
+      ['', `Project Manager at ${companyConfig.name}`, 'Management', `Project management role at ${companyConfig.name}`, '100000', '2.8', 'TRUE', '', '', ''],
+      ['', `Business Analyst at ${companyConfig.name}`, 'Business Analysis', `Business analysis role at ${companyConfig.name}`, '95000', '2.5', 'TRUE', '', '', ''],
     ];
     const companyRolesSheet = XLSX.utils.aoa_to_sheet(companyRolesData);
     XLSX.utils.book_append_sheet(workbook, companyRolesSheet, 'Agile Six Roles');
@@ -83,6 +87,7 @@ export class TemplateService {
       ['- Use exact values for dropdown fields (see reference sheets)'],
       ['- Dates should be in YYYY-MM-DD format'],
       ['- Boolean values should be TRUE or FALSE'],
+      ['- Escalation Rate: Enter as percentage (e.g., 3.0 for 3%, 2.5 for 2.5%)'],
       ['- Comma-separated values for multi-select fields'],
       ['- Do not modify the header rows'],
       [''],
@@ -91,8 +96,8 @@ export class TemplateService {
       ['Locations: Remote, On-site, Hybrid'],
       ['Categories: Engineering, Product, Experience, Management'],
       ['Contract Types: FFP, T&M, CPFF'],
-      ['Practice Areas: Engineering, Product, Design, Data Science, Management, Operations'],
-      ['Pay Bands: Band 1-5, Junior Level, Mid Level, Senior Level, Principal Level, Executive Level'],
+      ['Practice Areas: Engineering, Product, Design, Data Science, Management, Operations, Cybersecurity, DevOps, Business Analysis'],
+      ['Rates: Enter annual salary in dollars (e.g., 120000 for $120,000)'],
     ];
     const instructionsSheet = XLSX.utils.aoa_to_sheet(instructionsData);
     XLSX.utils.book_append_sheet(workbook, instructionsSheet, 'Instructions');
@@ -146,8 +151,8 @@ export class TemplateService {
         name: row[1] || '',
         code: row[2] || '',
         description: row[3] || '',
-        startDate: row[4] || undefined,
-        endDate: row[5] || undefined,
+        startDate: row[4] && row[4].toString().trim() !== '' ? row[4].toString() : undefined,
+        endDate: row[5] && row[5].toString().trim() !== '' ? row[5].toString() : undefined,
         escalationRate: (row[6] || 0) / 100, // Convert percentage to decimal
         isActive: row[7] === 'TRUE' || row[7] === true,
         createdAt: row[8] || new Date().toISOString(),
@@ -217,8 +222,8 @@ export class TemplateService {
         name: row[1] || '',
         practiceArea: row[2] || '',
         description: row[3] || '',
-        payBand: parseFloat(row[4]) || 0, // Parse as dollar amount
-        rateIncrease: parseFloat(row[5]) || 0, // Parse as decimal (not percentage)
+        rate: parseFloat(row[4]) || 0, // Parse as dollar amount
+        rateIncrease: (parseFloat(row[5]) || 0) / 100, // Convert percentage to decimal (2.5% -> 0.025)
         isActive: row[6] === 'TRUE' || row[6] === true,
         createdAt: row[7] || new Date().toISOString(),
         updatedAt: row[8] || new Date().toISOString(),
@@ -262,7 +267,12 @@ export class TemplateService {
 
     // Export each section to its own sheet
     if (template.contractVehicles.length > 0) {
-      const contractVehiclesSheet = XLSX.utils.json_to_sheet(template.contractVehicles);
+      // Convert escalation rates from decimal to percentage for Excel display
+      const contractVehiclesForExport = template.contractVehicles.map(vehicle => ({
+        ...vehicle,
+        escalationRate: (Number(vehicle.escalationRate) * 100).toFixed(1) // Convert 0.03 to "3.0"
+      }));
+      const contractVehiclesSheet = XLSX.utils.json_to_sheet(contractVehiclesForExport);
       XLSX.utils.book_append_sheet(workbook, contractVehiclesSheet, 'Contract Vehicles');
     }
 
@@ -279,7 +289,12 @@ export class TemplateService {
     }
 
     if (template.companyRoles.length > 0) {
-      const companyRolesSheet = XLSX.utils.json_to_sheet(template.companyRoles);
+      // Convert rate increase from decimal to percentage for Excel display
+      const companyRolesForExport = template.companyRoles.map(role => ({
+        ...role,
+        rateIncrease: (Number(role.rateIncrease) * 100).toFixed(1) // Convert 0.025 to "2.5"
+      }));
+      const companyRolesSheet = XLSX.utils.json_to_sheet(companyRolesForExport);
       XLSX.utils.book_append_sheet(workbook, companyRolesSheet, companyConfigService.getLabels().companyRoles);
     }
 

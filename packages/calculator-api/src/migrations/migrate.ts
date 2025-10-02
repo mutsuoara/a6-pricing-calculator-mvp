@@ -7,6 +7,7 @@ import { DatabaseService } from '../config/database';
 import { up as createTables } from './001-create-tables';
 import { up as fixTenantIdColumns } from './002-fix-tenant-id-columns';
 import { up as createPricingTables } from './003-create-pricing-tables';
+import { up as createLcatManagementTables } from './005-create-lcat-management-tables';
 
 export class MigrationRunner {
   private static sequelize: Sequelize;
@@ -79,6 +80,25 @@ export class MigrationRunner {
         console.log('✅ Migration 003-create-pricing-tables completed successfully');
       } else {
         console.log('⏭️  Migration 003-create-pricing-tables already executed, skipping');
+      }
+
+      // Run migration 005-create-lcat-management-tables
+      const [results5] = await this.sequelize.query(
+        "SELECT * FROM migrations WHERE name = '005-create-lcat-management-tables'"
+      );
+      
+      if (results5.length === 0) {
+        console.log('📝 Running migration: 005-create-lcat-management-tables');
+        await createLcatManagementTables(this.sequelize.getQueryInterface());
+        
+        // Record migration as completed
+        await this.sequelize.query(
+          "INSERT INTO migrations (name, executed_at) VALUES ('005-create-lcat-management-tables', NOW())"
+        );
+        
+        console.log('✅ Migration 005-create-lcat-management-tables completed successfully');
+      } else {
+        console.log('⏭️  Migration 005-create-lcat-management-tables already executed, skipping');
       }
       
       console.log('✅ All migrations completed successfully');

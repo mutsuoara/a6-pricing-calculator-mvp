@@ -17,134 +17,218 @@ import {
 } from '../types/mapping';
 
 export class MappingService {
-  // baseUrl removed - simplified architecture
+  private static baseUrl = 'http://localhost:3001/api/lcat-management';
 
   // Contract Vehicle Management
   static async getContractVehicles(): Promise<ContractVehicle[]> {
-    // Mock data for now - replace with actual API calls
-    return [
-      {
-        id: '1',
-        name: 'VA SPRUCE',
-        code: 'VA_SPRUCE',
-        description: 'VA Software Product and User Experience Contract',
-        startDate: '2024-01-01',
-        endDate: '2028-12-31',
-        escalationRate: 0.02, // 2% annual escalation
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-      },
-      {
-        id: '2',
-        name: 'GSA MAS',
-        code: 'GSA_MAS',
-        description: 'GSA Multiple Award Schedule',
-        startDate: '2024-01-01',
-        endDate: '2029-12-31',
-        escalationRate: 0.015, // 1.5% annual escalation
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-      },
-    ];
+    try {
+      const response = await fetch(`${this.baseUrl}/contract-vehicles`);
+      if (!response.ok) throw new Error('Failed to fetch contract vehicles');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching contract vehicles:', error);
+      // Fallback to mock data
+      return [
+        {
+          id: '1',
+          name: 'VA SPRUCE',
+          code: 'VA_SPRUCE',
+          description: 'VA Software Product and User Experience Contract',
+          startDate: '2024-01-01',
+          endDate: '2028-12-31',
+          escalationRate: 0.02, // 2% annual escalation
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          createdBy: 'system',
+        },
+        {
+          id: '2',
+          name: 'GSA MAS',
+          code: 'GSA_MAS',
+          description: 'GSA Multiple Award Schedule',
+          startDate: '2024-01-01',
+          endDate: '2029-12-31',
+          escalationRate: 0.015, // 1.5% annual escalation
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          createdBy: 'system',
+        },
+      ];
+    }
   }
 
   static async createContractVehicle(vehicle: Omit<ContractVehicle, 'id' | 'createdAt' | 'updatedAt'>): Promise<ContractVehicle> {
-    // Mock implementation
-    const newVehicle: ContractVehicle = {
-      ...vehicle,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    return newVehicle;
+    try {
+      const response = await fetch(`${this.baseUrl}/contract-vehicles`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(vehicle),
+      });
+      
+      if (!response.ok) throw new Error('Failed to create contract vehicle');
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating contract vehicle:', error);
+      throw error;
+    }
+  }
+
+  static async updateContractVehicle(id: string, vehicle: Omit<ContractVehicle, 'id' | 'createdAt' | 'updatedAt'>): Promise<ContractVehicle> {
+    try {
+      const response = await fetch(`${this.baseUrl}/contract-vehicles/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(vehicle),
+      });
+      
+      if (!response.ok) throw new Error('Failed to update contract vehicle');
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating contract vehicle:', error);
+      throw error;
+    }
   }
 
   // A6 Level Management removed - replaced with Company Roles
 
   // Project Role Management
   static async getProjectRoles(): Promise<ProjectRole[]> {
-    return [
-      {
-        id: '1',
-        name: 'Engineering Lead (KP)',
-        description: 'Key Personnel Engineering Lead',
-        typicalClearance: 'Secret',
-        typicalHours: 2080,
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-      },
-      {
-        id: '2',
-        name: 'Lead Product Manager (KP)',
-        description: 'Key Personnel Product Manager',
-        typicalClearance: 'Public Trust',
-        typicalHours: 2080,
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-      },
-    ];
+    try {
+      const response = await fetch(`${this.baseUrl}/project-roles`);
+      if (!response.ok) throw new Error('Failed to fetch project roles');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching project roles:', error);
+      // Fallback to mock data
+      return [
+        {
+          id: '1',
+          name: 'Engineering Lead (KP)',
+          description: 'Key Personnel Engineering Lead',
+          typicalClearance: 'Secret',
+          typicalHours: 2080,
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          createdBy: 'system',
+        },
+        {
+          id: '2',
+          name: 'Lead Product Manager (KP)',
+          description: 'Key Personnel Product Manager',
+          typicalClearance: 'Public Trust',
+          typicalHours: 2080,
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          createdBy: 'system',
+        },
+      ];
+    }
+  }
+
+  static async createProjectRole(role: Omit<ProjectRole, 'id' | 'createdAt' | 'updatedAt'>): Promise<ProjectRole> {
+    try {
+      const response = await fetch(`${this.baseUrl}/project-roles`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(role),
+      });
+      
+      if (!response.ok) throw new Error('Failed to create project role');
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating project role:', error);
+      throw error;
+    }
+  }
+
+  static async updateProjectRole(id: string, role: Omit<ProjectRole, 'id' | 'createdAt' | 'updatedAt'>): Promise<ProjectRole> {
+    try {
+      const response = await fetch(`${this.baseUrl}/project-roles/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(role),
+      });
+      
+      if (!response.ok) throw new Error('Failed to update project role');
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating project role:', error);
+      throw error;
+    }
   }
 
   // LCAT Management
   static async getLCATs(): Promise<LCAT[]> {
-    return [
-      {
-        id: '1',
-        vehicle: 'VA SPRUCE',
-        name: 'Software Engineer',
-        code: 'SWE',
-        description: 'Software Engineering position',
-        rate: 256.31,
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-      },
-      {
-        id: '2',
-        vehicle: 'VA SPRUCE',
-        name: 'Product Manager',
-        code: 'PM',
-        description: 'Product Management position',
-        rate: 324.16,
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-      },
-      {
-        id: '3',
-        vehicle: 'GSA MAS',
-        name: 'Software Engineer',
-        code: 'SWE',
-        description: 'Software Engineering position',
-        rate: 245.50,
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-      },
-      {
-        id: '4',
-        vehicle: 'GSA MAS',
-        name: 'Product Manager',
-        code: 'PM',
-        description: 'Product Management position',
-        rate: 310.25,
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-      },
-    ];
+    try {
+      const response = await fetch(`${this.baseUrl}/lcats`);
+      if (!response.ok) throw new Error('Failed to fetch LCATs');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching LCATs:', error);
+      // Fallback to mock data
+      return [
+        {
+          id: '1',
+          vehicle: 'VA SPRUCE',
+          name: 'Software Engineer',
+          code: 'SWE',
+          description: 'Software Engineering position',
+          rate: 256.31,
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          createdBy: 'system',
+        },
+        {
+          id: '2',
+          vehicle: 'VA SPRUCE',
+          name: 'Product Manager',
+          code: 'PM',
+          description: 'Product Management position',
+          rate: 324.16,
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          createdBy: 'system',
+        },
+        {
+          id: '3',
+          vehicle: 'GSA MAS',
+          name: 'Software Engineer',
+          code: 'SWE',
+          description: 'Software Engineering position',
+          rate: 245.50,
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          createdBy: 'system',
+        },
+        {
+          id: '4',
+          vehicle: 'GSA MAS',
+          name: 'Product Manager',
+          code: 'PM',
+          description: 'Product Management position',
+          rate: 310.25,
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          createdBy: 'system',
+        },
+      ];
+    }
   }
 
   // Backward compatibility
@@ -152,58 +236,102 @@ export class MappingService {
     return this.getLCATs();
   }
 
+  static async createLCAT(lcat: Omit<LCAT, 'id' | 'createdAt' | 'updatedAt'>): Promise<LCAT> {
+    try {
+      const response = await fetch(`${this.baseUrl}/lcats`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(lcat),
+      });
+      
+      if (!response.ok) throw new Error('Failed to create LCAT');
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating LCAT:', error);
+      throw error;
+    }
+  }
+
+  static async updateLCAT(id: string, lcat: Omit<LCAT, 'id' | 'createdAt' | 'updatedAt'>): Promise<LCAT> {
+    try {
+      const response = await fetch(`${this.baseUrl}/lcats/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(lcat),
+      });
+      
+      if (!response.ok) throw new Error('Failed to update LCAT');
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating LCAT:', error);
+      throw error;
+    }
+  }
+
   // Company Role Management
   static async getCompanyRoles(): Promise<CompanyRole[]> {
-    return [
-      {
-        id: '1',
-        name: 'Senior Software Engineer',
-        practiceArea: 'Engineering',
-        description: 'Senior level software engineering role with 5+ years experience',
-        payBand: 120000, // $120,000
-        rateIncrease: 0.03, // 3% annual increase
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-      },
-      {
-        id: '2',
-        name: 'Lead Product Manager',
-        practiceArea: 'Product',
-        description: 'Lead product management role with strategic responsibilities',
-        payBand: 110000, // $110,000
-        rateIncrease: 0.025, // 2.5% annual increase
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-      },
-      {
-        id: '3',
-        name: 'Principal Data Scientist',
-        practiceArea: 'Data Science',
-        description: 'Principal level data science role with advanced analytics expertise',
-        payBand: 130000, // $130,000
-        rateIncrease: 0.04, // 4% annual increase
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-      },
-      {
-        id: '4',
-        name: 'Senior UX Designer',
-        practiceArea: 'Design',
-        description: 'Senior user experience design role with leadership responsibilities',
-        payBand: 105000, // $105,000
-        rateIncrease: 0.028, // 2.8% annual increase
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-      },
-    ];
+    try {
+      const response = await fetch(`${this.baseUrl}/company-roles`);
+      if (!response.ok) throw new Error('Failed to fetch company roles');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching company roles:', error);
+      // Fallback to mock data
+      return [
+        {
+          id: '1',
+          name: 'Senior Software Engineer',
+          practiceArea: 'Engineering',
+          description: 'Senior level software engineering role with 5+ years experience',
+          rate: 120000, // $120,000
+          rateIncrease: 0.03, // 3% annual increase
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          createdBy: 'system',
+        },
+        {
+          id: '2',
+          name: 'Lead Product Manager',
+          practiceArea: 'Product',
+          description: 'Lead product management role with strategic responsibilities',
+          rate: 110000, // $110,000
+          rateIncrease: 0.025, // 2.5% annual increase
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          createdBy: 'system',
+        },
+        {
+          id: '3',
+          name: 'Principal Data Scientist',
+          practiceArea: 'Data Science',
+          description: 'Principal level data science role with advanced analytics expertise',
+          rate: 130000, // $130,000
+          rateIncrease: 0.04, // 4% annual increase
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          createdBy: 'system',
+        },
+        {
+          id: '4',
+          name: 'Senior UX Designer',
+          practiceArea: 'Design',
+          description: 'Senior user experience design role with leadership responsibilities',
+          rate: 105000, // $105,000
+          rateIncrease: 0.028, // 2.8% annual increase
+          isActive: true,
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+          createdBy: 'system',
+        },
+      ];
+    }
   }
 
   static async createCompanyRole(role: Omit<CompanyRole, 'id' | 'createdAt' | 'updatedAt'>): Promise<CompanyRole> {
@@ -237,10 +365,6 @@ export class MappingService {
     return updatedRole;
   }
 
-  static async deleteCompanyRole(id: string): Promise<void> {
-    // In a real implementation, this would make an API call
-    console.log('Deleting company role:', id);
-  }
 
   // Three-Way Mapping Management removed - simplified architecture
 
@@ -408,6 +532,108 @@ export class MappingService {
   static async importFromExcel(file: File): Promise<ImportTemplate> {
     const { TemplateService } = await import('./template.service');
     return TemplateService.parseTemplate(file);
+  }
+
+  // Bulk import to database
+  static async bulkImportToDatabase(template: ImportTemplate): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/bulk-import`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(template),
+      });
+      
+      if (!response.ok) throw new Error('Failed to import data to database');
+      return await response.json();
+    } catch (error) {
+      console.error('Error importing data to database:', error);
+      throw error;
+    }
+  }
+
+  // Clear all data from database
+  static async clearAllData(): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/clear-all`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error('Failed to clear all data from database');
+      return await response.json();
+    } catch (error) {
+      console.error('Error clearing all data from database:', error);
+      throw error;
+    }
+  }
+
+  // Delete methods
+  static async deleteContractVehicle(id: string): Promise<void> {
+    try {
+      const response = await fetch(`${this.baseUrl}/contract-vehicles/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete contract vehicle');
+    } catch (error) {
+      console.error('Error deleting contract vehicle:', error);
+      throw error;
+    }
+  }
+
+  static async deleteLCAT(id: string): Promise<void> {
+    try {
+      const response = await fetch(`${this.baseUrl}/lcats/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete LCAT');
+    } catch (error) {
+      console.error('Error deleting LCAT:', error);
+      throw error;
+    }
+  }
+
+  static async deleteProjectRole(id: string): Promise<void> {
+    try {
+      const response = await fetch(`${this.baseUrl}/project-roles/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete project role');
+    } catch (error) {
+      console.error('Error deleting project role:', error);
+      throw error;
+    }
+  }
+
+  static async deleteCompanyRole(id: string): Promise<void> {
+    try {
+      const response = await fetch(`${this.baseUrl}/company-roles/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete company role');
+    } catch (error) {
+      console.error('Error deleting company role:', error);
+      throw error;
+    }
   }
 
   // Audit Logging

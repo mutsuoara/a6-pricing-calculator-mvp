@@ -46,6 +46,7 @@ import {
   Business as BusinessIcon,
 } from '@mui/icons-material';
 import { OverridePermissions } from '../types/labor-category';
+import { useSystemSettings } from '../hooks/useSystemSettings';
 import LCATManagement from './LCATManagement';
 
 interface User {
@@ -80,6 +81,7 @@ function TabPanel(props: TabPanelProps) {
 
 const AdminDashboard: React.FC = () => {
   const [currentTab, setCurrentTab] = useState(0);
+  const { settings, setWrapRate } = useSystemSettings();
   const [users, setUsers] = useState<User[]>([
     {
       id: '1',
@@ -422,6 +424,15 @@ const AdminDashboard: React.FC = () => {
                       defaultValue="10"
                       InputProps={{ endAdornment: '%' }}
                       size="small"
+                    />
+                    <TextField
+                      label="Wrap Rate"
+                      type="number"
+                      value={settings.wrapRate}
+                      onChange={(e) => setWrapRate(parseFloat(e.target.value) || 0)}
+                      InputProps={{ endAdornment: '%' }}
+                      size="small"
+                      helperText="System-wide wrap rate applied to all labor categories"
                     />
                     <FormControl size="small">
                       <InputLabel>Default Contract Type</InputLabel>

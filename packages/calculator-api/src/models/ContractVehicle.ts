@@ -13,6 +13,9 @@ export interface ContractVehicleAttributes {
   name: string; // e.g., "GSA MAS", "8(a)", "SBIR"
   code: string; // e.g., "GSA_MAS", "8A", "SBIR"
   description: string;
+  escalationRate: number; // Annual escalation rate (e.g., 0.03 for 3%)
+  startDate?: string; // Contract start date
+  endDate?: string; // Contract end date
   rateStructure: 'fixed' | 'burdened' | 'custom'; // How rates are structured
   maxOverheadRate: number; // Maximum allowed overhead rate for this vehicle
   maxGaRate: number; // Maximum allowed G&A rate for this vehicle
@@ -21,6 +24,7 @@ export interface ContractVehicleAttributes {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  createdBy: string;
   deletedAt?: Date;
 }
 
@@ -32,6 +36,9 @@ export class ContractVehicle extends Model<ContractVehicleAttributes, ContractVe
   public name!: string;
   public code!: string;
   public description!: string;
+  public escalationRate!: number;
+  public startDate?: string;
+  public endDate?: string;
   public rateStructure!: 'fixed' | 'burdened' | 'custom';
   public maxOverheadRate!: number;
   public maxGaRate!: number;
@@ -40,6 +47,7 @@ export class ContractVehicle extends Model<ContractVehicleAttributes, ContractVe
   public isActive!: boolean;
   public createdAt!: Date;
   public updatedAt!: Date;
+  public createdBy!: string;
   public deletedAt?: Date;
 
   /**
@@ -92,6 +100,22 @@ export class ContractVehicle extends Model<ContractVehicleAttributes, ContractVe
           type: DataTypes.TEXT,
           allowNull: true,
         },
+        escalationRate: {
+          type: DataTypes.DECIMAL(5, 4),
+          allowNull: false,
+          defaultValue: 0.03,
+          comment: 'Annual escalation rate as decimal (0.03 = 3%)',
+        },
+        startDate: {
+          type: DataTypes.DATEONLY,
+          allowNull: true,
+          comment: 'Contract start date',
+        },
+        endDate: {
+          type: DataTypes.DATEONLY,
+          allowNull: true,
+          comment: 'Contract end date',
+        },
         rateStructure: {
           type: DataTypes.ENUM('fixed', 'burdened', 'custom'),
           allowNull: false,
@@ -131,6 +155,12 @@ export class ContractVehicle extends Model<ContractVehicleAttributes, ContractVe
           type: DataTypes.DATE,
           allowNull: false,
           defaultValue: DataTypes.NOW,
+        },
+        createdBy: {
+          type: DataTypes.STRING(255),
+          allowNull: false,
+          defaultValue: 'system',
+          comment: 'User who created this contract vehicle',
         },
         deletedAt: {
           type: DataTypes.DATE,

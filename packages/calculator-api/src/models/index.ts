@@ -11,6 +11,10 @@ import { AuditLog } from './AuditLog';
 import { ContractVehicle } from './ContractVehicle';
 import { A6Role } from './A6Role';
 import { LaborCategoryTemplate } from './LaborCategoryTemplate';
+import { CompanyRole, initCompanyRole } from './CompanyRole';
+import { LCAT, initLCAT } from './LCAT';
+import { ProjectRole, initProjectRole } from './ProjectRole';
+import { RateValidationRule, initRateValidationRule } from './RateValidationRule';
 
 export class ModelManager {
   private static initialized = false;
@@ -34,6 +38,13 @@ export class ModelManager {
       ContractVehicle.initModel();
       A6Role.initModel();
       LaborCategoryTemplate.initModel();
+      
+      // Initialize LCAT Management models
+      const sequelize = dbService.getSequelize();
+      initCompanyRole(sequelize);
+      initLCAT(sequelize);
+      initProjectRole(sequelize);
+      initRateValidationRule(sequelize);
 
       // Set up associations
       PricingProject.hasMany(LaborCategory, {
@@ -80,7 +91,11 @@ export class ModelManager {
       AuditLog,
       ContractVehicle,
       A6Role,
-      LaborCategoryTemplate
+      LaborCategoryTemplate,
+      CompanyRole,
+      LCAT,
+      ProjectRole,
+      RateValidationRule
     };
   }
 
@@ -91,5 +106,5 @@ export class ModelManager {
 }
 
 // Export models for use in other parts of the application
-export { User, PricingProject, LaborCategory, OtherDirectCost, AuditLog, ContractVehicle, A6Role, LaborCategoryTemplate };
+export { User, PricingProject, LaborCategory, OtherDirectCost, AuditLog, ContractVehicle, A6Role, LaborCategoryTemplate, CompanyRole, LCAT, ProjectRole, RateValidationRule };
 export { DatabaseService } from '../config/database';
