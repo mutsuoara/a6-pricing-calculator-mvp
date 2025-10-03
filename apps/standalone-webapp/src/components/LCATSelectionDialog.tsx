@@ -36,7 +36,7 @@ import {
 } from '@mui/icons-material';
 
 // API base URL - in production this would come from environment variables
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = '/api';
 
 interface LCATTemplate {
   id: string;

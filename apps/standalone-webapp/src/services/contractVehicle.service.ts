@@ -60,7 +60,7 @@ class ContractVehicleService {
     this.notifyListeners();
 
     try {
-      const response = await fetch('http://localhost:3001/api/lcat-management/contract-vehicles');
+      const response = await fetch('/api/lcat-management/contract-vehicles');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -83,7 +83,7 @@ class ContractVehicleService {
    */
   async createVehicle(vehicleData: Omit<ContractVehicle, 'id' | 'createdAt' | 'updatedAt'>): Promise<ContractVehicle> {
     try {
-      const response = await fetch('http://localhost:3001/api/lcat-management/contract-vehicles', {
+      const response = await fetch('/api/lcat-management/contract-vehicles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ class ContractVehicleService {
    */
   async updateVehicle(id: string, vehicleData: Partial<ContractVehicle>): Promise<ContractVehicle> {
     try {
-      const response = await fetch(`http://localhost:3001/api/lcat-management/contract-vehicles/${id}`, {
+      const response = await fetch(`/api/lcat-management/contract-vehicles/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -144,7 +144,7 @@ class ContractVehicleService {
    */
   async deleteVehicle(id: string): Promise<void> {
     try {
-      const response = await fetch(`http://localhost:3001/api/lcat-management/contract-vehicles/${id}`, {
+      const response = await fetch(`/api/lcat-management/contract-vehicles/${id}`, {
         method: 'DELETE',
       });
 

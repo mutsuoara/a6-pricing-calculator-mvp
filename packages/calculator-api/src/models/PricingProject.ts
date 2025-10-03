@@ -15,10 +15,12 @@ export interface PricingProjectAttributes {
   tenantId: string;
   name: string;
   description?: string;
+  contractVehicle?: string;
   settings: PricingSettings;
   version: number;
   isTemplate: boolean;
   tags: string[];
+  laborCategoriesData: any[]; // Store complex labor category data as JSON
   createdBy: string;
   updatedBy: string;
   createdAt: Date;
@@ -33,10 +35,12 @@ export class PricingProject extends Model<PricingProjectAttributes, PricingProje
   public tenantId!: string;
   public name!: string;
   public description?: string;
+  public contractVehicle?: string;
   public settings!: PricingSettings;
   public version!: number;
   public isTemplate!: boolean;
   public tags!: string[];
+  public laborCategoriesData!: any[]; // Store complex labor category data as JSON
   public createdBy!: string;
   public updatedBy!: string;
   public createdAt!: Date;
@@ -44,7 +48,7 @@ export class PricingProject extends Model<PricingProjectAttributes, PricingProje
   public deletedAt?: Date;
 
   // Associations
-  public laborCategories?: LaborCategory[];
+  // Note: Labor categories are stored as JSON data in laborCategoriesData field
   public otherDirectCosts?: OtherDirectCost[];
 
   /**
@@ -175,6 +179,10 @@ export class PricingProject extends Model<PricingProjectAttributes, PricingProje
           type: DataTypes.TEXT,
           allowNull: true,
         },
+        contractVehicle: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
         settings: {
           type: DataTypes.JSONB,
           allowNull: false,
@@ -194,6 +202,11 @@ export class PricingProject extends Model<PricingProjectAttributes, PricingProje
         tags: {
           type: DataTypes.ARRAY(DataTypes.TEXT),
           allowNull: false,
+          defaultValue: [],
+        },
+        laborCategoriesData: {
+          type: DataTypes.JSONB,
+          allowNull: true,
           defaultValue: [],
         },
         createdBy: {

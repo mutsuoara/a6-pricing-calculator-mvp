@@ -83,6 +83,11 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     totalBurdenedCost: 0,
     averageBaseRate: 0,
     averageBurdenedRate: 0,
+    // New properties for enhanced calculations
+    totalCost: 0,
+    totalActualCost: 0,
+    totalActualProfit: 0,
+    averageActualProfitPercentage: 0,
   });
   const [lcatDialogOpen, setLcatDialogOpen] = useState(false);
   const [speedDialOpen, setSpeedDialOpen] = useState(false);

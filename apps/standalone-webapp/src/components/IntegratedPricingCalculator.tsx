@@ -99,46 +99,7 @@ const IntegratedPricingCalculator: React.FC = () => {
     overheadRate: 0.30,
     gaRate: 0.15,
     feeRate: 0.10,
-    laborCategories: [
-      {
-        id: '1',
-        title: 'Senior Software Engineer',
-        baseRate: 85.00,
-        hours: 2080,
-        ftePercentage: 100,
-        clearanceLevel: 'Secret',
-        location: 'On-site',
-        companyRoleId: '',
-        companyRoleName: '',
-        companyRoleRate: 0,
-        finalRate: 85.00,
-        finalRateMetadata: {
-          source: 'manual',
-          reason: 'Demo project',
-          timestamp: new Date().toISOString(),
-          userId: 'demo-user',
-        },
-      },
-      {
-        id: '2',
-        title: 'Project Manager',
-        baseRate: 95.00,
-        hours: 2080,
-        ftePercentage: 100,
-        clearanceLevel: 'Public Trust',
-        location: 'On-site',
-        companyRoleId: '',
-        companyRoleName: '',
-        companyRoleRate: 0,
-        finalRate: 95.00,
-        finalRateMetadata: {
-          source: 'manual',
-          reason: 'Demo project',
-          timestamp: new Date().toISOString(),
-          userId: 'demo-user',
-        },
-      },
-    ],
+    laborCategories: [],
     otherDirectCosts: [],
   });
 
@@ -207,6 +168,8 @@ const IntegratedPricingCalculator: React.FC = () => {
       setSnackbarOpen(true);
       
       const apiProjectData = ProjectService.convertFrontendProjectToApi(projectData);
+      console.log('🔍 IntegratedPricingCalculator.handleSaveProject - Original projectData:', JSON.stringify(projectData, null, 2));
+      console.log('🔍 IntegratedPricingCalculator.handleSaveProject - Converted apiProjectData:', JSON.stringify(apiProjectData, null, 2));
       
       let response;
       if (projectData.id.startsWith('demo-project') || projectData.id.startsWith('project-')) {

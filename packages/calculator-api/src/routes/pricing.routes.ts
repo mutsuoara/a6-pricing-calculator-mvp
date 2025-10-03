@@ -288,7 +288,6 @@ router.get('/projects', async (req, res) => {
   try {
     const projects = await PricingProject.findAll({
       include: [
-        { model: LaborCategory, as: 'laborCategories' },
         { model: OtherDirectCost, as: 'otherDirectCosts' }
       ],
       order: [['updatedAt', 'DESC']]
@@ -314,12 +313,19 @@ router.get('/projects', async (req, res) => {
 router.get('/projects/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const project = await PricingProject.findByPk(id, {
-      include: [
-        { model: LaborCategory, as: 'laborCategories' },
-        { model: OtherDirectCost, as: 'otherDirectCosts' }
-      ]
-    });
+    console.log('🔍 API GET /projects/:id - Fetching project:', id);
+    
+    const project = await PricingProject.findByPk(id);
+    console.log('🔍 API GET /projects/:id - Project found:', project ? 'Yes' : 'No');
+    
+    if (project) {
+      console.log('🔍 API GET /projects/:id - Project data:', {
+        id: project.id,
+        name: project.name,
+        laborCategoriesData: project.laborCategoriesData,
+        settings: project.settings
+      });
+    }
 
     if (!project) {
       return res.status(404).json({
@@ -348,9 +354,12 @@ router.get('/projects/:id', async (req, res) => {
  */
 router.post('/projects', async (req, res) => {
   try {
+    console.log('🔍 API /projects - Request body:', JSON.stringify(req.body, null, 2));
+    
     const {
       name,
       description,
+      contractVehicle,
       settings,
       laborCategories = [],
       otherDirectCosts = [],
@@ -365,17 +374,41 @@ router.post('/projects', async (req, res) => {
       });
     }
 
+    // Merge provided settings with defaults to ensure all required fields are present
+    const defaultSettings = PricingProject.getDefaultSettings();
+    const mergedSettings = {
+      ...defaultSettings,
+      ...settings,
+      // Ensure periodOfPerformance is properly merged
+      periodOfPerformance: {
+        ...defaultSettings.periodOfPerformance,
+        ...settings?.periodOfPerformance,
+      },
+    };
+
+    console.log('🔍 API /projects - Creating project with data:', {
+      name: name.trim(),
+      description: description?.trim(),
+      settings: mergedSettings,
+      laborCategoriesData: laborCategories,
+      otherDirectCosts,
+      tags
+    });
+
     const project = await PricingProject.create({
       tenantId: uuidv4(), // In real app, get from auth context
       name: name.trim(),
       description: description?.trim(),
-      settings: settings || PricingProject.getDefaultSettings(),
-      laborCategories,
+      contractVehicle: contractVehicle,
+      settings: mergedSettings,
+      laborCategoriesData: laborCategories, // Store as JSON data
       otherDirectCosts,
       tags,
       createdBy: uuidv4(), // In real app, get from auth context
       updatedBy: uuidv4(), // In real app, get from auth context
     });
+
+    console.log('🔍 API /projects - Project created successfully:', project.id);
 
     res.status(201).json({
       success: true,
@@ -383,6 +416,9 @@ router.post('/projects', async (req, res) => {
       message: 'Project created successfully'
     });
   } catch (error) {
+    console.error('🔍 API /projects - Error creating project:', error);
+    console.error('🔍 API /projects - Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -397,9 +433,12 @@ router.post('/projects', async (req, res) => {
 router.put('/projects/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    console.log('🔍 API PUT /projects/:id - Request body:', JSON.stringify(req.body, null, 2));
+    
     const {
       name,
       description,
+      contractVehicle,
       settings,
       laborCategories,
       otherDirectCosts,
@@ -423,20 +462,32 @@ router.put('/projects/:id', async (req, res) => {
 
     if (name !== undefined) updateData.name = name.trim();
     if (description !== undefined) updateData.description = description?.trim();
-    if (settings !== undefined) updateData.settings = settings;
-    if (laborCategories !== undefined) updateData.laborCategories = laborCategories;
+    if (contractVehicle !== undefined) updateData.contractVehicle = contractVehicle;
+    if (settings !== undefined) {
+      // Merge provided settings with existing project settings to preserve required fields
+      const existingSettings = project.settings;
+      const mergedSettings = {
+        ...existingSettings,
+        ...settings,
+        // Ensure periodOfPerformance is properly merged
+        periodOfPerformance: {
+          ...existingSettings.periodOfPerformance,
+          ...settings.periodOfPerformance,
+        },
+      };
+      updateData.settings = mergedSettings;
+    }
+    if (laborCategories !== undefined) updateData.laborCategoriesData = laborCategories;
     if (otherDirectCosts !== undefined) updateData.otherDirectCosts = otherDirectCosts;
     if (tags !== undefined) updateData.tags = tags;
 
+    console.log('🔍 API PUT /projects/:id - Update data:', JSON.stringify(updateData, null, 2));
+    
     await project.update(updateData);
+    console.log('🔍 API PUT /projects/:id - Project updated successfully');
 
-    // Fetch updated project with associations
-    const updatedProject = await PricingProject.findByPk(id, {
-      include: [
-        { model: LaborCategory, as: 'laborCategories' },
-        { model: OtherDirectCost, as: 'otherDirectCosts' }
-      ]
-    });
+    // Fetch updated project
+    const updatedProject = await PricingProject.findByPk(id);
 
     res.json({
       success: true,
@@ -444,6 +495,9 @@ router.put('/projects/:id', async (req, res) => {
       message: 'Project updated successfully'
     });
   } catch (error) {
+    console.error('🔍 API PUT /projects/:id - Error updating project:', error);
+    console.error('🔍 API PUT /projects/:id - Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

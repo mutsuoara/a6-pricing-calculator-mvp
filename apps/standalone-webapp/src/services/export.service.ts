@@ -12,7 +12,7 @@ export interface ExportOptions {
 }
 
 export class ExportService {
-  private static readonly API_BASE_URL = 'http://localhost:3001/api';
+  private static readonly API_BASE_URL = '/api';
 
   /**
    * Export calculation results to Excel

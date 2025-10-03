@@ -158,7 +158,7 @@ export const ProjectSelectionDialog: React.FC<ProjectSelectionDialogProps> = ({
     >
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Typography variant="h6" component="div">
+          <Typography variant="h6">
             Select Project
           </Typography>
           <Button

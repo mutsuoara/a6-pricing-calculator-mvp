@@ -57,8 +57,14 @@ class ProjectService {
    */
   public static async getProject(id: string): Promise<ProjectResponse> {
     try {
+      console.log('🔍 ProjectService.getProject - Fetching project:', id);
+      console.log('🔍 ProjectService.getProject - URL:', `${this.baseUrl}/projects/${id}`);
+      
       const response = await fetch(`${this.baseUrl}/projects/${id}`);
       const data = await response.json();
+      
+      console.log('🔍 ProjectService.getProject - Response status:', response.status);
+      console.log('🔍 ProjectService.getProject - Response data:', JSON.stringify(data, null, 2));
       
       if (!response.ok) {
         throw new Error(data.message || 'Failed to fetch project');
@@ -80,6 +86,8 @@ class ProjectService {
    */
   public static async createProject(projectData: Partial<ProjectData>): Promise<ProjectResponse> {
     try {
+      console.log('🔍 ProjectService.createProject - Input data:', JSON.stringify(projectData, null, 2));
+      
       const response = await fetch(`${this.baseUrl}/projects`, {
         method: 'POST',
         headers: {
@@ -88,10 +96,24 @@ class ProjectService {
         body: JSON.stringify(projectData),
       });
       
-      const data = await response.json();
+      console.log('🔍 ProjectService.createProject - Response status:', response.status);
+      console.log('🔍 ProjectService.createProject - Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      const responseText = await response.text();
+      console.log('🔍 ProjectService.createProject - Raw response:', responseText);
+      
+      let data;
+      try {
+        data = JSON.parse(responseText);
+        console.log('🔍 ProjectService.createProject - Parsed response:', JSON.stringify(data, null, 2));
+      } catch (parseError) {
+        console.error('🔍 ProjectService.createProject - JSON parse error:', parseError);
+        throw new Error(`Invalid JSON response: ${responseText}`);
+      }
       
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to create project');
+        console.error('🔍 ProjectService.createProject - Error response:', data);
+        throw new Error(data.message || data.error || 'Failed to create project');
       }
 
       return data;
@@ -165,20 +187,26 @@ class ProjectService {
    * Convert API project format to frontend format
    */
   public static convertApiProjectToFrontend(apiProject: any): ProjectData {
-    return {
+    console.log('🔍 ProjectService.convertApiProjectToFrontend - Input:', JSON.stringify(apiProject, null, 2));
+    
+    const converted = {
       id: apiProject.id,
       name: apiProject.name,
       description: apiProject.description,
       lastModified: apiProject.updatedAt,
       status: 'draft', // Default status
-      contractVehicle: undefined,
+      contractVehicle: apiProject.contractVehicle,
       overheadRate: apiProject.settings?.overheadRate || 0.30,
       gaRate: apiProject.settings?.gaRate || 0.15,
       feeRate: apiProject.settings?.feeRate || 0.10,
-      laborCategories: apiProject.laborCategories || [],
+      laborCategories: apiProject.laborCategories || apiProject.laborCategoriesData || [],
       otherDirectCosts: apiProject.otherDirectCosts || [],
       tags: apiProject.tags || [],
     };
+    
+    console.log('🔍 ProjectService.convertApiProjectToFrontend - Output:', JSON.stringify(converted, null, 2));
+    
+    return converted;
   }
 
   /**
@@ -188,6 +216,7 @@ class ProjectService {
     return {
       name: frontendProject.name,
       description: frontendProject.description,
+      contractVehicle: frontendProject.contractVehicle,
       settings: {
         overheadRate: frontendProject.overheadRate,
         gaRate: frontendProject.gaRate,

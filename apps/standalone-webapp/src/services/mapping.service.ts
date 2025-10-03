@@ -17,7 +17,7 @@ import {
 } from '../types/mapping';
 
 export class MappingService {
-  private static baseUrl = 'http://localhost:3001/api/lcat-management';
+  private static baseUrl = '/api/lcat-management';
 
   // Contract Vehicle Management
   static async getContractVehicles(): Promise<ContractVehicle[]> {

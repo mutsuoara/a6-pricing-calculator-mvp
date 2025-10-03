@@ -27,6 +27,7 @@ import {
   Stepper,
   Step,
   StepLabel,
+  TextField,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -46,6 +47,7 @@ interface LCATProjectRoleSelectionDialogProps {
     hours?: number;
     companyRole?: CompanyRole;
     finalRate?: number;
+    quantity?: number;
   }) => void;
 }
 
@@ -58,8 +60,9 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
   const [lcats, setLcats] = useState<LCAT[]>([]);
   const [projectRoles, setProjectRoles] = useState<ProjectRole[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedLCATs, setSelectedLCATs] = useState<LCAT[]>([]);
-  const [lcatMappings, setLcatMappings] = useState<Array<{lcat: LCAT, projectRole: ProjectRole | null}>>([]);
+  const [lcatMappings, setLcatMappings] = useState<Array<{lcat: LCAT, projectRole: ProjectRole | null, instanceId: string, quantity: number}>>([]);
   const [activeTab, setActiveTab] = useState(0);
   const [multiSelectMode, setMultiSelectMode] = useState(false);
 
@@ -83,10 +86,26 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
     }
   };
 
-  // Get filtered LCATs based on selected vehicle
+  // Get filtered LCATs based on selected vehicle and search query
   const getFilteredLCATs = () => {
-    if (!selectedVehicle) return lcats;
-    return lcats.filter(lcat => lcat.vehicle === selectedVehicle);
+    let filtered = lcats;
+    
+    // Filter by vehicle
+    if (selectedVehicle) {
+      filtered = filtered.filter(lcat => lcat.vehicle === selectedVehicle);
+    }
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(lcat => 
+        lcat.name.toLowerCase().includes(query) ||
+        lcat.code.toLowerCase().includes(query) ||
+        lcat.description.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered;
   };
 
   // Get unique vehicles from LCATs
@@ -109,22 +128,43 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
           setLcatMappings(prevMappings => prevMappings.filter(mapping => mapping.lcat.id !== lcat.id));
           return prev.filter(selected => selected.id !== lcat.id);
         } else {
-          // Add to mappings with null project role
-          setLcatMappings(prevMappings => [...prevMappings, { lcat, projectRole: null }]);
+          // Add to mappings with null project role and unique instance ID
+          setLcatMappings(prevMappings => [...prevMappings, { lcat, projectRole: null, instanceId: `${lcat.id}-${Date.now()}`, quantity: 1 }]);
           return [...prev, lcat];
         }
       });
     } else {
       setSelectedLCATs([lcat]);
-      setLcatMappings([{ lcat, projectRole: null }]);
+      setLcatMappings([{ lcat, projectRole: null, instanceId: `${lcat.id}-${Date.now()}`, quantity: 1 }]);
     }
   };
 
-  const handleProjectRoleMapping = (lcatId: string, projectRole: ProjectRole) => {
+  const handleProjectRoleMapping = (instanceId: string, projectRole: ProjectRole) => {
     setLcatMappings(prev => 
       prev.map(mapping => 
-        mapping.lcat.id === lcatId 
+        mapping.instanceId === instanceId 
           ? { ...mapping, projectRole }
+          : mapping
+      )
+    );
+  };
+
+  const handleAddInstance = (lcatId: string) => {
+    const lcat = lcats.find(l => l.id === lcatId);
+    if (lcat) {
+      setLcatMappings(prev => [...prev, { lcat, projectRole: null, instanceId: `${lcat.id}-${Date.now()}`, quantity: 1 }]);
+    }
+  };
+
+  const handleRemoveInstance = (instanceId: string) => {
+    setLcatMappings(prev => prev.filter(mapping => mapping.instanceId !== instanceId));
+  };
+
+  const handleQuantityChange = (instanceId: string, quantity: number) => {
+    setLcatMappings(prev => 
+      prev.map(mapping => 
+        mapping.instanceId === instanceId 
+          ? { ...mapping, quantity: Math.max(1, quantity) }
           : mapping
       )
     );
@@ -135,14 +175,16 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
     console.log(`Processing ${validMappings.length} labor category mappings:`, validMappings);
     
     if (validMappings.length > 0) {
-      // Handle multiple labor categories - call onSelect for each mapping
+      // Handle multiple labor categories - call onSelect for each individual instance
       validMappings.forEach((mapping, index) => {
-        console.log(`Calling onSelect for mapping ${index + 1}:`, mapping.lcat.name, '->', mapping.projectRole!.name);
+        console.log(`Calling onSelect for mapping ${index + 1}:`, mapping.lcat.name, '->', mapping.projectRole!.name, `(quantity: ${mapping.quantity})`);
+        
         onSelect({
           lcat: mapping.lcat,
           projectRole: mapping.projectRole!,
           // Include project role hours in the labor category
           hours: mapping.projectRole!.typicalHours,
+          quantity: mapping.quantity || 1,
         });
       });
       
@@ -186,9 +228,9 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
         </Box>
       </DialogTitle>
       
-      <DialogContent>
+      <DialogContent sx={{ p: 0 }}>
         {/* Progress Stepper */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ p: 3, pb: 2 }}>
           <Stepper activeStep={activeTab} alternativeLabel>
             {steps.map((label) => (
               <Step key={label}>
@@ -198,63 +240,103 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
           </Stepper>
         </Box>
 
-        {/* Navigation Controls */}
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={multiSelectMode}
-                  onChange={(e) => setMultiSelectMode(e.target.checked)}
-                />
-              }
-              label="Multi-select mode"
-            />
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <InputLabel>Filter by Vehicle</InputLabel>
-              <Select
-                value={selectedVehicle}
-                onChange={(e) => setSelectedVehicle(e.target.value)}
-                label="Filter by Vehicle"
-              >
-                <MenuItem value="">
-                  <em>All Vehicles</em>
-                </MenuItem>
-                {getAvailableVehicles().map((vehicle) => (
-                  <MenuItem key={vehicle} value={vehicle}>
-                    {vehicle}
+        {/* Sticky Navigation Controls */}
+        <Box sx={{ 
+          position: 'sticky', 
+          top: 0, 
+          zIndex: 1, 
+          bgcolor: 'background.paper', 
+          borderBottom: 1, 
+          borderColor: 'divider',
+          p: 2,
+          mb: 2
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={multiSelectMode}
+                    onChange={(e) => setMultiSelectMode(e.target.checked)}
+                  />
+                }
+                label="Multi-select mode"
+              />
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>Filter by Vehicle</InputLabel>
+                <Select
+                  value={selectedVehicle}
+                  onChange={(e) => setSelectedVehicle(e.target.value)}
+                  label="Filter by Vehicle"
+                >
+                  <MenuItem value="">
+                    <em>All Vehicles</em>
                   </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                  {getAvailableVehicles().map((vehicle) => (
+                    <MenuItem key={vehicle} value={vehicle}>
+                      {vehicle}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+            
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                startIcon={<ArrowBackIcon />}
+                onClick={handleBack}
+                disabled={activeTab === 0}
+                variant="outlined"
+              >
+                Back
+              </Button>
+              <Button
+                endIcon={<ArrowForwardIcon />}
+                onClick={handleNext}
+                disabled={
+                  activeTab === 2 || 
+                  (activeTab === 0 && selectedLCATs.length === 0) || 
+                  (activeTab === 1 && lcatMappings.some(mapping => mapping.projectRole === null))
+                }
+                variant="contained"
+              >
+                Next
+              </Button>
+            </Box>
           </Box>
           
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
-              startIcon={<ArrowBackIcon />}
-              onClick={handleBack}
-              disabled={activeTab === 0}
-              variant="outlined"
-            >
-              Back
-            </Button>
-            <Button
-              endIcon={<ArrowForwardIcon />}
-              onClick={handleNext}
-              disabled={
-                activeTab === 2 || 
-                (activeTab === 0 && selectedLCATs.length === 0) || 
-                (activeTab === 1 && lcatMappings.some(mapping => mapping.projectRole === null))
-              }
-              variant="contained"
-            >
-              Next
-            </Button>
-          </Box>
+          {/* Search Bar - Only show on LCAT selection tab */}
+          {activeTab === 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <TextField
+                size="small"
+                placeholder="Search LCATs by name, code, or description..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                sx={{ minWidth: 300 }}
+                InputProps={{
+                  startAdornment: (
+                    <Box sx={{ mr: 1, color: 'text.secondary' }}>
+                      🔍
+                    </Box>
+                  ),
+                }}
+              />
+              {searchQuery && (
+                <Button
+                  size="small"
+                  onClick={() => setSearchQuery('')}
+                  variant="outlined"
+                >
+                  Clear
+                </Button>
+              )}
+            </Box>
+          )}
         </Box>
 
         {/* Tab Content */}
-        <Box sx={{ minHeight: 400 }}>
+        <Box sx={{ minHeight: 400, p: 3 }}>
           {/* Tab 0: LCAT Selection */}
           {activeTab === 0 && (
             <Box>
@@ -344,7 +426,7 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
               
               <Grid container spacing={2}>
                 {lcatMappings.map((mapping, index) => (
-                  <Grid item xs={12} md={6} key={mapping.lcat.id}>
+                  <Grid item xs={12} md={6} key={mapping.instanceId}>
                     <Card sx={{ p: 2, border: 1, borderColor: 'divider' }}>
                       <Typography variant="subtitle1" gutterBottom>
                         Mapping {index + 1}
@@ -372,7 +454,7 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
                           onChange={(e) => {
                             const selectedRole = projectRoles.find(pr => pr.id === e.target.value);
                             if (selectedRole) {
-                              handleProjectRoleMapping(mapping.lcat.id, selectedRole);
+                              handleProjectRoleMapping(mapping.instanceId, selectedRole);
                             }
                           }}
                           label="Select Project Role"
@@ -392,6 +474,21 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
                         </Select>
                       </FormControl>
                       
+                      {/* Quantity Selection */}
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          Quantity:
+                        </Typography>
+                        <TextField
+                          size="small"
+                          type="number"
+                          value={mapping.quantity || 1}
+                          onChange={(e) => handleQuantityChange(mapping.instanceId, parseInt(e.target.value) || 1)}
+                          inputProps={{ min: 1, max: 20 }}
+                          sx={{ width: 80 }}
+                        />
+                      </Box>
+                      
                       {/* Selected Project Role Info */}
                       {mapping.projectRole && (
                         <Box sx={{ mt: 2, p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
@@ -400,6 +497,9 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
                           </Typography>
                           <Typography variant="caption" color="text.secondary" display="block">
                             Clearance: {mapping.projectRole.typicalClearance} • Hours: {mapping.projectRole.typicalHours}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Quantity: <strong>{mapping.quantity || 1}</strong>
                           </Typography>
                         </Box>
                       )}
@@ -463,6 +563,9 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
                         <Typography variant="caption" color="text.secondary" display="block">
                           <strong>Rate:</strong> ${Number(mapping.lcat.rate || 0).toFixed(2)}
                         </Typography>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          <strong>Quantity:</strong> {mapping.quantity || 1}
+                        </Typography>
                       </Box>
                     </Card>
                   </Grid>
@@ -481,7 +584,7 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
           variant="contained" 
           disabled={activeTab !== 2 || lcatMappings.some(mapping => mapping.projectRole === null)}
         >
-          Add {lcatMappings.filter(mapping => mapping.projectRole !== null).length} Labor Categories
+          Add {lcatMappings.filter(mapping => mapping.projectRole !== null).reduce((total, mapping) => total + (mapping.quantity || 1), 0)} Labor Categories
         </Button>
       </DialogActions>
     </Dialog>

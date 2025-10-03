@@ -57,6 +57,15 @@ export interface LaborCategoryResult {
   feeRate: number;
   totalCost: number;
   burdenedRate: number;
+  // New properties for enhanced calculations
+  annualSalary: number;
+  wrapAmount: number;
+  minimumProfitAmount: number;
+  minimumAnnualRevenue: number;
+  companyMinimumRate: number;
+  actualCost: number;
+  actualProfit: number;
+  actualProfitPercentage: number;
 }
 
 export interface LaborCategorySummary {
@@ -67,6 +76,11 @@ export interface LaborCategorySummary {
   totalBurdenedCost: number;
   averageBaseRate: number;
   averageBurdenedRate: number;
+  // New properties for enhanced calculations
+  totalCost: number;
+  totalActualCost: number;
+  totalActualProfit: number;
+  averageActualProfitPercentage: number;
 }
 
 export interface ValidationError {

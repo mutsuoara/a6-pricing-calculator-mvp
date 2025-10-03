@@ -49,12 +49,9 @@ export class ModelManager {
       initRateValidationRule(sequelize);
 
       // Set up associations
-      PricingProject.hasMany(LaborCategory, {
-        foreignKey: 'projectId',
-        as: 'laborCategories',
-        onDelete: 'CASCADE',
-      });
-
+      // Note: Labor categories are stored as JSON data in laborCategoriesData field
+      // No need for separate LaborCategory associations
+      
       LaborCategory.belongsTo(PricingProject, {
         foreignKey: 'projectId',
         as: 'project',

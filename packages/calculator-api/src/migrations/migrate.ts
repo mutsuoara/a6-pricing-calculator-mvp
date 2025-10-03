@@ -8,6 +8,8 @@ import { up as createTables } from './001-create-tables';
 import { up as fixTenantIdColumns } from './002-fix-tenant-id-columns';
 import { up as createPricingTables } from './003-create-pricing-tables';
 import { up as createLcatManagementTables } from './005-create-lcat-management-tables';
+import { up as addLaborCategoriesJsonField } from './008-add-labor-categories-json-field';
+import { up as addContractVehicleField } from './009-add-contract-vehicle-field';
 
 export class MigrationRunner {
   private static sequelize: Sequelize;
@@ -99,6 +101,44 @@ export class MigrationRunner {
         console.log('✅ Migration 005-create-lcat-management-tables completed successfully');
       } else {
         console.log('⏭️  Migration 005-create-lcat-management-tables already executed, skipping');
+      }
+
+      // Run migration 008-add-labor-categories-json-field
+      const [results8] = await this.sequelize.query(
+        "SELECT * FROM migrations WHERE name = '008-add-labor-categories-json-field'"
+      );
+      
+      if (results8.length === 0) {
+        console.log('📝 Running migration: 008-add-labor-categories-json-field');
+        await addLaborCategoriesJsonField(this.sequelize.getQueryInterface());
+        
+        // Record migration as completed
+        await this.sequelize.query(
+          "INSERT INTO migrations (name, executed_at) VALUES ('008-add-labor-categories-json-field', NOW())"
+        );
+        
+        console.log('✅ Migration 008-add-labor-categories-json-field completed successfully');
+      } else {
+        console.log('⏭️  Migration 008-add-labor-categories-json-field already executed, skipping');
+      }
+
+      // Run migration 009-add-contract-vehicle-field
+      const [results9] = await this.sequelize.query(
+        "SELECT * FROM migrations WHERE name = '009-add-contract-vehicle-field'"
+      );
+      
+      if (results9.length === 0) {
+        console.log('📝 Running migration: 009-add-contract-vehicle-field');
+        await addContractVehicleField(this.sequelize.getQueryInterface());
+        
+        // Record migration as completed
+        await this.sequelize.query(
+          "INSERT INTO migrations (name, executed_at) VALUES ('009-add-contract-vehicle-field', NOW())"
+        );
+        
+        console.log('✅ Migration 009-add-contract-vehicle-field completed successfully');
+      } else {
+        console.log('⏭️  Migration 009-add-contract-vehicle-field already executed, skipping');
       }
       
       console.log('✅ All migrations completed successfully');
