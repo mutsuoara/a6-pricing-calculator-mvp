@@ -195,45 +195,54 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     hours?: number;
     companyRole?: CompanyRole;
     finalRate?: number;
+    quantity?: number;
   }) => {
-    const newCategory: LaborCategoryInput = {
-      id: `temp-${Date.now()}`,
-      title: `${selection.lcat.name} - ${selection.projectRole.name}`,
-      baseRate: selection.finalRate || selection.lcat.rate,
-      hours: selection.hours || selection.projectRole.typicalHours, // Use project role hours
-      ftePercentage: 100,
-      capacity: 1, // Default capacity of 1
-      clearanceLevel: selection.projectRole.typicalClearance as any, // Use project role clearance
-      location: 'Remote',
-      // LCAT data
-      lcatId: selection.lcat.id,
-      lcatName: selection.lcat.name,
-      lcatCode: selection.lcat.code,
-      lcatDescription: selection.lcat.description,
-      lcatRate: selection.lcat.rate,
-      vehicle: selection.lcat.vehicle,
-      // Project Role data
-      projectRoleId: selection.projectRole.id,
-      projectRoleName: selection.projectRole.name,
-      projectRoleDescription: selection.projectRole.description,
-      // Company Role data
-      companyRoleId: selection.companyRole?.id || '',
-      companyRoleName: selection.companyRole?.name || '',
-      companyRoleRate: selection.companyRole?.rate || 0,
-      // Final Rate with metadata
-      finalRate: selection.finalRate || selection.lcat.rate,
-      finalRateMetadata: {
-        source: selection.companyRole ? 'company' : 'lcat',
-        reason: selection.companyRole ? 'Mapped to company role' : 'Using LCAT rate',
-        timestamp: new Date().toISOString(),
-        userId: 'current-user', // In real app, get from auth context
-      },
-    };
+    const quantity = selection.quantity || 1;
+    const newCategories: LaborCategoryInput[] = [];
+
+    // Create multiple labor category entries based on quantity
+    for (let i = 0; i < quantity; i++) {
+      const newCategory: LaborCategoryInput = {
+        id: `temp-${Date.now()}-${i}`, // Unique ID for each instance
+        title: `${selection.lcat.name} - ${selection.projectRole.name}`,
+        baseRate: selection.finalRate || selection.lcat.rate,
+        hours: selection.hours || selection.projectRole.typicalHours, // Use project role hours
+        ftePercentage: 100,
+        capacity: 1, // Default capacity of 1
+        clearanceLevel: selection.projectRole.typicalClearance as any, // Use project role clearance
+        location: 'Remote',
+        // LCAT data
+        lcatId: selection.lcat.id,
+        lcatName: selection.lcat.name,
+        lcatCode: selection.lcat.code,
+        lcatDescription: selection.lcat.description,
+        lcatRate: selection.lcat.rate,
+        vehicle: selection.lcat.vehicle,
+        // Project Role data
+        projectRoleId: selection.projectRole.id,
+        projectRoleName: selection.projectRole.name,
+        projectRoleDescription: selection.projectRole.description,
+        // Company Role data - provide defaults if not provided
+        companyRoleId: selection.companyRole?.id || 'default-company-role',
+        companyRoleName: selection.companyRole?.name || 'Default Company Role',
+        companyRoleRate: selection.companyRole?.rate || selection.lcat.rate,
+        // Final Rate with metadata
+        finalRate: selection.finalRate || selection.lcat.rate,
+        finalRateMetadata: {
+          source: selection.companyRole ? 'company' : 'lcat',
+          reason: selection.companyRole ? 'Mapped to company role' : 'Using LCAT rate',
+          timestamp: new Date().toISOString(),
+          userId: 'current-user', // In real app, get from auth context
+        },
+      };
+
+      newCategories.push(newCategory);
+    }
     
     // Use functional update to ensure we get the latest state
     onCategoriesChange((prevCategories: LaborCategoryInput[]) => {
-      const updated = [...prevCategories, newCategory];
-      console.log(`Adding labor category: ${newCategory.title}. Total categories: ${updated.length}`);
+      const updated = [...prevCategories, ...newCategories];
+      console.log(`Adding ${quantity} labor category instances: ${selection.lcat.name} - ${selection.projectRole.name}. Total categories: ${updated.length}`);
       return updated;
     });
   };
