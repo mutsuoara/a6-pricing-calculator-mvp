@@ -288,13 +288,6 @@ const SortableRow: React.FC<SortableRowProps> = ({
         )}
       </TableCell>
 
-      {/* Effective Hours */}
-      <TableCell align="right">
-        <Typography variant="body2" fontWeight="medium">
-          {formatNumberWithCommas(result.effectiveHours)}
-        </Typography>
-      </TableCell>
-
       {/* Capacity */}
       <TableCell>
         <TextField
@@ -306,6 +299,13 @@ const SortableRow: React.FC<SortableRowProps> = ({
           onBlur={() => handleCapacityInputBlur(index)}
           sx={{ width: 80 }}
         />
+      </TableCell>
+
+      {/* Effective Hours */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="medium">
+          {formatNumberWithCommas(result.effectiveHours)}
+        </Typography>
       </TableCell>
 
       {/* Annual Salary Estimate */}
