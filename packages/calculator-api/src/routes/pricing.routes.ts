@@ -290,7 +290,8 @@ router.get('/projects', async (req, res) => {
       include: [
         { model: LaborCategory, as: 'laborCategories' },
         { model: OtherDirectCost, as: 'otherDirectCosts' }
-      ]
+      ],
+      order: [['updatedAt', 'DESC']]
     });
 
     res.json({
@@ -303,6 +304,181 @@ router.get('/projects', async (req, res) => {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
       message: 'Failed to retrieve projects'
+    });
+  }
+});
+
+/**
+ * Get a specific project by ID
+ */
+router.get('/projects/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const project = await PricingProject.findByPk(id, {
+      include: [
+        { model: LaborCategory, as: 'laborCategories' },
+        { model: OtherDirectCost, as: 'otherDirectCosts' }
+      ]
+    });
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: 'Project not found',
+        message: `Project with ID ${id} does not exist`
+      });
+    }
+
+    res.json({
+      success: true,
+      project,
+      message: 'Project retrieved successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      message: 'Failed to retrieve project'
+    });
+  }
+});
+
+/**
+ * Create a new project
+ */
+router.post('/projects', async (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      settings,
+      laborCategories = [],
+      otherDirectCosts = [],
+      tags = []
+    } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Project name is required',
+        message: 'Please provide a valid project name'
+      });
+    }
+
+    const project = await PricingProject.create({
+      tenantId: uuidv4(), // In real app, get from auth context
+      name: name.trim(),
+      description: description?.trim(),
+      settings: settings || PricingProject.getDefaultSettings(),
+      laborCategories,
+      otherDirectCosts,
+      tags,
+      createdBy: uuidv4(), // In real app, get from auth context
+      updatedBy: uuidv4(), // In real app, get from auth context
+    });
+
+    res.status(201).json({
+      success: true,
+      project,
+      message: 'Project created successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      message: 'Failed to create project'
+    });
+  }
+});
+
+/**
+ * Update an existing project
+ */
+router.put('/projects/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      description,
+      settings,
+      laborCategories,
+      otherDirectCosts,
+      tags
+    } = req.body;
+
+    const project = await PricingProject.findByPk(id);
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: 'Project not found',
+        message: `Project with ID ${id} does not exist`
+      });
+    }
+
+    // Update project fields
+    const updateData: any = {
+      updatedBy: uuidv4(), // In real app, get from auth context
+      updatedAt: new Date()
+    };
+
+    if (name !== undefined) updateData.name = name.trim();
+    if (description !== undefined) updateData.description = description?.trim();
+    if (settings !== undefined) updateData.settings = settings;
+    if (laborCategories !== undefined) updateData.laborCategories = laborCategories;
+    if (otherDirectCosts !== undefined) updateData.otherDirectCosts = otherDirectCosts;
+    if (tags !== undefined) updateData.tags = tags;
+
+    await project.update(updateData);
+
+    // Fetch updated project with associations
+    const updatedProject = await PricingProject.findByPk(id, {
+      include: [
+        { model: LaborCategory, as: 'laborCategories' },
+        { model: OtherDirectCost, as: 'otherDirectCosts' }
+      ]
+    });
+
+    res.json({
+      success: true,
+      project: updatedProject,
+      message: 'Project updated successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      message: 'Failed to update project'
+    });
+  }
+});
+
+/**
+ * Delete a project
+ */
+router.delete('/projects/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const project = await PricingProject.findByPk(id);
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: 'Project not found',
+        message: `Project with ID ${id} does not exist`
+      });
+    }
+
+    await project.destroy();
+
+    res.json({
+      success: true,
+      message: 'Project deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      message: 'Failed to delete project'
     });
   }
 });

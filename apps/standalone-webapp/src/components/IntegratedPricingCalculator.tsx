@@ -46,12 +46,14 @@ import CalculationResults from './CalculationResults';
 import ContractVehicleSelector from './ContractVehicleSelector';
 import ExportPanel from './ExportPanel';
 import AdminDashboard from './AdminDashboard';
+import ProjectSelectionDialog from './ProjectSelectionDialog';
+import ProjectService, { ProjectData } from '../services/project.service';
 
 // Import types
 import { LaborCategoryInput, ValidationError } from '../types/labor-category';
 import { CalculationResult, PricingSettings, LaborCategoryInput as LaborCategoryInputType } from '@pricing-calculator/types';
 
-interface ProjectData {
+interface LocalProjectData {
   id: string;
   name: string;
   lastModified: string;
@@ -88,7 +90,7 @@ function TabPanel(props: TabPanelProps) {
 
 const IntegratedPricingCalculator: React.FC = () => {
   const [currentTab, setCurrentTab] = useState(0);
-  const [projectData, setProjectData] = useState<ProjectData>({
+  const [projectData, setProjectData] = useState<LocalProjectData>({
     id: 'demo-project-1',
     name: 'Demo Project',
     lastModified: new Date().toISOString(),
@@ -154,6 +156,7 @@ const IntegratedPricingCalculator: React.FC = () => {
   const [isEditingProjectName, setIsEditingProjectName] = useState(false);
   const [editingProjectName, setEditingProjectName] = useState('');
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
+  const [showProjectDialog, setShowProjectDialog] = useState(false);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
@@ -198,16 +201,47 @@ const IntegratedPricingCalculator: React.FC = () => {
     }
   };
 
-  const handleSaveProject = () => {
-    setSnackbarMessage('Project saved successfully!');
+  const handleSaveProject = async () => {
+    try {
+      setSnackbarMessage('Saving project...');
+      setSnackbarOpen(true);
+      
+      const apiProjectData = ProjectService.convertFrontendProjectToApi(projectData);
+      
+      let response;
+      if (projectData.id.startsWith('demo-project') || projectData.id.startsWith('project-')) {
+        // Create new project
+        response = await ProjectService.createProject(apiProjectData);
+      } else {
+        // Update existing project
+        response = await ProjectService.updateProject(projectData.id, apiProjectData);
+      }
+      
+      if (response.success && response.project) {
+        const updatedProject = ProjectService.convertApiProjectToFrontend(response.project);
+        setProjectData(updatedProject);
+        setSnackbarMessage('Project saved successfully!');
+      } else {
+        throw new Error(response.message || 'Failed to save project');
+      }
+    } catch (error) {
+      console.error('Error saving project:', error);
+      setSnackbarMessage(`Failed to save project: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
     setSnackbarOpen(true);
     handleMenuClose();
   };
 
-  const handleOpenProject = () => {
-    setSnackbarMessage('Project opened successfully!');
-    setSnackbarOpen(true);
+  const handleOpenProject = async () => {
+    setShowProjectDialog(true);
     handleMenuClose();
+  };
+
+  const handleSelectProject = (project: ProjectData) => {
+    const convertedProject = ProjectService.convertApiProjectToFrontend(project);
+    setProjectData(convertedProject);
+    setSnackbarMessage(`Project "${project.name}" loaded successfully!`);
+    setSnackbarOpen(true);
   };
 
   const handleNewProject = () => {
@@ -819,6 +853,13 @@ const IntegratedPricingCalculator: React.FC = () => {
           </Box>
         </Box>
       </Dialog>
+
+      {/* Project Selection Dialog */}
+      <ProjectSelectionDialog
+        open={showProjectDialog}
+        onClose={() => setShowProjectDialog(false)}
+        onSelectProject={handleSelectProject}
+      />
     </Box>
   );
 };

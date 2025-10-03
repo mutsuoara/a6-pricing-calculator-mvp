@@ -9,6 +9,7 @@ export interface LaborCategoryInput {
   baseRate: number;
   hours: number;
   ftePercentage: number;
+  capacity: number; // Number of identical LCATs needed
   clearanceLevel: 'None' | 'Public Trust' | 'Secret' | 'Top Secret';
   location: 'Remote' | 'On-site' | 'Hybrid';
   // LCAT Integration fields
@@ -42,6 +43,7 @@ export interface LaborCategoryResult {
   baseRate: number;
   hours: number;
   ftePercentage: number;
+  capacity: number; // Number of identical LCATs needed
   effectiveHours: number;
   clearanceLevel: 'None' | 'Public Trust' | 'Secret' | 'Top Secret';
   location: 'Remote' | 'On-site' | 'Hybrid';

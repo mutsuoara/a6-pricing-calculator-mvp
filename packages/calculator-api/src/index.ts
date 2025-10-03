@@ -15,6 +15,7 @@ import { AuthService } from './services/auth.service';
 import authRoutes from './routes/auth.routes';
 import pricingRoutes from './routes/pricing.routes';
 import calculationRoutes from './routes/calculation.routes';
+import systemSettingsRoutes from './routes/system-settings.routes';
 
 // Load environment variables
 dotenv.config();
@@ -149,6 +150,9 @@ app.use('/api/pricing', pricingRoutes);
 // Calculation service routes
 app.use('/api/calculation', calculationRoutes);
 
+// System Settings routes
+app.use('/api/system-settings', systemSettingsRoutes);
+
 // Labor category routes
 import laborCategoryRoutes from './routes/labor-category.routes';
 app.use('/api/labor-categories', laborCategoryRoutes);
@@ -166,7 +170,7 @@ app.use('*', (req, res) => {
   res.status(404).json({
     error: 'Not Found',
     message: `Route ${req.method} ${req.originalUrl} not found`,
-    availableRoutes: ['/health', '/api/auth', '/api/pricing', '/api/calculation']
+    availableRoutes: ['/health', '/api/auth', '/api/pricing', '/api/calculation', '/api/system-settings']
   });
 });
 

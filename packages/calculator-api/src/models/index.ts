@@ -11,6 +11,7 @@ import { AuditLog } from './AuditLog';
 import { ContractVehicle } from './ContractVehicle';
 import { A6Role } from './A6Role';
 import { LaborCategoryTemplate } from './LaborCategoryTemplate';
+import { SystemSettings } from './SystemSettings';
 import { CompanyRole, initCompanyRole } from './CompanyRole';
 import { LCAT, initLCAT } from './LCAT';
 import { ProjectRole, initProjectRole } from './ProjectRole';
@@ -38,6 +39,7 @@ export class ModelManager {
       ContractVehicle.initModel();
       A6Role.initModel();
       LaborCategoryTemplate.initModel();
+      SystemSettings.initModel();
       
       // Initialize LCAT Management models
       const sequelize = dbService.getSequelize();
@@ -92,6 +94,7 @@ export class ModelManager {
       ContractVehicle,
       A6Role,
       LaborCategoryTemplate,
+      SystemSettings,
       CompanyRole,
       LCAT,
       ProjectRole,
@@ -106,5 +109,5 @@ export class ModelManager {
 }
 
 // Export models for use in other parts of the application
-export { User, PricingProject, LaborCategory, OtherDirectCost, AuditLog, ContractVehicle, A6Role, LaborCategoryTemplate, CompanyRole, LCAT, ProjectRole, RateValidationRule };
+export { User, PricingProject, LaborCategory, OtherDirectCost, AuditLog, ContractVehicle, A6Role, LaborCategoryTemplate, SystemSettings, CompanyRole, LCAT, ProjectRole, RateValidationRule };
 export { DatabaseService } from '../config/database';

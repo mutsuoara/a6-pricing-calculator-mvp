@@ -81,7 +81,7 @@ function TabPanel(props: TabPanelProps) {
 
 const AdminDashboard: React.FC = () => {
   const [currentTab, setCurrentTab] = useState(0);
-  const { settings, setWrapRate } = useSystemSettings();
+  const { settings, setWrapRate, setMinimumProfitRate } = useSystemSettings();
   const [users, setUsers] = useState<User[]>([
     {
       id: '1',
@@ -432,7 +432,16 @@ const AdminDashboard: React.FC = () => {
                       onChange={(e) => setWrapRate(parseFloat(e.target.value) || 0)}
                       InputProps={{ endAdornment: '%' }}
                       size="small"
-                      helperText="System-wide wrap rate applied to all labor categories"
+                      helperText="System-wide wrap rate applied to all labor categories (Default: 87.5%)"
+                    />
+                    <TextField
+                      label="Minimum Profit Rate"
+                      type="number"
+                      value={settings.minimumProfitRate}
+                      onChange={(e) => setMinimumProfitRate(parseFloat(e.target.value) || 0)}
+                      InputProps={{ endAdornment: '%' }}
+                      size="small"
+                      helperText="System-wide minimum profit rate applied to (Annual Salary + Wrap) (Default: 7.53%)"
                     />
                     <FormControl size="small">
                       <InputLabel>Default Contract Type</InputLabel>

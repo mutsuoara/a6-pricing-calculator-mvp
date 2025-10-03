@@ -72,14 +72,15 @@ export class LaborCategoryService {
     const overheadAmount = clearanceAdjustedRate * overheadRate * effectiveHours;
     const gaAmount = clearanceAdjustedRate * (1 + overheadRate) * gaRate * effectiveHours;
     const feeAmount = clearanceAdjustedRate * (1 + overheadRate) * (1 + gaRate) * feeRate * effectiveHours;
-    const totalCost = burdenedRate * effectiveHours;
+    const totalCost = laborCategory.finalRate * effectiveHours * laborCategory.capacity; // (Capacity × Effective Hours) × Final Rate
 
     return {
-      id: laborCategory.id,
+      id: laborCategory.id || '',
       title: laborCategory.title,
       baseRate: laborCategory.baseRate,
       hours: laborCategory.hours,
       ftePercentage: laborCategory.ftePercentage,
+      capacity: laborCategory.capacity,
       effectiveHours,
       clearanceLevel: laborCategory.clearanceLevel,
       location: laborCategory.location,
@@ -135,6 +136,15 @@ export class LaborCategoryService {
         field: `${prefix}.ftePercentage`,
         message: 'FTE percentage must be between 0.01% and 100%',
         value: laborCategory.ftePercentage,
+        severity: 'error',
+      });
+    }
+
+    if (laborCategory.capacity < 0.1 || laborCategory.capacity > 100) {
+      errors.push({
+        field: `${prefix}.capacity`,
+        message: 'Capacity must be between 0.1 and 100',
+        value: laborCategory.capacity,
         severity: 'error',
       });
     }
@@ -219,6 +229,7 @@ export class LaborCategoryService {
       baseRate: 0,
       hours: 0,
       ftePercentage: 100,
+      capacity: 1, // Default capacity of 1
       clearanceLevel: 'None',
       location: 'Remote',
       companyRoleId: '',

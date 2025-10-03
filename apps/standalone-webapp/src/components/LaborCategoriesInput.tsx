@@ -19,16 +19,12 @@ import {
   IconButton,
   Chip,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
-  Alert,
   Tooltip,
-  Divider,
   Grid,
   Card,
   CardContent,
-  Fab,
   SpeedDial,
   SpeedDialAction,
   SpeedDialIcon,
@@ -49,7 +45,7 @@ import { LaborCategoryService } from '../services/labor-category.service';
 import { LCAT, CompanyRole, ProjectRole } from '../types/mapping';
 import { MappingService } from '../services/mapping.service';
 import { getSalaryConversionInfo } from '../utils/salary-conversion';
-import { formatNumberWithCommas, formatCurrencyWithCommas, formatPercentageWithCommas } from '../utils/number-formatting';
+import { formatNumberWithCommas, formatCurrencyWithCommas, formatCurrencySmart, formatPercentageWithCommas } from '../utils/number-formatting';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LCATProjectRoleSelectionDialog } from './LCATProjectRoleSelectionDialog';
 
@@ -74,10 +70,11 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   feeRate,
   disabled = false,
 }) => {
-  const { calculateWrapAmount } = useSystemSettings();
+  const { settings, calculateWrapAmount, calculateMinimumProfitAmount } = useSystemSettings();
   const [editingState, setEditingState] = useState<EditingState>({});
   const [originalCategories, setOriginalCategories] = useState<LaborCategoryInput[]>([]);
   const [errors, setErrors] = useState<Record<string, ValidationError[]>>({});
+  const [capacityInputValues, setCapacityInputValues] = useState<Record<string, string>>({});
   const [summary, setSummary] = useState<LaborCategorySummary>({
     totalCategories: 0,
     totalHours: 0,
@@ -111,6 +108,11 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     const newSummary = LaborCategoryService.calculateSummary(categories, overheadRate, gaRate, feeRate);
     setSummary(newSummary);
   }, [categories, overheadRate, gaRate, feeRate]);
+
+  // Force re-render when system settings change (for minimum profit calculation)
+  useEffect(() => {
+    // This effect will trigger a re-render when system settings change
+  }, [settings]);
 
   // Validate all categories
   const validateCategories = useCallback(() => {
@@ -157,10 +159,27 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   };
 
   const updateCategory = (index: number, field: keyof LaborCategoryInput, value: any) => {
-    console.log(`updateCategory called: index=${index}, field=${field}, value=`, value);
     const newCategories = [...categories];
-    newCategories[index] = { ...newCategories[index], [field]: value };
-    console.log('Updated category:', newCategories[index]);
+    const currentCategory = newCategories[index];
+    if (!currentCategory) return;
+    
+    newCategories[index] = { 
+      ...currentCategory, 
+      [field]: value,
+      // Ensure all required fields are explicitly set (only if not being updated)
+      title: field === 'title' ? value : currentCategory.title,
+      baseRate: field === 'baseRate' ? value : currentCategory.baseRate,
+      hours: field === 'hours' ? value : currentCategory.hours,
+      ftePercentage: field === 'ftePercentage' ? value : currentCategory.ftePercentage,
+      capacity: field === 'capacity' ? value : currentCategory.capacity,
+      clearanceLevel: field === 'clearanceLevel' ? value : currentCategory.clearanceLevel,
+      location: field === 'location' ? value : currentCategory.location,
+      companyRoleId: field === 'companyRoleId' ? value : currentCategory.companyRoleId,
+      companyRoleName: field === 'companyRoleName' ? value : currentCategory.companyRoleName,
+      companyRoleRate: field === 'companyRoleRate' ? value : currentCategory.companyRoleRate,
+      finalRate: field === 'finalRate' ? value : currentCategory.finalRate,
+      finalRateMetadata: field === 'finalRateMetadata' ? value : currentCategory.finalRateMetadata,
+    };
     onCategoriesChange(newCategories);
   };
 
@@ -178,6 +197,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
       baseRate: selection.finalRate || selection.lcat.rate,
       hours: selection.hours || selection.projectRole.typicalHours, // Use project role hours
       ftePercentage: 100,
+      capacity: 1, // Default capacity of 1
       clearanceLevel: selection.projectRole.typicalClearance as any, // Use project role clearance
       location: 'Remote',
       // LCAT data
@@ -255,10 +275,23 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
 
   const duplicateCategory = (index: number) => {
     const categoryToDuplicate = categories[index];
+    if (!categoryToDuplicate) return;
+    
     const duplicatedCategory: LaborCategoryInput = {
       ...categoryToDuplicate,
       id: Date.now().toString(),
       title: `${categoryToDuplicate.title} (Copy)`,
+      baseRate: categoryToDuplicate.baseRate,
+      hours: categoryToDuplicate.hours,
+      ftePercentage: categoryToDuplicate.ftePercentage,
+      capacity: categoryToDuplicate.capacity,
+      clearanceLevel: categoryToDuplicate.clearanceLevel,
+      location: categoryToDuplicate.location,
+      companyRoleId: categoryToDuplicate.companyRoleId,
+      companyRoleName: categoryToDuplicate.companyRoleName,
+      companyRoleRate: categoryToDuplicate.companyRoleRate,
+      finalRate: categoryToDuplicate.finalRate,
+      finalRateMetadata: categoryToDuplicate.finalRateMetadata,
     };
     
     const newCategories = [...categories, duplicatedCategory];
@@ -367,8 +400,8 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               </TableCell>
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
-                  Company Rate
-                  <Tooltip title="Annual salary from company role (used to calculate hourly Final Rate)">
+                  Company Minimum Rate
+                  <Tooltip title="Minimum Annual Revenue ÷ Effective Hours">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -376,7 +409,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Final Rate
-                  <Tooltip title="Always editable - shows hourly rate. When company role selected, converts annual salary to hourly (annual ÷ hours)">
+                  <Tooltip title="Always editable - shows hourly rate. When company role selected, uses Company Minimum Rate">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -385,6 +418,14 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Final Rate Discount
                   <Tooltip title="Discount percentage: (LCAT Rate - Final Rate) ÷ LCAT Rate">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="center">
+                <Box display="flex" alignItems="center" justifyContent="center" gap={0.5}>
+                  Capacity
+                  <Tooltip title="Number of identical LCATs needed (multiplies total cost)">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -413,26 +454,36 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                   </Tooltip>
                 </Box>
               </TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="center">
+              {/* Hidden: Clearance column */}
+              {/* <TableCell sx={{ fontWeight: 'bold' }} align="center">
                 <Box display="flex" alignItems="center" justifyContent="center" gap={0.5}>
                   Clearance
                   <Tooltip title="Security clearance level required">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
-              </TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="center">
+              </TableCell> */}
+              {/* Hidden: Location column */}
+              {/* <TableCell sx={{ fontWeight: 'bold' }} align="center">
                 <Box display="flex" alignItems="center" justifyContent="center" gap={0.5}>
                   Location
                   <Tooltip title="Work location type">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
+              </TableCell> */}
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Minimum Annual Revenue
+                  <Tooltip title="Annual Salary Estimates + Wrap + Minimum Profit">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
               </TableCell>
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
-                  Annual Salary Estimates
-                  <Tooltip title="Annual salary from company role">
+                  Company Role Rate
+                  <Tooltip title="Minimum annual revenue from company role">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -440,23 +491,56 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Wrap
-                  <Tooltip title="System-wide wrap rate × Annual Salary Estimates (Configured in Admin Dashboard)">
+                  <Tooltip title="System-wide wrap rate × Company Role Rate (Configured in Admin Dashboard)">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
               </TableCell>
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Minimum Profit
+                  <Tooltip title="System-wide minimum profit rate × (Company Role Rate + Wrap) (Configured in Admin Dashboard)">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              {/* Hidden: Burdened Rate column */}
+              {/* <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Burdened Rate
                   <Tooltip title="Base rate + overhead + G&A + fee + clearance premium">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
-              </TableCell>
+              </TableCell> */}
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Total Cost
                   <Tooltip title="Burdened rate × effective hours">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Actual Cost
+                  <Tooltip title="(Company Role Rate + Wrap) × Capacity">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Actual Profit
+                  <Tooltip title="Total Cost - Actual Cost">
+                    <InfoIcon fontSize="small" color="action" />
+                  </Tooltip>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }} align="right">
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
+                  Actual Profit (%)
+                  <Tooltip title="Actual Profit / (Actual Cost + Actual Profit)">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -513,7 +597,6 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                   {/* Company Role - Always Editable */}
                   <TableCell>
                     <FormControl fullWidth size="small">
-                      <InputLabel>Company Role</InputLabel>
                       <Select
                         value={category.companyRoleId || ''}
                         onChange={(e) => {
@@ -522,22 +605,35 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                           console.log('Selected role:', selectedRole);
                           if (selectedRole) {
                             console.log('Updating category with role:', selectedRole.name, selectedRole.rate);
-                            // Convert annual salary to hourly rate (annual salary ÷ hours)
-                            const hourlyRate = Math.round((selectedRole.rate / category.hours) * 100) / 100; // Round to 2 decimal places
-                            console.log(`Converting annual salary ${formatCurrencyWithCommas(selectedRole.rate, false)} to hourly rate: ${formatCurrencyWithCommas(hourlyRate, true)} (÷ ${formatNumberWithCommas(category.hours)} hours)`);
+                            // Calculate Company Minimum Rate (Minimum Annual Revenue ÷ Effective Hours)
+                            const effectiveHours = category.hours * (category.ftePercentage / 100);
+                            const wrapAmount = calculateWrapAmount(selectedRole.rate);
+                            const minimumProfitAmount = calculateMinimumProfitAmount(selectedRole.rate, wrapAmount);
+                            const minimumAnnualRevenue = selectedRole.rate + wrapAmount + minimumProfitAmount;
+                            const minimumRate = Math.round((minimumAnnualRevenue / effectiveHours) * 100) / 100; // Round to 2 decimal places
+                            console.log(`Converting minimum annual revenue ${formatCurrencyWithCommas(minimumAnnualRevenue, false)} to minimum rate: ${formatCurrencyWithCommas(minimumRate, true)} (÷ ${formatNumberWithCommas(effectiveHours)} effective hours)`);
                             
                             // Batch all updates into a single state change
                             const newCategories = [...categories];
+                            const currentCategory = newCategories[index];
+                            if (!currentCategory) return;
+                            
                             newCategories[index] = {
-                              ...newCategories[index],
+                              ...currentCategory,
                               companyRoleId: selectedRole.id,
                               companyRoleName: selectedRole.name,
-                              companyRoleRate: selectedRole.rate, // Keep annual rate for reference
-                              finalRate: hourlyRate, // Use hourly rate for calculations (rounded to 2 decimals)
-                              baseRate: hourlyRate, // Use hourly rate for base calculations (rounded to 2 decimals)
+                              companyRoleRate: selectedRole.rate, // Keep minimum annual revenue for reference
+                              finalRate: minimumRate, // Use minimum rate for calculations (rounded to 2 decimals)
+                              baseRate: minimumRate, // Use minimum rate for base calculations (rounded to 2 decimals)
+                              title: currentCategory.title,
+                              hours: currentCategory.hours,
+                              ftePercentage: currentCategory.ftePercentage,
+                              capacity: currentCategory.capacity,
+                              clearanceLevel: currentCategory.clearanceLevel,
+                              location: currentCategory.location,
                               finalRateMetadata: {
                                 source: 'company',
-                                reason: `Mapped to ${selectedRole.name} (${formatCurrencyWithCommas(selectedRole.rate, false)} annual ÷ ${formatNumberWithCommas(category.hours)} hours = ${formatCurrencyWithCommas(hourlyRate, true)}/hour)`,
+                                reason: `Mapped to ${selectedRole.name} (${formatCurrencyWithCommas(minimumAnnualRevenue, false)} minimum annual revenue ÷ ${formatNumberWithCommas(effectiveHours)} effective hours = ${formatCurrencyWithCommas(minimumRate, true)}/hour)`,
                                 timestamp: new Date().toISOString(),
                                 userId: 'current-user', // In real app, get from auth context
                               }
@@ -548,11 +644,22 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                             console.log('Clearing company role');
                             // Clear company role
                             const newCategories = [...categories];
+                            const currentCategory = newCategories[index];
+                            if (!currentCategory) return;
+                            
                             newCategories[index] = {
-                              ...newCategories[index],
+                              ...currentCategory,
                               companyRoleId: '',
                               companyRoleName: '',
                               companyRoleRate: 0,
+                              title: currentCategory.title,
+                              baseRate: currentCategory.baseRate,
+                              hours: currentCategory.hours,
+                              ftePercentage: currentCategory.ftePercentage,
+                              capacity: currentCategory.capacity,
+                              clearanceLevel: currentCategory.clearanceLevel,
+                              location: currentCategory.location,
+                              finalRate: currentCategory.finalRate,
                               finalRateMetadata: {
                                 source: 'manual',
                                 reason: 'Company role cleared',
@@ -580,7 +687,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                                 {role.name}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
-                                {role.practiceArea} - {getSalaryConversionInfo(role.rate).annual} / {getSalaryConversionInfo(role.rate).hourly}
+                                {role.practiceArea} - Min Annual Revenue: {getSalaryConversionInfo(role.rate).annual}
                               </Typography>
                             </Box>
                           </MenuItem>
@@ -592,20 +699,23 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                   {/* LCAT Rate */}
                   <TableCell align="right">
                     <Typography variant="body2" fontWeight="medium">
-                      {formatCurrencyWithCommas(category.lcatRate || 0, true)}
+                      {formatCurrencySmart(category.lcatRate || 0)}
                     </Typography>
                   </TableCell>
 
-                  {/* Company Rate */}
+                  {/* Company Minimum Rate */}
                   <TableCell align="right">
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold" color="primary">
-                        {category.companyRoleRate ? formatCurrencyWithCommas(category.companyRoleRate / category.hours, true) : '$0.00'}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatCurrencyWithCommas(category.companyRoleRate || 0, false)}
-                      </Typography>
-                    </Box>
+                    <Typography variant="body2" fontWeight="bold" color="primary">
+                      {(() => {
+                        const effectiveHours = result.effectiveHours;
+                        const companyRoleRate = Number(category.companyRoleRate || 0);
+                        const wrapAmount = calculateWrapAmount(companyRoleRate);
+                        const minimumProfitAmount = calculateMinimumProfitAmount(companyRoleRate, wrapAmount);
+                        const minimumAnnualRevenue = companyRoleRate + wrapAmount + minimumProfitAmount;
+                        const minimumRate = effectiveHours > 0 ? minimumAnnualRevenue / effectiveHours : 0;
+                        return formatCurrencySmart(minimumRate);
+                      })()}
+                    </Typography>
                   </TableCell>
 
                   {/* Final Rate - Always Editable */}
@@ -621,10 +731,22 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                         console.log('Parsed rate:', newRate);
                         // Batch all updates into a single state change
                         const newCategories = [...categories];
+                        const currentCategory = newCategories[index];
+                        if (!currentCategory) return;
+                        
                         newCategories[index] = {
-                          ...newCategories[index],
+                          ...currentCategory,
                           finalRate: newRate,
                           baseRate: newRate,
+                          title: currentCategory.title,
+                          hours: currentCategory.hours,
+                          ftePercentage: currentCategory.ftePercentage,
+                          capacity: currentCategory.capacity,
+                          clearanceLevel: currentCategory.clearanceLevel,
+                          location: currentCategory.location,
+                          companyRoleId: currentCategory.companyRoleId,
+                          companyRoleName: currentCategory.companyRoleName,
+                          companyRoleRate: currentCategory.companyRoleRate,
                           finalRateMetadata: {
                             source: 'manual',
                             reason: 'Manual rate entry',
@@ -662,6 +784,84 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                         return formatPercentageWithCommas(discount, 1);
                       })()}
                     </Typography>
+                  </TableCell>
+
+                  {/* Capacity */}
+                  <TableCell align="center">
+                    <TextField
+                      size="small"
+                      type="text"
+                      value={capacityInputValues[`capacity_${index}`] ?? (category.capacity || 1).toString()}
+                      onChange={(e) => {
+                        setCapacityInputValues(prev => ({
+                          ...prev,
+                          [`capacity_${index}`]: e.target.value
+                        }));
+                      }}
+                      onFocus={(e) => {
+                        // Select all text when focused for easy replacement
+                        e.target.select();
+                      }}
+                      onBlur={(e) => {
+                        let inputValue = e.target.value.trim();
+                        
+                        // Handle empty input
+                        if (inputValue === '') {
+                          updateCategory(index, 'capacity', 1);
+                          setCapacityInputValues(prev => ({
+                            ...prev,
+                            [`capacity_${index}`]: '1'
+                          }));
+                          return;
+                        }
+                        
+                        // Handle decimal input more intuitively
+                        if (inputValue === '.') {
+                          inputValue = '0.';
+                        } else if (inputValue.startsWith('.')) {
+                          inputValue = '0' + inputValue;
+                        }
+                        
+                        // Parse the value
+                        const parsedValue = parseFloat(inputValue);
+                        
+                        // Update with valid number or default to 1
+                        if (!isNaN(parsedValue) && parsedValue >= 0.1 && parsedValue <= 100) {
+                          updateCategory(index, 'capacity', parsedValue);
+                          setCapacityInputValues(prev => ({
+                            ...prev,
+                            [`capacity_${index}`]: parsedValue.toString()
+                          }));
+                        } else {
+                          // Invalid value, reset to current value
+                          const currentValue = category.capacity || 1;
+                          updateCategory(index, 'capacity', currentValue);
+                          setCapacityInputValues(prev => ({
+                            ...prev,
+                            [`capacity_${index}`]: currentValue.toString()
+                          }));
+                        }
+                      }}
+                      error={!!getFieldError(index, 'capacity')}
+                      disabled={disabled}
+                      sx={{ 
+                        width: 80,
+                        '& .MuiFormHelperText-root': { 
+                          position: 'absolute', 
+                          top: '100%', 
+                          left: 0,
+                          margin: 0,
+                          fontSize: '0.75rem'
+                        },
+                        '& .MuiInputBase-input': {
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                          color: 'primary.main'
+                        }
+                      }}
+                      helperText={getFieldError(index, 'capacity')}
+                      placeholder="1"
+                    />
                   </TableCell>
 
                   {/* Hours */}
@@ -731,8 +931,8 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                     </Typography>
                   </TableCell>
 
-                  {/* Clearance Level */}
-                  <TableCell align="center">
+                  {/* Hidden: Clearance Level */}
+                  {/* <TableCell align="center">
                     {editing ? (
                       <FormControl size="small" sx={{ minWidth: 120, height: 40 }}>
                         <Select
@@ -758,10 +958,10 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                         }}
                       />
                     )}
-                  </TableCell>
+                  </TableCell> */}
 
-                  {/* Location */}
-                  <TableCell align="center">
+                  {/* Hidden: Location */}
+                  {/* <TableCell align="center">
                     {editing ? (
                       <FormControl size="small" sx={{ minWidth: 100, height: 40 }}>
                         <Select
@@ -782,12 +982,26 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                         </Typography>
                       </Tooltip>
                     )}
+                  </TableCell> */}
+
+                  {/* Minimum Annual Revenue */}
+                  <TableCell align="right">
+                    <Typography variant="body2" fontWeight="bold" color="success.main">
+                      {(() => {
+                        const companyRoleRate = Number(category.companyRoleRate || 0);
+                        const wrapAmount = calculateWrapAmount(companyRoleRate);
+                        const minimumProfitAmount = calculateMinimumProfitAmount(companyRoleRate, wrapAmount);
+                        const minimumAnnualRevenue = companyRoleRate + wrapAmount + minimumProfitAmount;
+                        
+                        return formatCurrencySmart(minimumAnnualRevenue);
+                      })()}
+                    </Typography>
                   </TableCell>
 
-                  {/* Annual Salary Estimates */}
+                  {/* Company Role Rate */}
                   <TableCell align="right">
                     <Typography variant="body2" fontWeight="bold" color="primary">
-                      {formatCurrencyWithCommas(category.companyRoleRate || 0, false)}
+                      {formatCurrencySmart(category.companyRoleRate || 0)}
                     </Typography>
                   </TableCell>
 
@@ -795,22 +1009,81 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                   <TableCell align="right">
                     <Box>
                       <Typography variant="body2" fontWeight="bold" color="secondary">
-                        {formatCurrencyWithCommas(calculateWrapAmount(category.companyRoleRate || 0), false)}
+                        {formatCurrencySmart(calculateWrapAmount(Number(category.companyRoleRate || 0)))}
                       </Typography>
                     </Box>
                   </TableCell>
 
-                  {/* Burdened Rate */}
+                  {/* Minimum Profit */}
                   <TableCell align="right">
-                    <Typography variant="body2" fontWeight="medium" color="primary">
-                      {LaborCategoryService.formatCurrency(result.burdenedRate)}
-                    </Typography>
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold" color="success.main">
+                        {formatCurrencySmart(calculateMinimumProfitAmount(Number(category.companyRoleRate || 0), calculateWrapAmount(Number(category.companyRoleRate || 0))))}
+                      </Typography>
+                    </Box>
                   </TableCell>
+
+                  {/* Hidden: Burdened Rate */}
+                  {/* <TableCell align="right">
+                    <Typography variant="body2" fontWeight="medium" color="primary">
+                      {formatCurrencySmart(result.burdenedRate)}
+                    </Typography>
+                  </TableCell> */}
 
                   {/* Total Cost */}
                   <TableCell align="right">
                     <Typography variant="body2" fontWeight="bold" color="success.main">
-                      {LaborCategoryService.formatCurrency(result.totalCost)}
+                      {formatCurrencySmart(result.totalCost)}
+                    </Typography>
+                  </TableCell>
+
+                  {/* Actual Cost */}
+                  <TableCell align="right">
+                    <Typography variant="body2" fontWeight="bold" color="info.main">
+                      {(() => {
+                        const companyRoleRate = Number(category.companyRoleRate || 0);
+                        const wrapAmount = calculateWrapAmount(companyRoleRate);
+                        const capacity = category.capacity || 1;
+                        const actualCost = (companyRoleRate + wrapAmount) * capacity;
+                        
+                        return formatCurrencySmart(actualCost);
+                      })()}
+                    </Typography>
+                  </TableCell>
+
+                  {/* Actual Profit */}
+                  <TableCell align="right">
+                    <Typography variant="body2" fontWeight="bold" color="success.main">
+                      {(() => {
+                        const companyRoleRate = Number(category.companyRoleRate || 0);
+                        const wrapAmount = calculateWrapAmount(companyRoleRate);
+                        const capacity = category.capacity || 1;
+                        const totalCost = result.totalCost;
+                        const actualCost = (companyRoleRate + wrapAmount) * capacity;
+                        const actualProfit = totalCost - actualCost;
+                        
+                        return formatCurrencySmart(actualProfit);
+                      })()}
+                    </Typography>
+                  </TableCell>
+
+                  {/* Actual Profit (%) */}
+                  <TableCell align="right">
+                    <Typography variant="body2" fontWeight="bold" color="success.main">
+                      {(() => {
+                        const companyRoleRate = Number(category.companyRoleRate || 0);
+                        const wrapAmount = calculateWrapAmount(companyRoleRate);
+                        const capacity = category.capacity || 1;
+                        const totalCost = result.totalCost;
+                        const actualCost = (companyRoleRate + wrapAmount) * capacity;
+                        const actualProfit = totalCost - actualCost;
+                        
+                        // Calculate percentage: Actual Profit / (Actual Cost + Actual Profit)
+                        const denominator = actualCost + actualProfit;
+                        const profitPercentage = denominator !== 0 ? (actualProfit / denominator) * 100 : 0;
+                        
+                        return `${profitPercentage.toFixed(1)}%`;
+                      })()}
                     </Typography>
                   </TableCell>
 
@@ -926,7 +1199,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                 }}>
                   <CardContent>
                     <Typography variant="h4" fontWeight="bold">
-                      {LaborCategoryService.formatCurrency(summary.averageBurdenedRate)}
+                      {formatCurrencySmart(summary.averageBurdenedRate)}
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.9 }}>
                       Avg Burdened Rate
@@ -941,7 +1214,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                 }}>
                   <CardContent>
                     <Typography variant="h4" fontWeight="bold">
-                      {LaborCategoryService.formatCurrency(summary.totalBurdenedCost)}
+                      {formatCurrencySmart(summary.totalBurdenedCost)}
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.9 }}>
                       Total Labor Cost
@@ -957,7 +1230,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                 <Grid item xs={12} md={4}>
                   <Box textAlign="center" p={2} sx={{ backgroundColor: 'rgba(25, 118, 210, 0.1)', borderRadius: 2 }}>
                     <Typography variant="h6" color="primary" fontWeight="bold">
-                      {LaborCategoryService.formatCurrency(summary.totalBaseCost)}
+                      {formatCurrencySmart(summary.totalBaseCost)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Total Base Cost
@@ -967,7 +1240,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                 <Grid item xs={12} md={4}>
                   <Box textAlign="center" p={2} sx={{ backgroundColor: 'rgba(76, 175, 80, 0.1)', borderRadius: 2 }}>
                     <Typography variant="h6" color="success.main" fontWeight="bold">
-                      {LaborCategoryService.formatCurrency(summary.totalBurdenedCost - summary.totalBaseCost)}
+                      {formatCurrencySmart(summary.totalBurdenedCost - summary.totalBaseCost)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Total Burden Cost

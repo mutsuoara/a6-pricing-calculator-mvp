@@ -22,19 +22,38 @@ export function formatNumberWithCommas(value: number | string, decimals: number 
 /**
  * Format currency with commas and dollar sign
  * @param value - The number to format
- * @param showDecimals - Whether to show decimal places (default: true)
+ * @param showDecimals - Whether to show decimal places (default: true, always 2 decimals)
  * @returns Formatted currency string
  */
 export function formatCurrencyWithCommas(value: number | string, showDecimals: boolean = true): string {
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
   
-  if (isNaN(numValue)) return '$0';
+  if (isNaN(numValue)) return showDecimals ? '$0.00' : '$0';
   
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: showDecimals ? 2 : 0,
     maximumFractionDigits: showDecimals ? 2 : 0,
+  }).format(numValue);
+}
+
+/**
+ * Format currency with smart decimal handling for contract accuracy
+ * Always shows 2 decimal places for consistency
+ * @param value - The number to format
+ * @returns Formatted currency string with 2 decimal places
+ */
+export function formatCurrencySmart(value: number | string): string {
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (isNaN(numValue)) return '$0.00';
+  
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(numValue);
 }
 
