@@ -3,7 +3,7 @@
  * Professional table-based input for managing labor categories with real-time calculations
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Paper,
@@ -60,12 +60,11 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { LaborCategoryInput, LaborCategoryResult, LaborCategorySummary, ValidationError } from '../types/labor-category';
+import { LaborCategoryInput, LaborCategoryResult, LaborCategorySummary } from '../types/labor-category';
 import { LaborCategoryService } from '../services/labor-category.service';
 import { LCAT, CompanyRole, ProjectRole } from '../types/mapping';
 import { MappingService } from '../services/mapping.service';
-import { getSalaryConversionInfo } from '../utils/salary-conversion';
-import { formatNumberWithCommas, formatCurrencyWithCommas, formatCurrencySmart, formatPercentageWithCommas } from '../utils/number-formatting';
+import { formatNumberWithCommas, formatCurrencyWithCommas, formatPercentageWithCommas } from '../utils/number-formatting';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LCATProjectRoleSelectionDialog } from './LCATProjectRoleSelectionDialog';
 
@@ -76,14 +75,12 @@ interface SortableRowProps {
   result: LaborCategoryResult;
   editing: boolean;
   onUpdateCategory: (index: number, field: keyof LaborCategoryInput, value: any) => void;
+  onUpdateCompanyRole: (index: number, companyRoleId: string, companyRoleName: string, companyRoleRate: string | number) => void;
   onDeleteCategory: (index: number) => void;
   onEditCategory: (index: number) => void;
   onSaveCategory: (index: number) => void;
   onCancelEdit: (index: number) => void;
   onDuplicateCategory: (index: number) => void;
-  isEditing: (index: number) => boolean;
-  calculateCategoryResult: (category: LaborCategoryInput) => LaborCategoryResult;
-  systemSettings: any;
   companyRoles: CompanyRole[];
   handleCapacityInputChange: (index: number, value: string) => void;
   handleCapacityInputBlur: (index: number) => void;
@@ -97,14 +94,12 @@ const SortableRow: React.FC<SortableRowProps> = ({
   result,
   editing,
   onUpdateCategory,
+  onUpdateCompanyRole,
   onDeleteCategory,
   onEditCategory,
   onSaveCategory,
   onCancelEdit,
   onDuplicateCategory,
-  isEditing,
-  calculateCategoryResult,
-  systemSettings,
   companyRoles,
   handleCapacityInputChange,
   handleCapacityInputBlur,
@@ -201,7 +196,17 @@ const SortableRow: React.FC<SortableRowProps> = ({
         <FormControl size="small" sx={{ minWidth: 150 }}>
           <Select
             value={category.companyRoleId || ''}
-            onChange={(e) => onUpdateCategory(index, 'companyRoleId', e.target.value)}
+            onChange={(e) => {
+              const selectedRoleId = e.target.value;
+              const selectedRole = companyRoles.find(role => role.id === selectedRoleId);
+              
+              // Update all company role fields atomically using the specialized function
+              if (selectedRole) {
+                onUpdateCompanyRole(index, selectedRoleId, selectedRole.name, selectedRole.rate);
+              } else {
+                onUpdateCompanyRole(index, '', '', 0);
+              }
+            }}
             displayEmpty
           >
             <MenuItem value="">
@@ -251,6 +256,19 @@ const SortableRow: React.FC<SortableRowProps> = ({
         </Typography>
       </TableCell>
 
+      {/* Capacity */}
+      <TableCell>
+        <TextField
+          size="small"
+          type="text"
+          value={capacityInputValues[index] ?? category.capacity}
+          onChange={(e) => handleCapacityInputChange(index, e.target.value)}
+          onFocus={() => handleCapacityInputFocus(index)}
+          onBlur={() => handleCapacityInputBlur(index)}
+          sx={{ width: 80 }}
+        />
+      </TableCell>
+
       {/* Hours */}
       <TableCell>
         {editing ? (
@@ -288,19 +306,6 @@ const SortableRow: React.FC<SortableRowProps> = ({
         )}
       </TableCell>
 
-      {/* Capacity */}
-      <TableCell>
-        <TextField
-          size="small"
-          type="text"
-          value={capacityInputValues[index] ?? category.capacity}
-          onChange={(e) => handleCapacityInputChange(index, e.target.value)}
-          onFocus={() => handleCapacityInputFocus(index)}
-          onBlur={() => handleCapacityInputBlur(index)}
-          sx={{ width: 80 }}
-        />
-      </TableCell>
-
       {/* Effective Hours */}
       <TableCell align="right">
         <Typography variant="body2" fontWeight="medium">
@@ -308,10 +313,17 @@ const SortableRow: React.FC<SortableRowProps> = ({
         </Typography>
       </TableCell>
 
-      {/* Annual Salary Estimate */}
+      {/* Minimum Annual Revenue */}
       <TableCell align="right">
         <Typography variant="body2" fontWeight="medium">
-          {formatCurrencyWithCommas(result.annualSalary)}
+          {formatCurrencyWithCommas(result.minimumAnnualRevenue)}
+        </Typography>
+      </TableCell>
+
+      {/* Annual Salary Estimates */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="medium">
+          {formatCurrencyWithCommas(category.companyRoleRate || 0)}
         </Typography>
       </TableCell>
 
@@ -326,13 +338,6 @@ const SortableRow: React.FC<SortableRowProps> = ({
       <TableCell align="right">
         <Typography variant="body2" fontWeight="medium">
           {formatCurrencyWithCommas(result.minimumProfitAmount)}
-        </Typography>
-      </TableCell>
-
-      {/* Minimum Annual Revenue */}
-      <TableCell align="right">
-        <Typography variant="body2" fontWeight="medium">
-          {formatCurrencyWithCommas(result.minimumAnnualRevenue)}
         </Typography>
       </TableCell>
 
@@ -426,10 +431,9 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   feeRate,
   disabled = false,
 }) => {
-  const { settings, calculateWrapAmount, calculateMinimumProfitAmount } = useSystemSettings();
+  const { settings } = useSystemSettings();
   const [editingState, setEditingState] = useState<EditingState>({});
   const [originalCategories, setOriginalCategories] = useState<LaborCategoryInput[]>([]);
-  const [errors, setErrors] = useState<Record<string, ValidationError[]>>({});
   const [capacityInputValues, setCapacityInputValues] = useState<Record<string, string>>({});
   const [summary, setSummary] = useState<LaborCategorySummary>({
     totalCategories: 0,
@@ -476,9 +480,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   useEffect(() => {
     const loadCompanyRoles = async () => {
       try {
-        console.log('Loading company roles...');
         const companyRolesData = await MappingService.getCompanyRoles();
-        console.log('Loaded company roles:', companyRolesData);
         setCompanyRoles(companyRolesData);
       } catch (error) {
         console.error('Error loading Company Role data:', error);
@@ -486,6 +488,36 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     };
     loadCompanyRoles();
   }, []);
+
+  // Clean up legacy company role data and duplicate IDs when categories change
+  const cleanupPerformedRef = useRef(false);
+  useEffect(() => {
+    if (categories.length === 0 || cleanupPerformedRef.current) return; // Don't run if no categories or already cleaned up
+    
+    const needsCleanup = categories.some(category => 
+      category.companyRoleId === 'default-company-role' || 
+      category.companyRoleName === 'Default Company Role'
+    );
+    
+    // Check for duplicate IDs
+    const ids = categories.map(cat => cat.id);
+    const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index);
+    const hasDuplicateIds = duplicateIds.length > 0;
+    
+    if (needsCleanup || hasDuplicateIds) {
+      const cleanedCategories = categories.map((category, index) => ({
+        ...category,
+        // Fix legacy company role data
+        companyRoleId: category.companyRoleId === 'default-company-role' ? '' : category.companyRoleId,
+        companyRoleName: category.companyRoleName === 'Default Company Role' ? '' : category.companyRoleName,
+        companyRoleRate: category.companyRoleId === 'default-company-role' ? 0 : category.companyRoleRate,
+        // Fix duplicate IDs by ensuring each has a unique ID
+        id: hasDuplicateIds ? `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${index}` : (category.id || `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${index}`),
+      }));
+      cleanupPerformedRef.current = true;
+      onCategoriesChange(cleanedCategories);
+    }
+  }, [categories]); // Run when categories change
 
   // Calculate summary whenever categories or rates change
   useEffect(() => {
@@ -497,26 +529,6 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   useEffect(() => {
     // This effect will trigger a re-render when system settings change
   }, [settings]);
-
-  // Validate all categories
-  const validateCategories = useCallback(() => {
-    const newErrors: Record<string, ValidationError[]> = {};
-    
-    categories.forEach((category, index) => {
-      const categoryErrors = LaborCategoryService.validateLaborCategory(category, index);
-      if (categoryErrors.length > 0) {
-        newErrors[`category_${index}`] = categoryErrors;
-      }
-    });
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [categories]);
-
-  // Validate categories when they change
-  useEffect(() => {
-    validateCategories();
-  }, [validateCategories]);
 
   const addCategory = () => {
     const newCategory = LaborCategoryService.createEmptyCategory();
@@ -547,23 +559,58 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     const currentCategory = newCategories[index];
     if (!currentCategory) return;
     
+    // Only clean up legacy 'default-company-role' values if we're not updating company role fields
+    const cleanedCategory = {
+      ...currentCategory,
+      // Only clean up legacy values if we're not updating company role fields
+      companyRoleId: (field !== 'companyRoleId' && currentCategory.companyRoleId === 'default-company-role') ? '' : currentCategory.companyRoleId,
+      companyRoleName: (field !== 'companyRoleName' && currentCategory.companyRoleName === 'Default Company Role') ? '' : currentCategory.companyRoleName,
+      companyRoleRate: (field !== 'companyRoleRate' && currentCategory.companyRoleId === 'default-company-role') ? 0 : currentCategory.companyRoleRate,
+    };
+    
     newCategories[index] = { 
-      ...currentCategory, 
+      ...cleanedCategory, 
       [field]: value,
       // Ensure all required fields are explicitly set (only if not being updated)
-      title: field === 'title' ? value : currentCategory.title,
-      baseRate: field === 'baseRate' ? value : currentCategory.baseRate,
-      hours: field === 'hours' ? value : currentCategory.hours,
-      ftePercentage: field === 'ftePercentage' ? value : currentCategory.ftePercentage,
-      capacity: field === 'capacity' ? value : currentCategory.capacity,
-      clearanceLevel: field === 'clearanceLevel' ? value : currentCategory.clearanceLevel,
-      location: field === 'location' ? value : currentCategory.location,
-      companyRoleId: field === 'companyRoleId' ? value : currentCategory.companyRoleId,
-      companyRoleName: field === 'companyRoleName' ? value : currentCategory.companyRoleName,
-      companyRoleRate: field === 'companyRoleRate' ? value : currentCategory.companyRoleRate,
-      finalRate: field === 'finalRate' ? value : currentCategory.finalRate,
-      finalRateMetadata: field === 'finalRateMetadata' ? value : currentCategory.finalRateMetadata,
+      title: field === 'title' ? value : cleanedCategory.title,
+      baseRate: field === 'baseRate' ? value : cleanedCategory.baseRate,
+      hours: field === 'hours' ? value : cleanedCategory.hours,
+      ftePercentage: field === 'ftePercentage' ? value : cleanedCategory.ftePercentage,
+      capacity: field === 'capacity' ? value : cleanedCategory.capacity,
+      clearanceLevel: field === 'clearanceLevel' ? value : cleanedCategory.clearanceLevel,
+      location: field === 'location' ? value : cleanedCategory.location,
+      companyRoleId: field === 'companyRoleId' ? value : cleanedCategory.companyRoleId,
+      companyRoleName: field === 'companyRoleName' ? value : cleanedCategory.companyRoleName,
+      companyRoleRate: field === 'companyRoleRate' ? value : cleanedCategory.companyRoleRate,
+      finalRate: field === 'finalRate' ? value : cleanedCategory.finalRate,
+      finalRateMetadata: field === 'finalRateMetadata' ? value : cleanedCategory.finalRateMetadata,
     };
+    
+    onCategoriesChange(newCategories);
+  };
+
+  // Specialized function for updating company role fields atomically
+  const updateCompanyRole = (index: number, companyRoleId: string, companyRoleName: string, companyRoleRate: string | number) => {
+    const newCategories = [...categories];
+    const currentCategory = newCategories[index];
+    if (!currentCategory) return;
+    
+    // Clean up legacy values
+    const cleanedCategory = {
+      ...currentCategory,
+      companyRoleId: currentCategory.companyRoleId === 'default-company-role' ? '' : currentCategory.companyRoleId,
+      companyRoleName: currentCategory.companyRoleName === 'Default Company Role' ? '' : currentCategory.companyRoleName,
+      companyRoleRate: currentCategory.companyRoleId === 'default-company-role' ? 0 : currentCategory.companyRoleRate,
+    };
+    
+    // Update all company role fields atomically
+    newCategories[index] = {
+      ...cleanedCategory,
+      companyRoleId,
+      companyRoleName,
+      companyRoleRate: Number(companyRoleRate),
+    };
+    
     onCategoriesChange(newCategories);
   };
 
@@ -582,7 +629,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     // Create multiple labor category entries based on quantity
     for (let i = 0; i < quantity; i++) {
     const newCategory: LaborCategoryInput = {
-        id: `temp-${Date.now()}-${i}`, // Unique ID for each instance
+        id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${i}`, // Truly unique ID for each instance
       title: `${selection.lcat.name} - ${selection.projectRole.name}`,
       baseRate: selection.finalRate || selection.lcat.rate,
       hours: selection.hours || selection.projectRole.typicalHours, // Use project role hours
@@ -602,9 +649,9 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
       projectRoleName: selection.projectRole.name,
       projectRoleDescription: selection.projectRole.description,
         // Company Role data - provide defaults if not provided
-        companyRoleId: selection.companyRole?.id || 'default-company-role',
-        companyRoleName: selection.companyRole?.name || 'Default Company Role',
-        companyRoleRate: selection.companyRole?.rate || selection.lcat.rate,
+      companyRoleId: selection.companyRole?.id || '',
+      companyRoleName: selection.companyRole?.name || '',
+      companyRoleRate: selection.companyRole?.rate || 0,
       // Final Rate with metadata
       finalRate: selection.finalRate || selection.lcat.rate,
       finalRateMetadata: {
@@ -655,26 +702,18 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
 
   const isEditing = (index: number) => editingState[`category_${index}`] || false;
 
-  const getFieldError = (index: number, field: string): string | undefined => {
-    const categoryErrors = errors[`category_${index}`] || [];
-    const fieldError = categoryErrors.find(error => error.field.includes(field));
-    return fieldError?.message;
-  };
-
   const calculateCategoryResult = (category: LaborCategoryInput): LaborCategoryResult => {
     const baseResult = LaborCategoryService.calculateTotalCost(category, overheadRate, gaRate, feeRate);
     
-    // Calculate extended properties
-    const annualSalary = category.finalRate * baseResult.effectiveHours;
-    const wrapAmount = Number(calculateWrapAmount(annualSalary)) || 0;
-    const minimumProfitAmount = Number(calculateMinimumProfitAmount(annualSalary, wrapAmount)) || 0;
-    const minimumAnnualRevenue = annualSalary + wrapAmount + minimumProfitAmount;
-    const companyMinimumRate = baseResult.effectiveHours > 0 ? minimumAnnualRevenue / baseResult.effectiveHours : 0;
-    const actualCost = (Number(category.companyRoleRate) + wrapAmount) * category.capacity;
-    const actualProfit = baseResult.totalCost - ((annualSalary + wrapAmount) * category.capacity);
-    const actualProfitPercentage = ((annualSalary + wrapAmount) * category.capacity + actualProfit) !== 0
-      ? (actualProfit / ((annualSalary + wrapAmount) * category.capacity + actualProfit)) * 100
-      : 0;
+    // Calculate extended properties using correct formulas
+    const annualSalaryEstimates = Number(category.companyRoleRate) || 0;
+    const wrapAmount = annualSalaryEstimates * (settings.wrapRate / 100); // Annual Salary Estimates * Wrap rate
+    const minimumProfitAmount = (annualSalaryEstimates + wrapAmount) * (settings.minimumProfitRate / 100); // (Annual Salary Estimates + Wrap) * minimum profit rate
+    const minimumAnnualRevenue = annualSalaryEstimates + wrapAmount + minimumProfitAmount; // Annual Salary Estimates + Wrap + Minimum Profit
+    const companyMinimumRate = baseResult.effectiveHours > 0 ? minimumAnnualRevenue / baseResult.effectiveHours : 0; // minimum annual revenue/effective hours
+    const actualCost = (annualSalaryEstimates + wrapAmount) * category.capacity; // (Annual Salary Estimates + Wrap) * Capacity
+    const actualProfit = baseResult.totalCost - actualCost; // Total Cost - Actual Cost
+    const actualProfitPercentage = actualCost !== 0 ? (actualProfit / actualCost) * 100 : 0; // Actual Profit / Actual Cost
     
     // Calculate final rate discount as percentage
     const lcatRate = Number(category.lcatRate) || 0;
@@ -682,7 +721,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     
     return {
       ...baseResult,
-      annualSalary,
+      annualSalary: annualSalaryEstimates, // Use annualSalaryEstimates as the base
       wrapAmount,
       minimumProfitAmount,
       minimumAnnualRevenue,
@@ -948,8 +987,8 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               </TableCell>
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
-                  Company Role Rate
-                  <Tooltip title="Minimum annual revenue from company role">
+                  Annual Salary Estimates
+                  <Tooltip title="Annual salary from selected Company Role">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -957,7 +996,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Wrap
-                  <Tooltip title="System-wide wrap rate × Company Role Rate (Configured in Admin Dashboard)">
+                  <Tooltip title="Annual Salary Estimates × Wrap rate (from system settings)">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -965,7 +1004,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Minimum Profit
-                  <Tooltip title="System-wide minimum profit rate × (Company Role Rate + Wrap) (Configured in Admin Dashboard)">
+                  <Tooltip title="(Annual Salary Estimates + Wrap) × minimum profit rate (system settings)">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -982,7 +1021,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Total Cost
-                  <Tooltip title="Burdened rate × effective hours">
+                  <Tooltip title="(Capacity × Effective Hours) × Final Rate">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -990,7 +1029,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Actual Cost
-                  <Tooltip title="(Company Role Rate + Wrap) × Capacity">
+                  <Tooltip title="(Annual Salary Estimates + Wrap) × Capacity">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -1006,7 +1045,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
               <TableCell sx={{ fontWeight: 'bold' }} align="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5}>
                   Actual Profit (%)
-                  <Tooltip title="Actual Profit / (Actual Cost + Actual Profit)">
+                  <Tooltip title="Actual Profit / Actual Cost">
                     <InfoIcon fontSize="small" color="action" />
                   </Tooltip>
                 </Box>
@@ -1036,14 +1075,12 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                       result={result}
                       editing={editing}
                       onUpdateCategory={updateCategory}
+                      onUpdateCompanyRole={updateCompanyRole}
                       onDeleteCategory={removeCategory}
                       onEditCategory={startEditing}
                       onSaveCategory={saveEditing}
                       onCancelEdit={cancelEditing}
                       onDuplicateCategory={duplicateCategory}
-                      isEditing={isEditing}
-                      calculateCategoryResult={calculateCategoryResult}
-                      systemSettings={settings}
                       companyRoles={companyRoles}
                       handleCapacityInputChange={handleCapacityChange}
                       handleCapacityInputBlur={handleCapacityBlur}
