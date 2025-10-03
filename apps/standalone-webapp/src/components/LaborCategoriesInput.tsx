@@ -196,37 +196,24 @@ const SortableRow: React.FC<SortableRowProps> = ({
         )}
       </TableCell>
 
-      {/* Company Role */}
+      {/* Company Role - Always Editable */}
       <TableCell>
-        {editing ? (
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <Select
-              value={category.companyRoleId || ''}
-              onChange={(e) => onUpdateCategory(index, 'companyRoleId', e.target.value)}
-              displayEmpty
-            >
-              <MenuItem value="">
-                <em>Select Company Role</em>
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <Select
+            value={category.companyRoleId || ''}
+            onChange={(e) => onUpdateCategory(index, 'companyRoleId', e.target.value)}
+            displayEmpty
+          >
+            <MenuItem value="">
+              <em>Select Company Role</em>
+            </MenuItem>
+            {companyRoles.map((role) => (
+              <MenuItem key={role.id} value={role.id}>
+                {role.name} - {formatCurrencyWithCommas(role.rate)}
               </MenuItem>
-              {companyRoles.map((role) => (
-                <MenuItem key={role.id} value={role.id}>
-                  {role.name} - {formatCurrencyWithCommas(role.rate)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        ) : (
-          <Box>
-            <Typography variant="body2" fontWeight="medium">
-              {category.companyRoleName || 'No company role'}
-            </Typography>
-            {category.companyRoleRate && (
-              <Typography variant="caption" color="text.secondary">
-                {formatCurrencyWithCommas(category.companyRoleRate)}
-              </Typography>
-            )}
-          </Box>
-        )}
+            ))}
+          </Select>
+        </FormControl>
       </TableCell>
 
       {/* LCAT Rate */}
@@ -243,24 +230,18 @@ const SortableRow: React.FC<SortableRowProps> = ({
         </Typography>
       </TableCell>
 
-      {/* Final Rate */}
+      {/* Final Rate - Always Editable */}
       <TableCell>
-        {editing ? (
-          <TextField
-            size="small"
-            type="number"
-            value={category.finalRate || ''}
-            onChange={(e) => onUpdateCategory(index, 'finalRate', parseFloat(e.target.value) || 0)}
-            InputProps={{
-              startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
-            }}
-            sx={{ width: 120 }}
-          />
-        ) : (
-          <Typography variant="body2" fontWeight="medium" color="primary">
-            {formatCurrencyWithCommas(category.finalRate)}
-          </Typography>
-        )}
+        <TextField
+          size="small"
+          type="number"
+          value={category.finalRate || ''}
+          onChange={(e) => onUpdateCategory(index, 'finalRate', parseFloat(e.target.value) || 0)}
+          InputProps={{
+            startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
+          }}
+          sx={{ width: 120 }}
+        />
       </TableCell>
 
       {/* Final Rate Discount */}
@@ -600,39 +581,39 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
 
     // Create multiple labor category entries based on quantity
     for (let i = 0; i < quantity; i++) {
-      const newCategory: LaborCategoryInput = {
+    const newCategory: LaborCategoryInput = {
         id: `temp-${Date.now()}-${i}`, // Unique ID for each instance
-        title: `${selection.lcat.name} - ${selection.projectRole.name}`,
-        baseRate: selection.finalRate || selection.lcat.rate,
-        hours: selection.hours || selection.projectRole.typicalHours, // Use project role hours
-        ftePercentage: 100,
+      title: `${selection.lcat.name} - ${selection.projectRole.name}`,
+      baseRate: selection.finalRate || selection.lcat.rate,
+      hours: selection.hours || selection.projectRole.typicalHours, // Use project role hours
+      ftePercentage: 100,
         capacity: 1, // Default capacity of 1
-        clearanceLevel: selection.projectRole.typicalClearance as any, // Use project role clearance
-        location: 'Remote',
-        // LCAT data
-        lcatId: selection.lcat.id,
-        lcatName: selection.lcat.name,
-        lcatCode: selection.lcat.code,
-        lcatDescription: selection.lcat.description,
-        lcatRate: selection.lcat.rate,
-        vehicle: selection.lcat.vehicle,
-        // Project Role data
-        projectRoleId: selection.projectRole.id,
-        projectRoleName: selection.projectRole.name,
-        projectRoleDescription: selection.projectRole.description,
+      clearanceLevel: selection.projectRole.typicalClearance as any, // Use project role clearance
+      location: 'Remote',
+      // LCAT data
+      lcatId: selection.lcat.id,
+      lcatName: selection.lcat.name,
+      lcatCode: selection.lcat.code,
+      lcatDescription: selection.lcat.description,
+      lcatRate: selection.lcat.rate,
+      vehicle: selection.lcat.vehicle,
+      // Project Role data
+      projectRoleId: selection.projectRole.id,
+      projectRoleName: selection.projectRole.name,
+      projectRoleDescription: selection.projectRole.description,
         // Company Role data - provide defaults if not provided
         companyRoleId: selection.companyRole?.id || 'default-company-role',
         companyRoleName: selection.companyRole?.name || 'Default Company Role',
         companyRoleRate: selection.companyRole?.rate || selection.lcat.rate,
-        // Final Rate with metadata
-        finalRate: selection.finalRate || selection.lcat.rate,
-        finalRateMetadata: {
-          source: selection.companyRole ? 'company' : 'lcat',
-          reason: selection.companyRole ? 'Mapped to company role' : 'Using LCAT rate',
-          timestamp: new Date().toISOString(),
-          userId: 'current-user', // In real app, get from auth context
-        },
-      };
+      // Final Rate with metadata
+      finalRate: selection.finalRate || selection.lcat.rate,
+      finalRateMetadata: {
+        source: selection.companyRole ? 'company' : 'lcat',
+        reason: selection.companyRole ? 'Mapped to company role' : 'Using LCAT rate',
+        timestamp: new Date().toISOString(),
+        userId: 'current-user', // In real app, get from auth context
+      },
+    };
 
       newCategories.push(newCategory);
     }
@@ -1043,11 +1024,11 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                 items={categories.map(category => category.id || `temp-${categories.indexOf(category)}`)}
                 strategy={verticalListSortingStrategy}
               >
-                {categories.map((category, index) => {
-                  const result = calculateCategoryResult(category);
-                  const editing = isEditing(index);
-                  
-                  return (
+            {categories.map((category, index) => {
+              const result = calculateCategoryResult(category);
+              const editing = isEditing(index);
+              
+              return (
                     <SortableRow
                       key={category.id || `temp-${index}`}
                       category={category}
@@ -1069,8 +1050,8 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                       handleCapacityInputFocus={handleCapacityFocus}
                       capacityInputValues={capacityInputValues}
                     />
-                  );
-                })}
+              );
+            })}
               </SortableContext>
             </DndContext>
           </TableBody>
@@ -1158,15 +1139,15 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
       />
 
       {/* Floating Speed Dial for Actions */}
-      <SpeedDial
+        <SpeedDial
         ariaLabel="Labor Category Actions"
-        sx={{ position: 'fixed', bottom: 16, right: 16 }}
-        icon={<SpeedDialIcon />}
-        onClose={() => setSpeedDialOpen(false)}
-        onOpen={() => setSpeedDialOpen(true)}
-        open={speedDialOpen}
-      >
-        <SpeedDialAction
+          sx={{ position: 'fixed', bottom: 16, right: 16 }}
+          icon={<SpeedDialIcon />}
+          onClose={() => setSpeedDialOpen(false)}
+          onOpen={() => setSpeedDialOpen(true)}
+          open={speedDialOpen}
+        >
+            <SpeedDialAction
           icon={<AddIcon />}
           tooltipTitle="Add from LCAT Management"
           onClick={() => setLcatDialogOpen(true)}
