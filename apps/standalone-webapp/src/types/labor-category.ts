@@ -66,6 +66,7 @@ export interface LaborCategoryResult {
   actualCost: number;
   actualProfit: number;
   actualProfitPercentage: number;
+  finalRateDiscount: number;
 }
 
 export interface LaborCategorySummary {

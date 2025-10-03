@@ -39,7 +39,27 @@ import {
   ContentCopy as DuplicateIcon,
   ClearAll as ClearAllIcon,
   Info as InfoIcon,
+  DragIndicator as DragIndicatorIcon,
 } from '@mui/icons-material';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { LaborCategoryInput, LaborCategoryResult, LaborCategorySummary, ValidationError } from '../types/labor-category';
 import { LaborCategoryService } from '../services/labor-category.service';
 import { LCAT, CompanyRole, ProjectRole } from '../types/mapping';
@@ -48,6 +68,361 @@ import { getSalaryConversionInfo } from '../utils/salary-conversion';
 import { formatNumberWithCommas, formatCurrencyWithCommas, formatCurrencySmart, formatPercentageWithCommas } from '../utils/number-formatting';
 import { useSystemSettings } from '../hooks/useSystemSettings';
 import { LCATProjectRoleSelectionDialog } from './LCATProjectRoleSelectionDialog';
+
+// SortableRow component for drag-and-drop functionality
+interface SortableRowProps {
+  category: LaborCategoryInput;
+  index: number;
+  result: LaborCategoryResult;
+  editing: boolean;
+  onUpdateCategory: (index: number, field: keyof LaborCategoryInput, value: any) => void;
+  onDeleteCategory: (index: number) => void;
+  onEditCategory: (index: number) => void;
+  onSaveCategory: (index: number) => void;
+  onCancelEdit: (index: number) => void;
+  onDuplicateCategory: (index: number) => void;
+  isEditing: (index: number) => boolean;
+  calculateCategoryResult: (category: LaborCategoryInput) => LaborCategoryResult;
+  systemSettings: any;
+  companyRoles: CompanyRole[];
+  handleCapacityInputChange: (index: number, value: string) => void;
+  handleCapacityInputBlur: (index: number) => void;
+  handleCapacityInputFocus: (index: number) => void;
+  capacityInputValues: { [key: number]: string };
+}
+
+const SortableRow: React.FC<SortableRowProps> = ({
+  category,
+  index,
+  result,
+  editing,
+  onUpdateCategory,
+  onDeleteCategory,
+  onEditCategory,
+  onSaveCategory,
+  onCancelEdit,
+  onDuplicateCategory,
+  isEditing,
+  calculateCategoryResult,
+  systemSettings,
+  companyRoles,
+  handleCapacityInputChange,
+  handleCapacityInputBlur,
+  handleCapacityInputFocus,
+  capacityInputValues,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: category.id || `temp-${index}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <TableRow 
+      ref={setNodeRef} 
+      style={style} 
+      hover
+      sx={{ 
+        backgroundColor: isDragging ? 'rgba(0, 0, 0, 0.04)' : 'transparent',
+        '&:hover': {
+          backgroundColor: isDragging ? 'rgba(0, 0, 0, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+        }
+      }}
+    >
+      {/* Drag Handle */}
+      <TableCell sx={{ width: 40, p: 1 }}>
+        <IconButton
+          {...attributes}
+          {...listeners}
+          size="small"
+          sx={{ 
+            cursor: 'grab',
+            '&:active': { cursor: 'grabbing' },
+            color: 'text.secondary',
+            '&:hover': { color: 'primary.main' }
+          }}
+        >
+          <DragIndicatorIcon fontSize="small" />
+        </IconButton>
+      </TableCell>
+
+      {/* LCAT */}
+      <TableCell>
+        {category.lcatId ? (
+          <Box>
+            <Typography variant="body2" fontWeight="medium">
+              {category.lcatName}
+            </Typography>
+            <Chip 
+              label={`${category.vehicle} - ${category.lcatCode}`} 
+              size="small" 
+              color="primary" 
+              sx={{ mt: 0.5 }}
+            />
+          </Box>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No LCAT selected
+          </Typography>
+        )}
+      </TableCell>
+
+      {/* Project Role */}
+      <TableCell>
+        {category.projectRoleId ? (
+          <Box>
+            <Typography variant="body2" fontWeight="medium">
+              {category.projectRoleName}
+            </Typography>
+            {category.projectRoleDescription && (
+              <Typography variant="caption" color="text.secondary">
+                {category.projectRoleDescription}
+              </Typography>
+            )}
+          </Box>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No role selected
+          </Typography>
+        )}
+      </TableCell>
+
+      {/* Company Role */}
+      <TableCell>
+        {editing ? (
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <Select
+              value={category.companyRoleId || ''}
+              onChange={(e) => onUpdateCategory(index, 'companyRoleId', e.target.value)}
+              displayEmpty
+            >
+              <MenuItem value="">
+                <em>Select Company Role</em>
+              </MenuItem>
+              {companyRoles.map((role) => (
+                <MenuItem key={role.id} value={role.id}>
+                  {role.name} - {formatCurrencyWithCommas(role.rate)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        ) : (
+          <Box>
+            <Typography variant="body2" fontWeight="medium">
+              {category.companyRoleName || 'No company role'}
+            </Typography>
+            {category.companyRoleRate && (
+              <Typography variant="caption" color="text.secondary">
+                {formatCurrencyWithCommas(category.companyRoleRate)}
+              </Typography>
+            )}
+          </Box>
+        )}
+      </TableCell>
+
+      {/* LCAT Rate */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="medium">
+          {formatCurrencyWithCommas(category.lcatRate || 0)}
+        </Typography>
+      </TableCell>
+
+      {/* Company Minimum Rate */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="medium" color="primary">
+          {formatCurrencyWithCommas(result.companyMinimumRate)}
+        </Typography>
+      </TableCell>
+
+      {/* Final Rate */}
+      <TableCell>
+        {editing ? (
+          <TextField
+            size="small"
+            type="number"
+            value={category.finalRate || ''}
+            onChange={(e) => onUpdateCategory(index, 'finalRate', parseFloat(e.target.value) || 0)}
+            InputProps={{
+              startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
+            }}
+            sx={{ width: 120 }}
+          />
+        ) : (
+          <Typography variant="body2" fontWeight="medium" color="primary">
+            {formatCurrencyWithCommas(category.finalRate)}
+          </Typography>
+        )}
+      </TableCell>
+
+      {/* Final Rate Discount */}
+      <TableCell align="right">
+        <Typography variant="body2" color="error">
+          {formatPercentageWithCommas(result.finalRateDiscount)}
+        </Typography>
+      </TableCell>
+
+      {/* Hours */}
+      <TableCell>
+        {editing ? (
+          <TextField
+            size="small"
+            type="number"
+            value={category.hours || ''}
+            onChange={(e) => onUpdateCategory(index, 'hours', parseInt(e.target.value) || 0)}
+            sx={{ width: 80 }}
+          />
+        ) : (
+          <Typography variant="body2">
+            {formatNumberWithCommas(category.hours)}
+          </Typography>
+        )}
+      </TableCell>
+
+      {/* FTE Percentage */}
+      <TableCell>
+        {editing ? (
+          <TextField
+            size="small"
+            type="number"
+            value={category.ftePercentage || ''}
+            onChange={(e) => onUpdateCategory(index, 'ftePercentage', parseFloat(e.target.value) || 0)}
+            InputProps={{
+              endAdornment: <Typography sx={{ ml: 1 }}>%</Typography>,
+            }}
+            sx={{ width: 80 }}
+          />
+        ) : (
+          <Typography variant="body2">
+            {formatPercentageWithCommas(category.ftePercentage)}
+          </Typography>
+        )}
+      </TableCell>
+
+      {/* Effective Hours */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="medium">
+          {formatNumberWithCommas(result.effectiveHours)}
+        </Typography>
+      </TableCell>
+
+      {/* Capacity */}
+      <TableCell>
+        <TextField
+          size="small"
+          type="text"
+          value={capacityInputValues[index] ?? category.capacity}
+          onChange={(e) => handleCapacityInputChange(index, e.target.value)}
+          onFocus={() => handleCapacityInputFocus(index)}
+          onBlur={() => handleCapacityInputBlur(index)}
+          sx={{ width: 80 }}
+        />
+      </TableCell>
+
+      {/* Annual Salary Estimate */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="medium">
+          {formatCurrencyWithCommas(result.annualSalary)}
+        </Typography>
+      </TableCell>
+
+      {/* Wrap */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="medium">
+          {formatCurrencyWithCommas(result.wrapAmount)}
+        </Typography>
+      </TableCell>
+
+      {/* Minimum Profit */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="medium">
+          {formatCurrencyWithCommas(result.minimumProfitAmount)}
+        </Typography>
+      </TableCell>
+
+      {/* Minimum Annual Revenue */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="medium">
+          {formatCurrencyWithCommas(result.minimumAnnualRevenue)}
+        </Typography>
+      </TableCell>
+
+      {/* Total Cost */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="bold" color="primary">
+          {formatCurrencyWithCommas(result.totalCost)}
+        </Typography>
+      </TableCell>
+
+      {/* Actual Cost */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="medium">
+          {formatCurrencyWithCommas(result.actualCost)}
+        </Typography>
+      </TableCell>
+
+      {/* Actual Profit */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="medium" color={result.actualProfit >= 0 ? 'success.main' : 'error.main'}>
+          {formatCurrencyWithCommas(result.actualProfit)}
+        </Typography>
+      </TableCell>
+
+      {/* Actual Profit (%) */}
+      <TableCell align="right">
+        <Typography variant="body2" fontWeight="medium" color={result.actualProfitPercentage >= 0 ? 'success.main' : 'error.main'}>
+          {formatPercentageWithCommas(result.actualProfitPercentage)}
+        </Typography>
+      </TableCell>
+
+      {/* Actions */}
+      <TableCell align="center">
+        <Box display="flex" gap={1} justifyContent="center">
+          {editing ? (
+            <>
+              <Tooltip title="Save">
+                <IconButton size="small" onClick={() => onSaveCategory(index)} color="primary">
+                  <SaveIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Cancel">
+                <IconButton size="small" onClick={() => onCancelEdit(index)} color="secondary">
+                  <CancelIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </>
+          ) : (
+            <>
+              <Tooltip title="Edit">
+                <IconButton size="small" onClick={() => onEditCategory(index)} color="primary">
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Duplicate">
+                <IconButton size="small" onClick={() => onDuplicateCategory(index)} color="info">
+                  <DuplicateIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Delete">
+                <IconButton size="small" onClick={() => onDeleteCategory(index)} color="error">
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
+        </Box>
+      </TableCell>
+    </TableRow>
+  );
+};
 
 interface LaborCategoriesInputProps {
   categories: LaborCategoryInput[];
@@ -89,6 +464,29 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     totalActualProfit: 0,
     averageActualProfitPercentage: 0,
   });
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end event
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const oldIndex = categories.findIndex(category => (category.id || `temp-${categories.indexOf(category)}`) === active.id);
+      const newIndex = categories.findIndex(category => (category.id || `temp-${categories.indexOf(category)}`) === over?.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newCategories = arrayMove(categories, oldIndex, newIndex);
+        onCategoriesChange(newCategories);
+      }
+    }
+  };
   const [lcatDialogOpen, setLcatDialogOpen] = useState(false);
   const [speedDialOpen, setSpeedDialOpen] = useState(false);
   const [companyRoles, setCompanyRoles] = useState<CompanyRole[]>([]);
@@ -283,7 +681,36 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
   };
 
   const calculateCategoryResult = (category: LaborCategoryInput): LaborCategoryResult => {
-    return LaborCategoryService.calculateTotalCost(category, overheadRate, gaRate, feeRate);
+    const baseResult = LaborCategoryService.calculateTotalCost(category, overheadRate, gaRate, feeRate);
+    
+    // Calculate extended properties
+    const annualSalary = category.finalRate * baseResult.effectiveHours;
+    const wrapAmount = Number(calculateWrapAmount(annualSalary)) || 0;
+    const minimumProfitAmount = Number(calculateMinimumProfitAmount(annualSalary, wrapAmount)) || 0;
+    const minimumAnnualRevenue = annualSalary + wrapAmount + minimumProfitAmount;
+    const companyMinimumRate = baseResult.effectiveHours > 0 ? minimumAnnualRevenue / baseResult.effectiveHours : 0;
+    const actualCost = (Number(category.companyRoleRate) + wrapAmount) * category.capacity;
+    const actualProfit = baseResult.totalCost - ((annualSalary + wrapAmount) * category.capacity);
+    const actualProfitPercentage = ((annualSalary + wrapAmount) * category.capacity + actualProfit) !== 0
+      ? (actualProfit / ((annualSalary + wrapAmount) * category.capacity + actualProfit)) * 100
+      : 0;
+    
+    // Calculate final rate discount as percentage
+    const lcatRate = Number(category.lcatRate) || 0;
+    const finalRateDiscount = lcatRate > 0 ? ((lcatRate - category.finalRate) / lcatRate) * 100 : 0;
+    
+    return {
+      ...baseResult,
+      annualSalary,
+      wrapAmount,
+      minimumProfitAmount,
+      minimumAnnualRevenue,
+      companyMinimumRate,
+      actualCost,
+      actualProfit,
+      actualProfitPercentage,
+      finalRateDiscount,
+    };
   };
 
 
@@ -310,6 +737,49 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
     
     const newCategories = [...categories, duplicatedCategory];
     onCategoriesChange(newCategories);
+  };
+
+  // Capacity input handlers for better UX
+  const handleCapacityChange = (index: number, value: string) => {
+    setCapacityInputValues(prev => ({ ...prev, [index]: value }));
+  };
+
+  const handleCapacityBlur = (index: number) => {
+    const inputValue = capacityInputValues[index];
+    if (inputValue === undefined) return;
+
+    let numValue = parseFloat(inputValue);
+
+    // Handle empty or invalid input - default to 1
+    if (!inputValue || isNaN(numValue)) {
+      numValue = 1;
+    }
+
+    // Handle leading decimal (e.g., ".5" becomes "0.5")
+    if (inputValue.startsWith('.')) {
+      numValue = parseFloat(`0${inputValue}`);
+    }
+
+    // Ensure minimum value of 0
+    numValue = Math.max(0, numValue);
+
+    // Update the category
+    updateCategory(index, 'capacity', numValue);
+
+    // Clear the local input state
+    setCapacityInputValues(prev => {
+      const newState = { ...prev };
+      delete newState[index];
+      return newState;
+    });
+  };
+
+  const handleCapacityFocus = (index: number) => {
+    // Select all text on focus for easy replacement
+    const category = categories[index];
+    if (category) {
+      setCapacityInputValues(prev => ({ ...prev, [index]: String(category.capacity) }));
+    }
   };
 
   const clearAllCategories = () => {
@@ -380,6 +850,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+              <TableCell sx={{ fontWeight: 'bold', width: 40 }}>Drag</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>
                 <Box display="flex" alignItems="center" gap={0.5}>
                   LCAT
@@ -563,607 +1034,45 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {categories.map((category, index) => {
-              const result = calculateCategoryResult(category);
-              const editing = isEditing(index);
-              
-              return (
-                <TableRow key={index} hover>
-                  {/* LCAT */}
-                  <TableCell>
-                    {category.lcatId ? (
-                      <Box>
-                        <Typography variant="body2" fontWeight="medium">
-                          {category.lcatName}
-                        </Typography>
-                        <Chip 
-                          label={`${category.vehicle} - ${category.lcatCode}`} 
-                          size="small" 
-                          color="primary" 
-                          sx={{ mt: 0.5 }}
-                        />
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        No LCAT selected
-                      </Typography>
-                    )}
-                  </TableCell>
-
-                  {/* Project Role */}
-                  <TableCell>
-                    {category.projectRoleId ? (
-                      <Box>
-                        <Typography variant="body2" fontWeight="medium">
-                          {category.projectRoleName}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {category.projectRoleDescription}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        No project role
-                      </Typography>
-                    )}
-                  </TableCell>
-
-                  {/* Company Role - Always Editable */}
-                  <TableCell>
-                    <FormControl fullWidth size="small">
-                      <Select
-                        value={category.companyRoleId || ''}
-                        onChange={(e) => {
-                          console.log('Company Role onChange triggered:', e.target.value);
-                          const selectedRole = companyRoles.find(r => r.id === e.target.value);
-                          console.log('Selected role:', selectedRole);
-                          if (selectedRole) {
-                            console.log('Updating category with role:', selectedRole.name, selectedRole.rate);
-                            // Calculate Company Minimum Rate (Minimum Annual Revenue ÷ Effective Hours)
-                            const effectiveHours = category.hours * (category.ftePercentage / 100);
-                            const wrapAmount = calculateWrapAmount(selectedRole.rate);
-                            const minimumProfitAmount = calculateMinimumProfitAmount(selectedRole.rate, wrapAmount);
-                            const minimumAnnualRevenue = selectedRole.rate + wrapAmount + minimumProfitAmount;
-                            const minimumRate = Math.round((minimumAnnualRevenue / effectiveHours) * 100) / 100; // Round to 2 decimal places
-                            console.log(`Converting minimum annual revenue ${formatCurrencyWithCommas(minimumAnnualRevenue, false)} to minimum rate: ${formatCurrencyWithCommas(minimumRate, true)} (÷ ${formatNumberWithCommas(effectiveHours)} effective hours)`);
-                            
-                            // Batch all updates into a single state change
-                            const newCategories = [...categories];
-                            const currentCategory = newCategories[index];
-                            if (!currentCategory) return;
-                            
-                            newCategories[index] = {
-                              ...currentCategory,
-                              companyRoleId: selectedRole.id,
-                              companyRoleName: selectedRole.name,
-                              companyRoleRate: selectedRole.rate, // Keep minimum annual revenue for reference
-                              finalRate: minimumRate, // Use minimum rate for calculations (rounded to 2 decimals)
-                              baseRate: minimumRate, // Use minimum rate for base calculations (rounded to 2 decimals)
-                              title: currentCategory.title,
-                              hours: currentCategory.hours,
-                              ftePercentage: currentCategory.ftePercentage,
-                              capacity: currentCategory.capacity,
-                              clearanceLevel: currentCategory.clearanceLevel,
-                              location: currentCategory.location,
-                              finalRateMetadata: {
-                                source: 'company',
-                                reason: `Mapped to ${selectedRole.name} (${formatCurrencyWithCommas(minimumAnnualRevenue, false)} minimum annual revenue ÷ ${formatNumberWithCommas(effectiveHours)} effective hours = ${formatCurrencyWithCommas(minimumRate, true)}/hour)`,
-                                timestamp: new Date().toISOString(),
-                                userId: 'current-user', // In real app, get from auth context
-                              }
-                            };
-                            console.log('Updated category:', newCategories[index]);
-                            onCategoriesChange(newCategories);
-                          } else {
-                            console.log('Clearing company role');
-                            // Clear company role
-                            const newCategories = [...categories];
-                            const currentCategory = newCategories[index];
-                            if (!currentCategory) return;
-                            
-                            newCategories[index] = {
-                              ...currentCategory,
-                              companyRoleId: '',
-                              companyRoleName: '',
-                              companyRoleRate: 0,
-                              title: currentCategory.title,
-                              baseRate: currentCategory.baseRate,
-                              hours: currentCategory.hours,
-                              ftePercentage: currentCategory.ftePercentage,
-                              capacity: currentCategory.capacity,
-                              clearanceLevel: currentCategory.clearanceLevel,
-                              location: currentCategory.location,
-                              finalRate: currentCategory.finalRate,
-                              finalRateMetadata: {
-                                source: 'manual',
-                                reason: 'Company role cleared',
-                                timestamp: new Date().toISOString(),
-                                userId: 'current-user',
-                              }
-                            };
-                            onCategoriesChange(newCategories);
-                          }
-                        }}
-                        disabled={disabled}
-                        sx={{
-                          '& .MuiSelect-select': {
-                            fontWeight: 'medium'
-                          }
-                        }}
-                      >
-                        <MenuItem value="">
-                          <em>No Company Role</em>
-                        </MenuItem>
-                        {companyRoles.map((role) => (
-                          <MenuItem key={role.id} value={role.id}>
-                            <Box>
-                              <Typography variant="body2" fontWeight="medium">
-                                {role.name}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {role.practiceArea} - Min Annual Revenue: {getSalaryConversionInfo(role.rate).annual}
-                              </Typography>
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </TableCell>
-
-                  {/* LCAT Rate */}
-                  <TableCell align="right">
-                    <Typography variant="body2" fontWeight="medium">
-                      {formatCurrencySmart(category.lcatRate || 0)}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Company Minimum Rate */}
-                  <TableCell align="right">
-                    <Typography variant="body2" fontWeight="bold" color="primary">
-                      {(() => {
-                        const effectiveHours = result.effectiveHours;
-                        const companyRoleRate = Number(category.companyRoleRate || 0);
-                        const wrapAmount = calculateWrapAmount(companyRoleRate);
-                        const minimumProfitAmount = calculateMinimumProfitAmount(companyRoleRate, wrapAmount);
-                        const minimumAnnualRevenue = companyRoleRate + wrapAmount + minimumProfitAmount;
-                        const minimumRate = effectiveHours > 0 ? minimumAnnualRevenue / effectiveHours : 0;
-                        return formatCurrencySmart(minimumRate);
-                      })()}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Final Rate - Always Editable */}
-                  <TableCell align="right">
-                    <TextField
-                      size="small"
-                      type="number"
-                      value={category.finalRate || ''}
-                      inputProps={{ step: 0.01 }}
-                      onChange={(e) => {
-                        console.log('Final Rate onChange triggered:', e.target.value);
-                        const newRate = Math.round((parseFloat(e.target.value) || 0) * 100) / 100; // Round to 2 decimal places
-                        console.log('Parsed rate:', newRate);
-                        // Batch all updates into a single state change
-                        const newCategories = [...categories];
-                        const currentCategory = newCategories[index];
-                        if (!currentCategory) return;
-                        
-                        newCategories[index] = {
-                          ...currentCategory,
-                          finalRate: newRate,
-                          baseRate: newRate,
-                          title: currentCategory.title,
-                          hours: currentCategory.hours,
-                          ftePercentage: currentCategory.ftePercentage,
-                          capacity: currentCategory.capacity,
-                          clearanceLevel: currentCategory.clearanceLevel,
-                          location: currentCategory.location,
-                          companyRoleId: currentCategory.companyRoleId,
-                          companyRoleName: currentCategory.companyRoleName,
-                          companyRoleRate: currentCategory.companyRoleRate,
-                          finalRateMetadata: {
-                            source: 'manual',
-                            reason: 'Manual rate entry',
-                            timestamp: new Date().toISOString(),
-                            userId: 'current-user', // In real app, get from auth context
-                          }
-                        };
-                        console.log('Updated category finalRate to:', newRate);
-                        onCategoriesChange(newCategories);
-                      }}
-                      disabled={disabled}
-                      sx={{ 
-                        width: 120,
-                        '& .MuiInputBase-input': {
-                          textAlign: 'right',
-                          fontWeight: 'bold',
-                          color: 'primary.main'
-                        }
-                      }}
-                      InputProps={{
-                        startAdornment: <Typography sx={{ mr: 0.5, fontWeight: 'bold' }}>$</Typography>
-                      }}
-                      placeholder="0.00"
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={categories.map(category => category.id || `temp-${categories.indexOf(category)}`)}
+                strategy={verticalListSortingStrategy}
+              >
+                {categories.map((category, index) => {
+                  const result = calculateCategoryResult(category);
+                  const editing = isEditing(index);
+                  
+                  return (
+                    <SortableRow
+                      key={category.id || `temp-${index}`}
+                      category={category}
+                      index={index}
+                      result={result}
+                      editing={editing}
+                      onUpdateCategory={updateCategory}
+                      onDeleteCategory={removeCategory}
+                      onEditCategory={startEditing}
+                      onSaveCategory={saveEditing}
+                      onCancelEdit={cancelEditing}
+                      onDuplicateCategory={duplicateCategory}
+                      isEditing={isEditing}
+                      calculateCategoryResult={calculateCategoryResult}
+                      systemSettings={settings}
+                      companyRoles={companyRoles}
+                      handleCapacityInputChange={handleCapacityChange}
+                      handleCapacityInputBlur={handleCapacityBlur}
+                      handleCapacityInputFocus={handleCapacityFocus}
+                      capacityInputValues={capacityInputValues}
                     />
-                  </TableCell>
-
-                  {/* Final Rate Discount */}
-                  <TableCell align="right">
-                    <Typography variant="body2" fontWeight="bold" color="secondary">
-                      {(() => {
-                        const lcatRate = Number(category.lcatRate || 0);
-                        const finalRate = Number(category.finalRate || 0);
-                        if (lcatRate === 0) return 'N/A';
-                        const discount = ((lcatRate - finalRate) / lcatRate) * 100;
-                        return formatPercentageWithCommas(discount, 1);
-                      })()}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Capacity */}
-                  <TableCell align="center">
-                    <TextField
-                      size="small"
-                      type="text"
-                      value={capacityInputValues[`capacity_${index}`] ?? (category.capacity || 1).toString()}
-                      onChange={(e) => {
-                        setCapacityInputValues(prev => ({
-                          ...prev,
-                          [`capacity_${index}`]: e.target.value
-                        }));
-                      }}
-                      onFocus={(e) => {
-                        // Select all text when focused for easy replacement
-                        e.target.select();
-                      }}
-                      onBlur={(e) => {
-                        let inputValue = e.target.value.trim();
-                        
-                        // Handle empty input
-                        if (inputValue === '') {
-                          updateCategory(index, 'capacity', 1);
-                          setCapacityInputValues(prev => ({
-                            ...prev,
-                            [`capacity_${index}`]: '1'
-                          }));
-                          return;
-                        }
-                        
-                        // Handle decimal input more intuitively
-                        if (inputValue === '.') {
-                          inputValue = '0.';
-                        } else if (inputValue.startsWith('.')) {
-                          inputValue = '0' + inputValue;
-                        }
-                        
-                        // Parse the value
-                        const parsedValue = parseFloat(inputValue);
-                        
-                        // Update with valid number or default to 1
-                        if (!isNaN(parsedValue) && parsedValue >= 0.1 && parsedValue <= 100) {
-                          updateCategory(index, 'capacity', parsedValue);
-                          setCapacityInputValues(prev => ({
-                            ...prev,
-                            [`capacity_${index}`]: parsedValue.toString()
-                          }));
-                        } else {
-                          // Invalid value, reset to current value
-                          const currentValue = category.capacity || 1;
-                          updateCategory(index, 'capacity', currentValue);
-                          setCapacityInputValues(prev => ({
-                            ...prev,
-                            [`capacity_${index}`]: currentValue.toString()
-                          }));
-                        }
-                      }}
-                      error={!!getFieldError(index, 'capacity')}
-                      disabled={disabled}
-                      sx={{ 
-                        width: 80,
-                        '& .MuiFormHelperText-root': { 
-                          position: 'absolute', 
-                          top: '100%', 
-                          left: 0,
-                          margin: 0,
-                          fontSize: '0.75rem'
-                        },
-                        '& .MuiInputBase-input': {
-                          textAlign: 'center',
-                          fontWeight: 'bold',
-                          color: 'primary.main'
-                        }
-                      }}
-                      helperText={getFieldError(index, 'capacity')}
-                      placeholder="1"
-                    />
-                  </TableCell>
-
-                  {/* Hours */}
-                  <TableCell align="right">
-                    {editing ? (
-                      <TextField
-                        size="small"
-                        type="number"
-                        value={category.hours}
-                        onChange={(e) => updateCategory(index, 'hours', parseInt(e.target.value) || 0)}
-                        error={!!getFieldError(index, 'hours')}
-                        disabled={disabled}
-                        sx={{ 
-                          width: 80,
-                          '& .MuiFormHelperText-root': { 
-                            position: 'absolute', 
-                            top: '100%', 
-                            left: 0,
-                            margin: 0,
-                            fontSize: '0.75rem'
-                          }
-                        }}
-                        helperText={getFieldError(index, 'hours')}
-                        inputProps={{ min: 1, max: 10000 }}
-                      />
-                    ) : (
-                      <Typography variant="body2">
-                        {category.hours.toLocaleString()}
-                      </Typography>
-                    )}
-                  </TableCell>
-
-                  {/* FTE Percentage */}
-                  <TableCell align="right">
-                    {editing ? (
-                      <TextField
-                        size="small"
-                        type="number"
-                        value={category.ftePercentage}
-                        onChange={(e) => updateCategory(index, 'ftePercentage', parseFloat(e.target.value) || 0)}
-                        error={!!getFieldError(index, 'ftePercentage')}
-                        disabled={disabled}
-                        sx={{ 
-                          width: 80,
-                          '& .MuiFormHelperText-root': { 
-                            position: 'absolute', 
-                            top: '100%', 
-                            left: 0,
-                            margin: 0,
-                            fontSize: '0.75rem'
-                          }
-                        }}
-                        helperText={getFieldError(index, 'ftePercentage')}
-                        inputProps={{ min: 0.01, max: 100, step: 0.01 }}
-                      />
-                    ) : (
-                      <Typography variant="body2">
-                        {formatPercentageWithCommas(category.ftePercentage, 1)}
-                      </Typography>
-                    )}
-                  </TableCell>
-
-                  {/* Effective Hours */}
-                  <TableCell align="right">
-                    <Typography variant="body2" fontWeight="medium">
-                      {result.effectiveHours.toLocaleString()}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Hidden: Clearance Level */}
-                  {/* <TableCell align="center">
-                    {editing ? (
-                      <FormControl size="small" sx={{ minWidth: 120, height: 40 }}>
-                        <Select
-                          value={category.clearanceLevel}
-                          onChange={(e) => updateCategory(index, 'clearanceLevel', e.target.value)}
-                          disabled={disabled}
-                          sx={{ height: 40 }}
-                        >
-                          <MenuItem value="None">None</MenuItem>
-                          <MenuItem value="Public Trust">Public Trust</MenuItem>
-                          <MenuItem value="Secret">Secret</MenuItem>
-                          <MenuItem value="Top Secret">Top Secret</MenuItem>
-                        </Select>
-                      </FormControl>
-                    ) : (
-                      <Chip
-                        label={category.clearanceLevel}
-                        size="small"
-                        sx={{
-                          backgroundColor: LaborCategoryService.getClearanceLevelColor(category.clearanceLevel),
-                          color: 'white',
-                          fontWeight: 'bold',
-                        }}
-                      />
-                    )}
-                  </TableCell> */}
-
-                  {/* Hidden: Location */}
-                  {/* <TableCell align="center">
-                    {editing ? (
-                      <FormControl size="small" sx={{ minWidth: 100, height: 40 }}>
-                        <Select
-                          value={category.location}
-                          onChange={(e) => updateCategory(index, 'location', e.target.value)}
-                          disabled={disabled}
-                          sx={{ height: 40 }}
-                        >
-                          <MenuItem value="Remote">Remote</MenuItem>
-                          <MenuItem value="On-site">On-site</MenuItem>
-                          <MenuItem value="Hybrid">Hybrid</MenuItem>
-                        </Select>
-                      </FormControl>
-                    ) : (
-                      <Tooltip title={category.location}>
-                        <Typography variant="body2" fontSize="1.2rem">
-                          {LaborCategoryService.getLocationIcon(category.location)}
-                        </Typography>
-                      </Tooltip>
-                    )}
-                  </TableCell> */}
-
-                  {/* Minimum Annual Revenue */}
-                  <TableCell align="right">
-                    <Typography variant="body2" fontWeight="bold" color="success.main">
-                      {(() => {
-                        const companyRoleRate = Number(category.companyRoleRate || 0);
-                        const wrapAmount = calculateWrapAmount(companyRoleRate);
-                        const minimumProfitAmount = calculateMinimumProfitAmount(companyRoleRate, wrapAmount);
-                        const minimumAnnualRevenue = companyRoleRate + wrapAmount + minimumProfitAmount;
-                        
-                        return formatCurrencySmart(minimumAnnualRevenue);
-                      })()}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Company Role Rate */}
-                  <TableCell align="right">
-                    <Typography variant="body2" fontWeight="bold" color="primary">
-                      {formatCurrencySmart(category.companyRoleRate || 0)}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Wrap */}
-                  <TableCell align="right">
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold" color="secondary">
-                        {formatCurrencySmart(calculateWrapAmount(Number(category.companyRoleRate || 0)))}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-
-                  {/* Minimum Profit */}
-                  <TableCell align="right">
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold" color="success.main">
-                        {formatCurrencySmart(calculateMinimumProfitAmount(Number(category.companyRoleRate || 0), calculateWrapAmount(Number(category.companyRoleRate || 0))))}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-
-                  {/* Hidden: Burdened Rate */}
-                  {/* <TableCell align="right">
-                    <Typography variant="body2" fontWeight="medium" color="primary">
-                      {formatCurrencySmart(result.burdenedRate)}
-                    </Typography>
-                  </TableCell> */}
-
-                  {/* Total Cost */}
-                  <TableCell align="right">
-                    <Typography variant="body2" fontWeight="bold" color="success.main">
-                      {formatCurrencySmart(result.totalCost)}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Actual Cost */}
-                  <TableCell align="right">
-                    <Typography variant="body2" fontWeight="bold" color="info.main">
-                      {(() => {
-                        const companyRoleRate = Number(category.companyRoleRate || 0);
-                        const wrapAmount = calculateWrapAmount(companyRoleRate);
-                        const capacity = category.capacity || 1;
-                        const actualCost = (companyRoleRate + wrapAmount) * capacity;
-                        
-                        return formatCurrencySmart(actualCost);
-                      })()}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Actual Profit */}
-                  <TableCell align="right">
-                    <Typography variant="body2" fontWeight="bold" color="success.main">
-                      {(() => {
-                        const companyRoleRate = Number(category.companyRoleRate || 0);
-                        const wrapAmount = calculateWrapAmount(companyRoleRate);
-                        const capacity = category.capacity || 1;
-                        const totalCost = result.totalCost;
-                        const actualCost = (companyRoleRate + wrapAmount) * capacity;
-                        const actualProfit = totalCost - actualCost;
-                        
-                        return formatCurrencySmart(actualProfit);
-                      })()}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Actual Profit (%) */}
-                  <TableCell align="right">
-                    <Typography variant="body2" fontWeight="bold" color="success.main">
-                      {(() => {
-                        const companyRoleRate = Number(category.companyRoleRate || 0);
-                        const wrapAmount = calculateWrapAmount(companyRoleRate);
-                        const capacity = category.capacity || 1;
-                        const totalCost = result.totalCost;
-                        const actualCost = (companyRoleRate + wrapAmount) * capacity;
-                        const actualProfit = totalCost - actualCost;
-                        
-                        // Calculate percentage: Actual Profit / (Actual Cost + Actual Profit)
-                        const denominator = actualCost + actualProfit;
-                        const profitPercentage = denominator !== 0 ? (actualProfit / denominator) * 100 : 0;
-                        
-                        return `${profitPercentage.toFixed(1)}%`;
-                      })()}
-                    </Typography>
-                  </TableCell>
-
-                  {/* Actions */}
-                  <TableCell align="center">
-                    {editing ? (
-                      <Box display="flex" gap={1}>
-                        <Tooltip title="Save">
-                          <IconButton
-                            size="small"
-                            onClick={() => saveEditing(index)}
-                            disabled={disabled}
-                            color="primary"
-                          >
-                            <SaveIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Cancel">
-                          <IconButton
-                            size="small"
-                            onClick={() => cancelEditing(index)}
-                            disabled={disabled}
-                            color="secondary"
-                          >
-                            <CancelIcon />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    ) : (
-                      <Box display="flex" gap={1}>
-                        <Tooltip title="Edit">
-                          <IconButton
-                            size="small"
-                            onClick={() => startEditing(index)}
-                            disabled={disabled}
-                            color="primary"
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Duplicate">
-                          <IconButton
-                            size="small"
-                            onClick={() => duplicateCategory(index)}
-                            disabled={disabled}
-                            color="info"
-                          >
-                            <DuplicateIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Delete">
-                          <IconButton
-                            size="small"
-                            onClick={() => removeCategory(index)}
-                            disabled={disabled}
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+                  );
+                })}
+              </SortableContext>
+            </DndContext>
           </TableBody>
         </Table>
       </TableContainer>
@@ -1186,7 +1095,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                       {summary.totalCategories}
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Total Categories
+                      Labor Categories
                     </Typography>
                   </CardContent>
                 </Card>
@@ -1198,7 +1107,7 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                 }}>
                   <CardContent>
                     <Typography variant="h4" fontWeight="bold">
-                      {summary.totalEffectiveHours.toLocaleString()}
+                      {formatNumberWithCommas(summary.totalEffectiveHours)}
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.9 }}>
                       Effective Hours
@@ -1213,10 +1122,10 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                 }}>
                   <CardContent>
                     <Typography variant="h4" fontWeight="bold">
-                      {formatCurrencySmart(summary.averageBurdenedRate)}
+                      {formatCurrencyWithCommas(summary.totalCost)}
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Avg Burdened Rate
+                      Total Cost
                     </Typography>
                   </CardContent>
                 </Card>
@@ -1228,124 +1137,17 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
                 }}>
                   <CardContent>
                     <Typography variant="h4" fontWeight="bold">
-                      {formatCurrencySmart(summary.totalBurdenedCost)}
+                      {formatCurrencyWithCommas(summary.totalActualProfit)}
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Total Labor Cost
+                      Total Actual Profit
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
             </Grid>
-            
-            {/* Additional Metrics */}
-            <Box mt={3}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={4}>
-                  <Box textAlign="center" p={2} sx={{ backgroundColor: 'rgba(25, 118, 210, 0.1)', borderRadius: 2 }}>
-                    <Typography variant="h6" color="primary" fontWeight="bold">
-                      {formatCurrencySmart(summary.totalBaseCost)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Total Base Cost
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Box textAlign="center" p={2} sx={{ backgroundColor: 'rgba(76, 175, 80, 0.1)', borderRadius: 2 }}>
-                    <Typography variant="h6" color="success.main" fontWeight="bold">
-                      {formatCurrencySmart(summary.totalBurdenedCost - summary.totalBaseCost)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Total Burden Cost
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Box textAlign="center" p={2} sx={{ backgroundColor: 'rgba(255, 152, 0, 0.1)', borderRadius: 2 }}>
-                    <Typography variant="h6" color="warning.main" fontWeight="bold">
-                      {((summary.totalBurdenedCost / summary.totalBaseCost - 1) * 100).toFixed(1)}%
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Burden Rate
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </Box>
           </Paper>
         </Box>
-      )}
-
-      {/* Enhanced Empty State */}
-      {categories.length === 0 && (
-        <Box textAlign="center" py={6}>
-          <Paper elevation={1} sx={{ p: 4, backgroundColor: '#f8f9fa' }}>
-            <Typography variant="h5" color="text.secondary" gutterBottom fontWeight="bold">
-              🚀 Ready to Build Your Team?
-            </Typography>
-            <Typography variant="body1" color="text.secondary" mb={3}>
-              Start by selecting from our pre-populated labor categories or create custom categories
-            </Typography>
-            <Box display="flex" gap={2} justifyContent="center" flexWrap="wrap">
-              <Button
-                variant="contained"
-                startIcon={<LibraryIcon />}
-                onClick={() => setLcatDialogOpen(true)}
-                disabled={disabled}
-                size="large"
-                sx={{ 
-                  backgroundColor: '#1976d2',
-                  '&:hover': { backgroundColor: '#1565c0' }
-                }}
-              >
-                Select Labor Category
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<AddIcon />}
-                onClick={addCategory}
-                disabled={disabled}
-                size="large"
-                sx={{ 
-                  borderColor: '#1976d2',
-                  color: '#1976d2',
-                  '&:hover': { 
-                    borderColor: '#1565c0',
-                    backgroundColor: 'rgba(25, 118, 210, 0.04)'
-                  }
-                }}
-              >
-                Create Custom Category
-              </Button>
-            </Box>
-          </Paper>
-        </Box>
-      )}
-
-
-      {/* Speed Dial for Quick Actions */}
-      {categories.length > 0 && (
-        <SpeedDial
-          ariaLabel="Quick actions"
-          sx={{ position: 'fixed', bottom: 16, right: 16 }}
-          icon={<SpeedDialIcon />}
-          onClose={() => setSpeedDialOpen(false)}
-          onOpen={() => setSpeedDialOpen(true)}
-          open={speedDialOpen}
-        >
-          {speedDialActions.map((action) => (
-            <SpeedDialAction
-              key={action.name}
-              icon={action.icon}
-              tooltipTitle={action.name}
-              onClick={() => {
-                action.onClick();
-                setSpeedDialOpen(false);
-              }}
-            />
-          ))}
-        </SpeedDial>
       )}
 
       {/* LCAT Project Role Selection Dialog */}
@@ -1354,6 +1156,32 @@ export const LaborCategoriesInput: React.FC<LaborCategoriesInputProps> = ({
         onClose={() => setLcatDialogOpen(false)}
         onSelect={handleLCATProjectRoleSelection}
       />
+
+      {/* Floating Speed Dial for Actions */}
+      <SpeedDial
+        ariaLabel="Labor Category Actions"
+        sx={{ position: 'fixed', bottom: 16, right: 16 }}
+        icon={<SpeedDialIcon />}
+        onClose={() => setSpeedDialOpen(false)}
+        onOpen={() => setSpeedDialOpen(true)}
+        open={speedDialOpen}
+      >
+        <SpeedDialAction
+          icon={<AddIcon />}
+          tooltipTitle="Add from LCAT Management"
+          onClick={() => setLcatDialogOpen(true)}
+        />
+        <SpeedDialAction
+          icon={<LibraryIcon />}
+          tooltipTitle="Add from Template"
+          onClick={() => console.log('Not implemented')}
+        />
+        <SpeedDialAction
+          icon={<ClearAllIcon />}
+          tooltipTitle="Clear All"
+          onClick={() => onCategoriesChange([])}
+        />
+      </SpeedDial>
     </Box>
   );
 };
