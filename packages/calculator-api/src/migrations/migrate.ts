@@ -7,7 +7,10 @@ import { DatabaseService } from '../config/database';
 import { up as createTables } from './001-create-tables';
 import { up as fixTenantIdColumns } from './002-fix-tenant-id-columns';
 import { up as createPricingTables } from './003-create-pricing-tables';
+import { up as createLcatTemplateTables } from './004-create-lcat-template-tables';
 import { up as createLcatManagementTables } from './005-create-lcat-management-tables';
+import { up as addMissingContractVehicleFields } from './006-add-missing-contract-vehicle-fields';
+import { up as createSystemSettingsTable } from './007-create-system-settings-table';
 import { up as addLaborCategoriesJsonField } from './008-add-labor-categories-json-field';
 import { up as addContractVehicleField } from './009-add-contract-vehicle-field';
 
@@ -84,6 +87,25 @@ export class MigrationRunner {
         console.log('⏭️  Migration 003-create-pricing-tables already executed, skipping');
       }
 
+      // Run migration 004-create-lcat-template-tables
+      const [results4] = await this.sequelize.query(
+        "SELECT * FROM migrations WHERE name = '004-create-lcat-template-tables'"
+      );
+      
+      if (results4.length === 0) {
+        console.log('📝 Running migration: 004-create-lcat-template-tables');
+        await createLcatTemplateTables(this.sequelize.getQueryInterface());
+        
+        // Record migration as completed
+        await this.sequelize.query(
+          "INSERT INTO migrations (name, executed_at) VALUES ('004-create-lcat-template-tables', NOW())"
+        );
+        
+        console.log('✅ Migration 004-create-lcat-template-tables completed successfully');
+      } else {
+        console.log('⏭️  Migration 004-create-lcat-template-tables already executed, skipping');
+      }
+
       // Run migration 005-create-lcat-management-tables
       const [results5] = await this.sequelize.query(
         "SELECT * FROM migrations WHERE name = '005-create-lcat-management-tables'"
@@ -101,6 +123,44 @@ export class MigrationRunner {
         console.log('✅ Migration 005-create-lcat-management-tables completed successfully');
       } else {
         console.log('⏭️  Migration 005-create-lcat-management-tables already executed, skipping');
+      }
+
+      // Run migration 006-add-missing-contract-vehicle-fields
+      const [results6] = await this.sequelize.query(
+        "SELECT * FROM migrations WHERE name = '006-add-missing-contract-vehicle-fields'"
+      );
+      
+      if (results6.length === 0) {
+        console.log('📝 Running migration: 006-add-missing-contract-vehicle-fields');
+        await addMissingContractVehicleFields(this.sequelize.getQueryInterface());
+        
+        // Record migration as completed
+        await this.sequelize.query(
+          "INSERT INTO migrations (name, executed_at) VALUES ('006-add-missing-contract-vehicle-fields', NOW())"
+        );
+        
+        console.log('✅ Migration 006-add-missing-contract-vehicle-fields completed successfully');
+      } else {
+        console.log('⏭️  Migration 006-add-missing-contract-vehicle-fields already executed, skipping');
+      }
+
+      // Run migration 007-create-system-settings-table
+      const [results7] = await this.sequelize.query(
+        "SELECT * FROM migrations WHERE name = '007-create-system-settings-table'"
+      );
+      
+      if (results7.length === 0) {
+        console.log('📝 Running migration: 007-create-system-settings-table');
+        await createSystemSettingsTable(this.sequelize.getQueryInterface());
+        
+        // Record migration as completed
+        await this.sequelize.query(
+          "INSERT INTO migrations (name, executed_at) VALUES ('007-create-system-settings-table', NOW())"
+        );
+        
+        console.log('✅ Migration 007-create-system-settings-table completed successfully');
+      } else {
+        console.log('⏭️  Migration 007-create-system-settings-table already executed, skipping');
       }
 
       // Run migration 008-add-labor-categories-json-field
