@@ -28,7 +28,6 @@ import {
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Add as AddIcon,
   Close as CloseIcon,
   Work as WorkIcon,
   Security as SecurityIcon,

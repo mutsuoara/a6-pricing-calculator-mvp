@@ -1,4 +1,3 @@
-import React from 'react';
 import { Container, Typography, Box, AppBar, Toolbar } from '@mui/material';
 import IntegratedPricingCalculator from './components/IntegratedPricingCalculator';
 

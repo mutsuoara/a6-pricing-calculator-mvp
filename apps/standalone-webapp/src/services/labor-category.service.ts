@@ -74,6 +74,17 @@ export class LaborCategoryService {
     const feeAmount = clearanceAdjustedRate * (1 + overheadRate) * (1 + gaRate) * feeRate * effectiveHours;
     const totalCost = laborCategory.finalRate * effectiveHours * laborCategory.capacity; // (Capacity × Effective Hours) × Final Rate
 
+    // Calculate new enhanced properties
+    const annualSalary = laborCategory.companyRoleRate || 0;
+    const wrapAmount = annualSalary * (wrapRate / 100);
+    const minimumProfitAmount = (annualSalary + wrapAmount) * (minimumProfitRate / 100);
+    const minimumAnnualRevenue = annualSalary + wrapAmount + minimumProfitAmount;
+    const companyMinimumRate = minimumAnnualRevenue / effectiveHours;
+    const actualCost = (annualSalary + wrapAmount) * laborCategory.capacity;
+    const actualProfit = totalCost - actualCost;
+    const actualProfitPercentage = actualCost > 0 ? (actualProfit / (actualCost + actualProfit)) * 100 : 0;
+    const finalRateDiscount = laborCategory.baseRate > 0 ? ((laborCategory.baseRate - laborCategory.finalRate) / laborCategory.baseRate) * 100 : 0;
+
     return {
       id: laborCategory.id || '',
       title: laborCategory.title,
@@ -94,6 +105,16 @@ export class LaborCategoryService {
       feeRate,
       totalCost,
       burdenedRate,
+      // New enhanced properties
+      annualSalary,
+      wrapAmount,
+      minimumProfitAmount,
+      minimumAnnualRevenue,
+      companyMinimumRate,
+      actualCost,
+      actualProfit,
+      actualProfitPercentage,
+      finalRateDiscount,
     };
   }
 
@@ -188,6 +209,10 @@ export class LaborCategoryService {
         totalBurdenedCost: 0,
         averageBaseRate: 0,
         averageBurdenedRate: 0,
+        totalCost: 0,
+        totalActualCost: 0,
+        totalActualProfit: 0,
+        averageActualProfitPercentage: 0,
       };
     }
 
@@ -197,6 +222,9 @@ export class LaborCategoryService {
     let totalBurdenedCost = 0;
     let totalBaseRate = 0;
     let totalBurdenedRate = 0;
+    let totalCost = 0;
+    let totalActualCost = 0;
+    let totalActualProfit = 0;
 
     categories.forEach(category => {
       const result = this.calculateTotalCost(category, overheadRate, gaRate, feeRate);
@@ -207,7 +235,12 @@ export class LaborCategoryService {
       totalBurdenedCost += result.totalCost;
       totalBaseRate += category.baseRate;
       totalBurdenedRate += result.burdenedRate;
+      totalCost += result.totalCost;
+      totalActualCost += result.actualCost;
+      totalActualProfit += result.actualProfit;
     });
+
+    const averageActualProfitPercentage = totalActualCost > 0 ? (totalActualProfit / (totalActualCost + totalActualProfit)) * 100 : 0;
 
     return {
       totalCategories: categories.length,
@@ -217,6 +250,10 @@ export class LaborCategoryService {
       totalBurdenedCost,
       averageBaseRate: totalBaseRate / categories.length,
       averageBurdenedRate: totalBurdenedRate / categories.length,
+      totalCost,
+      totalActualCost,
+      totalActualProfit,
+      averageActualProfitPercentage,
     };
   }
 

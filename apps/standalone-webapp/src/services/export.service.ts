@@ -3,7 +3,8 @@
  * Handles frontend export functionality
  */
 
-import { CalculationResult, PricingSettings, LaborCategoryInput, OtherDirectCostInput } from '@pricing-calculator/types';
+import { CalculationResult, PricingSettings, OtherDirectCost } from '@pricing-calculator/types';
+import { LaborCategoryInput } from '../types/labor-category';
 
 export interface ExportOptions {
   projectName?: string;
@@ -18,9 +19,9 @@ export class ExportService {
    * Export calculation results to Excel
    */
   static async exportToExcel(
-    calculationResult: CalculationResult,
+    _calculationResult: CalculationResult,
     laborCategories: LaborCategoryInput[],
-    otherDirectCosts: OtherDirectCostInput[],
+    otherDirectCosts: OtherDirectCost[],
     settings: PricingSettings,
     options: ExportOptions = {}
   ): Promise<void> {
@@ -58,7 +59,7 @@ export class ExportService {
       // Get filename from response headers or create default
       const contentDisposition = response.headers.get('Content-Disposition');
       const filename = contentDisposition
-        ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
+        ? contentDisposition.split('filename=')[1]?.replace(/"/g, '') || `pricing-calculation-${new Date().toISOString().split('T')[0]}.xlsx`
         : `pricing-calculation-${new Date().toISOString().split('T')[0]}.xlsx`;
 
       // Create blob and download
@@ -83,9 +84,9 @@ export class ExportService {
    */
   static async exportWithTemplate(
     template: 'basic' | 'va-spruce' | 'gsa-mas',
-    calculationResult: CalculationResult,
+    _calculationResult: CalculationResult,
     laborCategories: LaborCategoryInput[],
-    otherDirectCosts: OtherDirectCostInput[],
+    otherDirectCosts: OtherDirectCost[],
     settings: PricingSettings,
     options: ExportOptions = {}
   ): Promise<void> {
@@ -126,7 +127,7 @@ export class ExportService {
       // Get filename from response headers or create default
       const contentDisposition = response.headers.get('Content-Disposition');
       const filename = contentDisposition
-        ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
+        ? contentDisposition.split('filename=')[1]?.replace(/"/g, '') || `pricing-calculation-${template}-${new Date().toISOString().split('T')[0]}.xlsx`
         : `pricing-calculation-${template}-${new Date().toISOString().split('T')[0]}.xlsx`;
 
       // Create blob and download

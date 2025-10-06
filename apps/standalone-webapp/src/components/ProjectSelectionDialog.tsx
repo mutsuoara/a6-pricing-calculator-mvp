@@ -27,7 +27,6 @@ import {
 import {
   Search as SearchIcon,
   Delete as DeleteIcon,
-  Edit as EditIcon,
   FolderOpen as OpenIcon,
 } from '@mui/icons-material';
 import ProjectService, { ProjectData } from '../services/project.service';

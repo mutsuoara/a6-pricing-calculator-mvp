@@ -40,9 +40,7 @@ import {
   People as PeopleIcon,
   Security as SecurityIcon,
   Settings as SettingsIcon,
-  Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon,
   Business as BusinessIcon,
 } from '@mui/icons-material';
 import { OverridePermissions } from '../types/labor-category';

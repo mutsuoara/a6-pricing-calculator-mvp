@@ -149,16 +149,6 @@ export const LCATProjectRoleSelectionDialog: React.FC<LCATProjectRoleSelectionDi
     );
   };
 
-  const handleAddInstance = (lcatId: string) => {
-    const lcat = lcats.find(l => l.id === lcatId);
-    if (lcat) {
-      setLcatMappings(prev => [...prev, { lcat, projectRole: null, instanceId: `${lcat.id}-${Date.now()}`, quantity: 1 }]);
-    }
-  };
-
-  const handleRemoveInstance = (instanceId: string) => {
-    setLcatMappings(prev => prev.filter(mapping => mapping.instanceId !== instanceId));
-  };
 
   const handleQuantityChange = (instanceId: string, quantity: number) => {
     setLcatMappings(prev => 

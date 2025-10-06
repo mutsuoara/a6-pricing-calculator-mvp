@@ -20,19 +20,19 @@ import {
   Divider,
 } from '@mui/material';
 import {
-  Download as DownloadIcon,
   TableChart as ExcelIcon,
   PictureAsPdf as PdfIcon,
   MoreVert as MoreVertIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import { ExportService, ExportOptions } from '../services/export.service';
-import { CalculationResult, PricingSettings, LaborCategoryInput, OtherDirectCostInput } from '@pricing-calculator/types';
+import { CalculationResult, PricingSettings, OtherDirectCost } from '@pricing-calculator/types';
+import { LaborCategoryInput } from '../types/labor-category';
 
 interface ExportPanelProps {
   calculationResult: CalculationResult | null;
   laborCategories: LaborCategoryInput[];
-  otherDirectCosts: OtherDirectCostInput[];
+  otherDirectCosts: OtherDirectCost[];
   settings: PricingSettings;
   projectName?: string;
   contractVehicle?: string;
@@ -92,8 +92,8 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
 
     try {
       const options: ExportOptions = {
-        projectName,
-        contractVehicle,
+        ...(projectName && { projectName }),
+        ...(contractVehicle && { contractVehicle }),
         template: template as 'basic' | 'va-spruce' | 'gsa-mas'
       };
 
