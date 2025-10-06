@@ -12,7 +12,7 @@ export const up = async (queryInterface: QueryInterface): Promise<void> => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    tenant_id: {
+    tenantId: {
       type: DataTypes.UUID,
       allowNull: false,
     },
@@ -55,8 +55,8 @@ export const up = async (queryInterface: QueryInterface): Promise<void> => {
     },
   });
 
-  // Create unique index on tenant_id
-  await queryInterface.addIndex('system_settings', ['tenant_id'], {
+  // Create unique index on tenantId (camelCase to match model)
+  await queryInterface.addIndex('system_settings', ['tenantId'], {
     unique: true,
     name: 'system_settings_tenant_id_unique',
   });

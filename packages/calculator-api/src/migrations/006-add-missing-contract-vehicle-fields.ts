@@ -6,32 +6,61 @@
 import { QueryInterface, DataTypes } from 'sequelize';
 
 export const up = async (queryInterface: QueryInterface): Promise<void> => {
-  // Add missing fields to contract_vehicles table
-  await queryInterface.addColumn('contract_vehicles', 'escalationRate', {
-    type: DataTypes.DECIMAL(5, 4),
-    allowNull: false,
-    defaultValue: 0.03, // 3% default escalation rate
-    comment: 'Annual escalation rate as decimal (0.03 = 3%)',
-  });
+  // Add missing fields to contract_vehicles table (with existence checks)
+  
+  try {
+    await queryInterface.addColumn('contract_vehicles', 'escalationRate', {
+      type: DataTypes.DECIMAL(5, 4),
+      allowNull: false,
+      defaultValue: 0.03, // 3% default escalation rate
+      comment: 'Annual escalation rate as decimal (0.03 = 3%)',
+    });
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Column escalationRate already exists, skipping');
+  }
 
-  await queryInterface.addColumn('contract_vehicles', 'startDate', {
-    type: DataTypes.DATEONLY,
-    allowNull: true,
-    comment: 'Contract start date',
-  });
+  try {
+    await queryInterface.addColumn('contract_vehicles', 'startDate', {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      comment: 'Contract start date',
+    });
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Column startDate already exists, skipping');
+  }
 
-  await queryInterface.addColumn('contract_vehicles', 'endDate', {
-    type: DataTypes.DATEONLY,
-    allowNull: true,
-    comment: 'Contract end date',
-  });
+  try {
+    await queryInterface.addColumn('contract_vehicles', 'endDate', {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+      comment: 'Contract end date',
+    });
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Column endDate already exists, skipping');
+  }
 
-  await queryInterface.addColumn('contract_vehicles', 'createdBy', {
-    type: DataTypes.STRING(255),
-    allowNull: false,
-    defaultValue: 'system',
-    comment: 'User who created this contract vehicle',
-  });
+  try {
+    await queryInterface.addColumn('contract_vehicles', 'createdBy', {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      defaultValue: 'system',
+      comment: 'User who created this contract vehicle',
+    });
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Column createdBy already exists, skipping');
+  }
 };
 
 export const down = async (queryInterface: QueryInterface): Promise<void> => {

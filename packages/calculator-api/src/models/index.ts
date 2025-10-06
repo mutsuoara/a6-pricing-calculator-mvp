@@ -71,7 +71,8 @@ export class ModelManager {
       // LCAT Template associations - using JSON storage instead of many-to-many
 
       // Sync database (create tables if they don't exist)
-      await dbService.sync();
+      // Skip sync since migrations handle schema creation
+      // await dbService.sync();
 
       ModelManager.initialized = true;
       console.log('✅ All database models initialized successfully');

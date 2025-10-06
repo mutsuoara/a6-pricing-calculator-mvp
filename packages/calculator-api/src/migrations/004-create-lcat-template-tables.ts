@@ -178,12 +178,51 @@ export const up = async (queryInterface: QueryInterface): Promise<void> => {
     },
   });
 
-  // Create indexes for a6_roles
-  await queryInterface.addIndex('a6_roles', ['tenantId']);
-  await queryInterface.addIndex('a6_roles', ['code'], { unique: true });
-  await queryInterface.addIndex('a6_roles', ['department']);
-  await queryInterface.addIndex('a6_roles', ['level']);
-  await queryInterface.addIndex('a6_roles', ['isActive']);
+  // Create indexes for a6_roles (with existence checks)
+  try {
+    await queryInterface.addIndex('a6_roles', ['tenantId']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index a6_roles_tenant_id already exists, skipping');
+  }
+  
+  try {
+    await queryInterface.addIndex('a6_roles', ['code'], { unique: true });
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index a6_roles_code already exists, skipping');
+  }
+  
+  try {
+    await queryInterface.addIndex('a6_roles', ['department']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index a6_roles_department already exists, skipping');
+  }
+  
+  try {
+    await queryInterface.addIndex('a6_roles', ['level']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index a6_roles_level already exists, skipping');
+  }
+  
+  try {
+    await queryInterface.addIndex('a6_roles', ['isActive']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index a6_roles_isActive already exists, skipping');
+  }
 
   // Create labor_category_templates table
   await queryInterface.createTable('labor_category_templates', {
@@ -269,14 +308,69 @@ export const up = async (queryInterface: QueryInterface): Promise<void> => {
     },
   });
 
-  // Create indexes for labor_category_templates
-  await queryInterface.addIndex('labor_category_templates', ['tenantId']);
-  await queryInterface.addIndex('labor_category_templates', ['title']);
-  await queryInterface.addIndex('labor_category_templates', ['category']);
-  await queryInterface.addIndex('labor_category_templates', ['experienceLevel']);
-  await queryInterface.addIndex('labor_category_templates', ['isActive']);
-  await queryInterface.addIndex('labor_category_templates', ['typicalClearanceLevel']);
-  await queryInterface.addIndex('labor_category_templates', ['typicalLocation']);
+  // Create indexes for labor_category_templates (with existence checks)
+  try {
+    await queryInterface.addIndex('labor_category_templates', ['tenantId']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index labor_category_templates_tenant_id already exists, skipping');
+  }
+  
+  try {
+    await queryInterface.addIndex('labor_category_templates', ['title']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index labor_category_templates_title already exists, skipping');
+  }
+  
+  try {
+    await queryInterface.addIndex('labor_category_templates', ['category']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index labor_category_templates_category already exists, skipping');
+  }
+  
+  try {
+    await queryInterface.addIndex('labor_category_templates', ['experienceLevel']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index labor_category_templates_experienceLevel already exists, skipping');
+  }
+  
+  try {
+    await queryInterface.addIndex('labor_category_templates', ['isActive']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index labor_category_templates_isActive already exists, skipping');
+  }
+  
+  try {
+    await queryInterface.addIndex('labor_category_templates', ['typicalClearanceLevel']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index labor_category_templates_typicalClearanceLevel already exists, skipping');
+  }
+  
+  try {
+    await queryInterface.addIndex('labor_category_templates', ['typicalLocation']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index labor_category_templates_typicalLocation already exists, skipping');
+  }
 };
 
 export const down = async (queryInterface: QueryInterface): Promise<void> => {
