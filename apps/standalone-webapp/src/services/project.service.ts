@@ -194,7 +194,7 @@ class ProjectService {
       name: apiProject.name,
       description: apiProject.description,
       lastModified: apiProject.updatedAt,
-      status: 'draft', // Default status
+      status: (apiProject.status as 'draft' | 'active' | 'archived') || 'draft', // Use API status or default to draft
       contractVehicle: apiProject.contractVehicle,
       overheadRate: apiProject.settings?.overheadRate || 0.30,
       gaRate: apiProject.settings?.gaRate || 0.15,

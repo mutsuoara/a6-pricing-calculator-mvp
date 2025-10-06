@@ -158,6 +158,10 @@ export class TemplateService {
         createdAt: row[8] || new Date().toISOString(),
         updatedAt: row[9] || new Date().toISOString(),
         createdBy: row[10] || 'import',
+        maxOverheadRate: 100,
+        maxGaRate: 100,
+        maxFeeRate: 100,
+        complianceRequirements: [],
       }));
   }
 

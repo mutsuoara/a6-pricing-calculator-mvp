@@ -41,6 +41,10 @@ export class MappingService {
           createdAt: '2024-01-01T00:00:00Z',
           updatedAt: '2024-01-01T00:00:00Z',
           createdBy: 'system',
+          maxOverheadRate: 100,
+          maxGaRate: 100,
+          maxFeeRate: 100,
+          complianceRequirements: [],
         },
         {
           id: '2',
@@ -54,6 +58,10 @@ export class MappingService {
           createdAt: '2024-01-01T00:00:00Z',
           updatedAt: '2024-01-01T00:00:00Z',
           createdBy: 'system',
+          maxOverheadRate: 100,
+          maxGaRate: 100,
+          maxFeeRate: 100,
+          complianceRequirements: [],
         },
       ];
     }

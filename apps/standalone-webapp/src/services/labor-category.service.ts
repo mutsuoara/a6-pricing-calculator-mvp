@@ -76,6 +76,8 @@ export class LaborCategoryService {
 
     // Calculate new enhanced properties
     const annualSalary = laborCategory.companyRoleRate || 0;
+    const wrapRate = 87.5; // Default wrap rate
+    const minimumProfitRate = 7.53; // Default minimum profit rate
     const wrapAmount = annualSalary * (wrapRate / 100);
     const minimumProfitAmount = (annualSalary + wrapAmount) * (minimumProfitRate / 100);
     const minimumAnnualRevenue = annualSalary + wrapAmount + minimumProfitAmount;

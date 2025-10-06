@@ -58,7 +58,7 @@ interface LocalProjectData {
   name: string;
   lastModified: string;
   status: 'draft' | 'active' | 'archived';
-  contractVehicle: string | undefined;
+  contractVehicle?: string;
   overheadRate: number;
   gaRate: number;
   feeRate: number;
@@ -213,7 +213,6 @@ const IntegratedPricingCalculator: React.FC = () => {
       name: 'New Project',
       lastModified: new Date().toISOString(),
       status: 'draft',
-      contractVehicle: undefined,
       overheadRate: 0.30,
       gaRate: 0.15,
       feeRate: 0.10,
@@ -291,7 +290,7 @@ const IntegratedPricingCalculator: React.FC = () => {
   const handleContractVehicleChange = (vehicle: string | undefined, burdenedRates?: { overheadRate: number; gaRate: number; feeRate: number }) => {
     setProjectData(prev => ({
       ...prev,
-      contractVehicle: vehicle,
+      ...(vehicle !== undefined && { contractVehicle: vehicle }),
       lastModified: new Date().toISOString(),
       ...(burdenedRates && {
         overheadRate: burdenedRates.overheadRate,

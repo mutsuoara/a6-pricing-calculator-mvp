@@ -77,10 +77,33 @@ export const up = async (queryInterface: QueryInterface): Promise<void> => {
     },
   });
 
-  // Create indexes for contract_vehicles
-  await queryInterface.addIndex('contract_vehicles', ['tenantId']);
-  await queryInterface.addIndex('contract_vehicles', ['code'], { unique: true });
-  await queryInterface.addIndex('contract_vehicles', ['isActive']);
+  // Create indexes for contract_vehicles (with existence checks)
+  try {
+    await queryInterface.addIndex('contract_vehicles', ['tenantId']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index contract_vehicles_tenant_id already exists, skipping');
+  }
+  
+  try {
+    await queryInterface.addIndex('contract_vehicles', ['code'], { unique: true });
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index contract_vehicles_code already exists, skipping');
+  }
+  
+  try {
+    await queryInterface.addIndex('contract_vehicles', ['isActive']);
+  } catch (error: any) {
+    if (error.message && !error.message.includes('already exists')) {
+      throw error;
+    }
+    console.log('Index contract_vehicles_isActive already exists, skipping');
+  }
 
   // Create a6_roles table
   await queryInterface.createTable('a6_roles', {
